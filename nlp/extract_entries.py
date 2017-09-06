@@ -1,14 +1,16 @@
 """
 pickle entires for NLP analysis
 """
+
 import csv
-import random
 import pickle
 import os
-import tempfile
+import json
 
 import boto
 
+from entries.models import Entry
+from django.core.management.base import BaseCommand
 
 class Ent(object):
     def __init__(self):
@@ -53,6 +55,16 @@ class Ent(object):
             tddict['subsectors'] = [sub.name for sub in info_att.subsectors.all()]
 
         self.twodim.append(tddict)
+
+    def get_head(self):
+        return ['onedim_j', 'twodim_j', 'reliability', 'severity', 'demo_groups_j', 'specific_needs_j',
+                'aff_groups_j', 'geo_j', 'info_date', 'excerpt', 'has_image', 'lead_text', 'lead_id', 'lead_url', 'event']
+
+    def get_row(self):
+        return [str(val) for val in [json.dumps(self.onedim), json.dumps(self.twodim), self.reliability, self.severity, json.dumps(self.demo_groups),
+                                     json.dumps(self.specific_needs), json.dumps(self.affected_groups), json.dumps(self.geo_locations),
+                                     self.information_date, self.excerpt, self.has_image, self.lead_text, self.lead_id,
+                                     self.lead_url, self.event]]
 
 def extract():
     """
@@ -152,20 +164,28 @@ def send_boto(tmp):
 
     bucket = conn.get_bucket('deepnlp')
     key = boto.s3.key.Key(bucket)
-    key.key = 'pickle.p'
+    key.key = 'nlp_out.csv'
     key.set_contents_from_filename(tmp)
 
-def main():
+class Command(BaseCommand):
 
-    prepare_to_get_ricked = extract()
+    def handle(self, *args, **kwargs):
+        prepare_to_get_ricked = extract()
 
-    filename = '/tmp/tmp_pickle.%s.txt' % os.getpid()
-    pickle.dump(prepare_to_get_ricked, open(filename, 'wb'))
+        filename = '/tmp/tmp_nlp%s.csv' % os.getpid()
 
-    try:
-        send_boto(filename)
-    finally:
-        os.remove(filename)
+        with open(filename, 'w') as fp:
+            writer = csv.writer(fp, delimiter=',')
 
-if __name__ == '__main__':
-    main()
+            first = True
+            for ent in prepare_to_get_ricked:
+                if first:
+                    writer.writerow(ent.get_head())
+                    first = False
+
+                writer.writerow(ent.get_row())
+
+        try:
+            send_boto(filename)
+        finally:
+            os.remove(filename)
