@@ -1,5 +1,5 @@
 """
-pickle entires for NLP analysis
+data extraction methods - currently only for entries
 """
 
 import csv
@@ -7,6 +7,7 @@ import pickle
 import os
 import json
 
+import argparse
 import boto
 
 from entries.models import Entry
@@ -66,7 +67,7 @@ class Ent(object):
                                      self.information_date, self.excerpt, self.has_image, self.lead_text, self.lead_id,
                                      self.lead_url, self.event]]
 
-def extract():
+def extract_entries():
     """
     grab entries data from DEEP
 
@@ -159,6 +160,7 @@ def extract():
 
     return deep_ents
 
+
 def send_boto(tmp):
     conn = boto.connect_s3(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
 
@@ -167,10 +169,15 @@ def send_boto(tmp):
     key.key = 'nlp_out.csv'
     key.set_contents_from_filename(tmp)
 
+
 class Command(BaseCommand):
 
+    parser = argparse.ArgumentParser(description='Data extraction')
+    parser.add_argument('entries', metavar='N', type=bool, nargs='+',
+                        help='Extract just entries?')
+
     def handle(self, *args, **kwargs):
-        prepare_to_get_ricked = extract()
+        prepare_to_get_ricked = extract_entries()
 
         filename = '/tmp/tmp_nlp%s.csv' % os.getpid()
 
