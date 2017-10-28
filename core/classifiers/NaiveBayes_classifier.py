@@ -43,7 +43,7 @@ class NaiveBayesClassifier(GenericClassifier):
         Output the labels and their corresponding probabilities(list of tuples)
         """
         features = self.__feature_function(input)
-        prob_dist = sllf.__classifier.prob_classify(features)
+        prob_dist = self.__classifier.prob_classify(features)
         return [(label, dist.prob(label)) for label in dist.samples()]
 
     def multi_label_classify(self, input):
@@ -64,6 +64,8 @@ class NaiveBayesClassifier(GenericClassifier):
         """
         test_set = [(self.__feature_function(d), l) for (d,l) in test_data]
         return nltk.classify.accuracy(self.__classifier, test_set)
+def _feature_function(data):
+        return {'first': data[0], 'last': data[-1]}
 
 def _test():
     import random
@@ -73,12 +75,10 @@ def _test():
     random.shuffle(labeled_names)
     train_data, test_data = labeled_names[500:], labeled_names[:500]
 
-    def feature_function(data):
-        return {'first': data[0], 'last': data[-1]}
-
-    classifier = NaiveBayesClassifier.new(feature_function, train_data)
+    classifier = NaiveBayesClassifier.new(_feature_function, train_data)
     print(classifier.classify('bibek'))
     print(classifier.get_accuracy(test_data))
+    return classifier
 
 if __name__ == '__main__':
     _test()
