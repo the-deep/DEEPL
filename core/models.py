@@ -24,8 +24,10 @@ class ClassifierModel(BaseModel):
     """
     name = models.CharField(max_length=100)
     version = models.CharField(max_length=20, unique=True, editable=False)
+    # _data is for storing the pickled classifier object
     _data = models.TextField(db_column='data')
     accuracy = models.FloatField(default=0)
+    description = models.TextField()
 
     def set_data(self, data):
         self._data = base64.b64encode(data)

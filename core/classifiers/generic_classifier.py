@@ -1,10 +1,10 @@
-from core.classifiers.exceptions import ClassifierMethodNotImplemented
+from core.classifiers.exceptions import MethodNotImplemented
 
 class GenericClassifier():
     """
     Base class for all the classifiers.
     This class just provides interfaces for classes that inherit this.
-    By default, all methods raise ClassifierMethodNotImplemented exception.
+    By default, all methods raise MethodNotImplemented exception.
     Methods provided are:
     - new(labeled_data, **kwargs)
     - classify(input)
@@ -19,30 +19,30 @@ class GenericClassifier():
     @classmethod
     def new(cls, labeled_data, **kwargs):
         """Class method to create an instance of classs. """
-        raise ClassifierMethodNotImplemented
+        raise MethodNotImplemented
 
     def classify(self, input):
         """Classifies the input as the most relevant/probable label."""
-        raise ClassifierMethodNotImplemented
+        raise MethodNotImplemented
 
     def multi_label_classify(self, input):
         """Classifies the input as the most relevant/probable labels."""
-        raise ClassifierMethodNotImplemented
+        raise MethodNotImplemented
 
     def classify_as_label_probs(self, input):
         """
         Classifies the input showing probabilities of all the possible labels.
         """
-        raise ClassifierMethodNotImplemented
+        raise MethodNotImplemented
 
     def get_accuracy(self):
         """
         Returns the accuracy of the classifier
         """
-        raise ClassifierMethodNotImplemented
+        raise MethodNotImplemented
 
     def retrain(self, labeled_data):
         """
         Retrain the classifier and return new classifier
         """
-        raise ClassifierMethodNotImplemented
+        raise MethodNotImplemented
