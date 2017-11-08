@@ -2,6 +2,9 @@ certifi==2017.7.27.1
 chardet==3.0.4
 cycler==0.10.0
 decorator==4.1.2
+Django==1.11
+djangorestframework==3.7.1
+future==0.16.0
 googletrans==2.2.0
 idna==2.6
 ipykernel==4.6.1
@@ -24,8 +27,10 @@ Pygments==2.2.0
 pyparsing==2.2.0
 python-dateutil==2.6.1
 pytz==2017.2
+PyYAML==3.12
 pyzmq==16.0.2
 requests==2.18.4
+scikit-learn==0.19.1
 scipy==1.0.0rc1
 simplegeneric==0.8.1
 six==1.11.0
