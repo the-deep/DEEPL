@@ -1,6 +1,7 @@
 from core.classifiers.generic_classifier import GenericClassifier
 
 import nltk
+from nltk.stem.snowball import SnowballStemmer
 from nltk.metrics import ConfusionMatrix
 from collections import Counter
 
@@ -14,17 +15,19 @@ class NaiveBayesClassifier(GenericClassifier):
     methods provided by GenericClassifier.
     NOTE: Call the "new" @classmethod instead of directly creating instance.
     """
-    def __init__(self, classifier, feature_selector_obj, labels):
+    def __init__(self, classifier, pre_processor_func, feature_selector_obj, labels):
         """
         Takes in actual classifier instance, feature function and all labels
         """
         self.__feature_obj = feature_selector_obj
+        self.__pre_processor = pre_processor_func
         self.__classifier = classifier
         self.__labels = labels
         self.__threshold = 0.50 # TODO: auto_calculate this( or maybe let it pass through constructor)
+        self.__stemmer = SnowballStemmer('english')
 
     @classmethod
-    def new(cls, feature_selector_obj, labeled_data, **kwargs):
+    def new(cls, feature_selector_obj, pre_processor, labeled_data, **kwargs):
         """
         Creates the classifier model with the labeled data
         @labeled_data: list of tuple -> [(data, label), ... ]
@@ -42,19 +45,19 @@ class NaiveBayesClassifier(GenericClassifier):
         logger.info('TRAINING CLASSIFIER')
         classifier = nltk.NaiveBayesClassifier.train(feature_sets)
         logger.info('DONE')
-        return cls(classifier, feature_selector_obj, classifier.labels())
+        return cls(classifier, pre_processor, feature_selector_obj, classifier.labels())
 
     def classify(self, input):
         """Function to classify the input."""
         return self.__classifier.classify(
-            self.__feature_obj.get_features(input)
+            self.__feature_obj.get_features(self.__pre_processor(input))
         )
 
     def classify_as_label_probs(self, input):
         """
         Output the labels and their corresponding probabilities(list of tuples)
         """
-        features = self.__feature_obj.get_features(input)
+        features = self.__feature_obj.get_features(self.__pre_processor(input))
         prob_dist = self.__classifier.prob_classify(features)
         return [(label, prob_dist.prob(label)) for label in prob_dist.samples()]
 

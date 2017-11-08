@@ -62,7 +62,7 @@ class DocumentFeatureSelector(GenericFeatureSelector):
             for x in doc_words:
                 words_counter[x]+=1
             sorted_words = sorted(words_counter, key=words_counter.__getitem__, reverse=True)
-            if not top: top = int(len(sorted_words)/4)
+            if not top: top = int(len(sorted_words)/4) # get top 1/4th words
             freq_words = sorted_words[:top]
         return cls(freq_words)
 
