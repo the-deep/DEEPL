@@ -38,7 +38,7 @@ def get_classifier():
     """ TEMPORARY FUNCTION TO HELP WITH CREATING DEEP DATA"""
     from core.tasks import process_deep_entries_data
     from core.helpers.common import rm_punc_not_nums, rm_stop_words_txt, translate_to_english_txt, compose
-    from core.classifiers.feature_selector import DocumentFeatureSelector, BigramFeatureSelector
+    from core.feature_selectors import UnigramFeatureSelector, BigramFeatureSelector
     from core.classifiers.NaiveBayes_classifier import NaiveBayesClassifier
     import nltk
     from nltk.stem.snowball import SnowballStemmer
@@ -61,6 +61,12 @@ def get_classifier():
     data = [(rm_punc_and_stop(str(ex)), l) for (ex, l) in data if langid.classify(str(ex))[0] == 'en']
     print('DONE')
 
+    tags_data = {}
+    for ex, l in data:
+        tags_data[l] = tags_data.get(l, '') + " "+ str(ex)
+    all_tokenized_documents = list(map(lambda x:x.split(), [v for k, v in tags_data.items()]))
+
+
     print('SHUFFLING DATA')
     random.shuffle(data)
     print('DONE')
@@ -82,9 +88,9 @@ def get_classifier():
     print('DONE')
 
     print('CREATING FEATURE SELECTOR')
-    # print(freq_words[:200])
-    # assert False
-    selector = DocumentFeatureSelector.new(corpus=data)#freq_words=freq_words)
+    from core.tf_idf import relevant_terms
+    most_relevant_terms = list(relevant_terms(all_tokenized_documents))
+    selector = UnigramFeatureSelector.new(corpus=data)#freq_words=freq_words)
     print('DONE')
 
     # print('CREATING BIGRAM FEATURE SELECTOR')

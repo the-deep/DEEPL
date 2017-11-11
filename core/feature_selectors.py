@@ -1,5 +1,6 @@
 from core.classifiers.exceptions import MethodNotImplemented
 from collections import Counter
+# from tf_idf import 
 
 class GenericFeatureSelector():
     """
@@ -16,7 +17,6 @@ class GenericFeatureSelector():
 
     def get_features(self):
         raise MethodNotImplemented
-
 
 class SimpleFeatureSelector(GenericFeatureSelector):
     """
@@ -37,10 +37,9 @@ class SimpleFeatureSelector(GenericFeatureSelector):
             "last": input[-1]
         }
 
-
-class DocumentFeatureSelector(GenericFeatureSelector):
+class UnigramFeatureSelector(GenericFeatureSelector):
     """
-    Feature Selector for document classification
+    Unigram Feature Selector for document classification
     Selects features as word being present in frequent words list or not
     """
 
@@ -51,11 +50,16 @@ class DocumentFeatureSelector(GenericFeatureSelector):
     def new(cls, **kwargs):
         """
         Returns new object. Takes in frequent words list as freq_words kwarg
+        Keyword args:
+        - freq_words: Most frequent words which have already been extracted for feature selection
+        - corpus: The labeled data, from which most frequent words will be extracted
         """
         freq_words = []
         top = kwargs.get('top', 0)
         if 'freq_words' in kwargs:
-            freq_words = kwargs['freq_words']
+            return cls(kwargs['freq_words'])
+        elif 'words_freqs' in kwargs:
+            freq_words = kwargs['words_freqs']
         elif 'corpus' in kwargs:
             doc_words = [w for (y, l) in kwargs['corpus'] for w in y.split()]
             words_counter = Counter()
