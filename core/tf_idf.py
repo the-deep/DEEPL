@@ -76,7 +76,7 @@ def relevant_terms(tokenized_documents):
             )
         ))
     relevant_terms = set()
-    for x in rels:
+    for x in doc_relevants:
         relevant_terms = relevant_terms.union(set([y[0] for y in x]))
     return relevant_terms
 
