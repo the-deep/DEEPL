@@ -129,14 +129,14 @@ def _feature_function(data):
 def _test():
     import random
     from nltk.corpus import names, movie_reviews
-    from core.classifiers.feature_selector import (
+    from core.feature_selectors import (
         SimpleFeatureSelector,
-        DocumentFeatureSelector
+        UnigramFeatureSelector
     )
-    labeled_names = ( [(name, "male") for name in names.words('male.txt')] + 
-            [(name, "female") for name in names.words('female.txt')] )
-    random.shuffle(labeled_names)
-    train_data, test_data = labeled_names[500:], labeled_names[:500]
+    # labeled_names = ( [(name, "male") for name in names.words('male.txt')] + 
+            # [(name, "female") for name in names.words('female.txt')] )
+    # random.shuffle(labeled_names)
+    # train_data, test_data = labeled_names[500:], labeled_names[:500]
 
 
     movie_documents = [(list(movie_reviews.words(fileid)), category)
@@ -150,9 +150,10 @@ def _test():
     print(word_features[:250])
 
     movie_classifier = NaiveBayesClassifier.new(
-        DocumentFeatureSelector.new(freq_words=word_features), movie_documents[500:]
+            UnigramFeatureSelector.new(freq_words=word_features), lambda x: x,movie_documents[500:]
     )
     print(movie_classifier.get_accuracy(movie_documents[:500]))
+    print(movie_classifier.get_confusion_matrix(movie_documents[:500]))
     return movie_classifier
 
     classifier = NaiveBayesClassifier.new(

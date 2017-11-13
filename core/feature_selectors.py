@@ -61,7 +61,10 @@ class UnigramFeatureSelector(GenericFeatureSelector):
         elif 'words_freqs' in kwargs:
             freq_words = kwargs['words_freqs']
         elif 'corpus' in kwargs:
-            doc_words = [w for (y, l) in kwargs['corpus'] for w in y.split()]
+            if type(kwargs['corpus'][0][0]) == list:
+                doc_words = [w for (y, l) in kwargs['corpus'] for w in y]
+            else:
+                doc_words = [w for (y, l) in kwargs['corpus'] for w in y.split()]
             words_counter = Counter()
             for x in doc_words:
                 words_counter[x]+=1

@@ -11,6 +11,12 @@ def compose(*functions):
         return lambda *args: f1(f2(*args))
     return reduce(compose2, functions)
 
+def rm_punc_not_nums_list(strlist):
+    return list(map(rm_punc_not_nums, strlist))
+
+def rm_stop_words_txt_list(strlist):
+    return list(map(rm_stop_words_txt, strlist))
+
 def rm_punc_not_nums(inp, col=None):
     """Remove punctuation unless it's a number for either a df (and col) or single entry"""
     punc =  string.punctuation
