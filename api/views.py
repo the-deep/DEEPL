@@ -17,9 +17,9 @@ class DocumentClassifierView(APIView):
         validation_details = self._validate_classification_params(data)
         if not validation_details['status']:
             return Response(validation_details['error_data'], status=status.HTTP_400_BAD_REQUEST)
-        classifier_model = ClassifierModel.objects.all().first() # TODO: select model from url/user data
+        classifier_model = ClassifierModel.objects.all().last() # TODO: select latest model from url/user data
         classifier = pickle.loads(classifier_model.data)
-        classified = classifier.classify(data['text'])
+        classified = classifier.classify(data['text'].split())
         return Response({'status': True, 'classification': classified})
 
     def _validate_classification_params(self, params):
