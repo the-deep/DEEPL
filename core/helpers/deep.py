@@ -37,42 +37,56 @@ def get_sub_sectors_excerpt(df):
 def get_classifier():
     """ TEMPORARY FUNCTION TO HELP WITH CREATING DEEP DATA"""
     from core.tasks import process_deep_entries_data
-    from core.helpers.common import rm_punc_not_nums, rm_stop_words_txt, translate_to_english_txt, compose
+    from core.helpers.common import (
+        rm_punc_not_nums, rm_punc_not_nums_list,
+        rm_stop_words_txt, rm_stop_words_txt_list,
+        translate_to_english_txt,
+        compose
+    )
     from core.feature_selectors import UnigramFeatureSelector, BigramFeatureSelector
     from core.classifiers.NaiveBayes_classifier import NaiveBayesClassifier
     import nltk
     from nltk.stem.snowball import SnowballStemmer
+    from nltk.stem.porter import PorterStemmer
     import random
+    from nltk.corpus import names, movie_reviews
     import langid
 
     csv_file_path = '_playground/sample_data/nlp_out.csv'
 
     print('PROCESSING DEEP ENTRIES DATA')
-    data = process_deep_entries_data(csv_file_path)[:150]
+    data = process_deep_entries_data(csv_file_path)[:100]
     print('DONE')
 
     print('REMOVING PUNC AND STOP WORDS')
-    stemmer = SnowballStemmer('english')
+    stemmer = PorterStemmer()
     rm_punc_and_stop = compose(
-        rm_punc_not_nums,
-        rm_stop_words_txt,
-        stemmer.stem
+        rm_punc_not_nums_list,
+        rm_stop_words_txt_list,
+        lambda x: list(map(str.lower, x)),
+        lambda x: list(map(stemmer.stem,x)) # comment this if we don't need stemming
     )
-    data = [(rm_punc_and_stop(str(ex)), l) for (ex, l) in data if langid.classify(str(ex))[0] == 'en']
+    rm_punc_and_stop = lambda x: x
+    data = [(rm_punc_and_stop(str(ex).split()), l) for (ex, l) in data if langid.classify(str(ex))[0] == 'en']
     print('DONE')
 
+    #data = [(list(movie_reviews.words(fileid)), category)
+    #       for category in movie_reviews.categories()
+    #      for fileid in movie_reviews.fileids(category)
+    #]
+    #print(data[0])
     tags_data = {}
     for ex, l in data:
         tags_data[l] = tags_data.get(l, '') + " "+ str(ex)
+        
     all_tokenized_documents = list(map(lambda x:x.split(), [v for k, v in tags_data.items()]))
-
 
     print('SHUFFLING DATA')
     random.shuffle(data)
     print('DONE')
 
     data_len = len(data)
-    test_len = int(data_len * 0.4)
+    test_len = int(data_len * 0.25)
 
     print('TAKING OUT TEST/TRAIN DATA')
     train_data = data[test_len:]
@@ -89,8 +103,9 @@ def get_classifier():
 
     print('CREATING FEATURE SELECTOR')
     from core.tf_idf import relevant_terms
-    most_relevant_terms = list(relevant_terms(all_tokenized_documents))
-    selector = UnigramFeatureSelector.new(corpus=data)#freq_words=freq_words)
+    #most_relevant_terms = list(relevant_terms(all_tokenized_documents))
+    #selector = UnigramFeatureSelector.new(freq_words=most_relevant_terms)
+    selector = UnigramFeatureSelector.new(corpus=data, top=2000) # use top 2000 words
     print('DONE')
 
     # print('CREATING BIGRAM FEATURE SELECTOR')
@@ -99,11 +114,20 @@ def get_classifier():
     # print('DONE')
 
     print('CREATING CLASSIFIER')
-    classifier = NaiveBayesClassifier.new(selector, rm_punc_and_stop, train_data)
+    classifier = NaiveBayesClassifier.new(selector, train_data)
     print('DONE')
 
-    print('ACCURACY', classifier.get_accuracy(test_data))
+    print('CALCULATING ACCURACY')
+    print(classifier.get_accuracy(test_data))
 
     print('CONFUSION MATRIX')
     print(classifier.get_confusion_matrix(test_data))
-    return classifier
+
+    import pickle
+    from core.models import ClassifierModel
+    c = ClassifierModel(
+        name='Naive Bayes',
+        version='1.1',
+        data=pickle.dumps(classifier)
+    )
+    return c
