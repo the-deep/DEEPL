@@ -34,7 +34,7 @@ def get_sub_sectors_excerpt(df):
     return l
 
 
-def get_classifier():
+def get_classifier(num=1000):
     """ TEMPORARY FUNCTION TO HELP WITH CREATING DEEP DATA"""
     from core.tasks import process_deep_entries_data
     from core.helpers.common import (
@@ -55,7 +55,7 @@ def get_classifier():
     csv_file_path = '_playground/sample_data/nlp_out.csv'
 
     print('PROCESSING DEEP ENTRIES DATA')
-    data = process_deep_entries_data(csv_file_path)[:100]
+    data = process_deep_entries_data(csv_file_path)[:num]
     print('DONE')
 
     print('REMOVING PUNC AND STOP WORDS')
