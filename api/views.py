@@ -19,8 +19,10 @@ class DocumentClassifierView(APIView):
             return Response(validation_details['error_data'], status=status.HTTP_400_BAD_REQUEST)
         classifier_model = ClassifierModel.objects.all().last() # TODO: select latest model from url/user data
         classifier = pickle.loads(classifier_model.data)
-        classified = classifier.classify(data['text'].split())
-        return Response({'status': True, 'classification': classified})
+        classified = classifier.classify_as_label_probs(data['text'].split())
+        classified.sort(key=lambda x: x[1], reverse=True)
+        # classified = classifier.classify(data['text'].split())
+        return Response({'status': True, 'tags': classified})
 
     def _validate_classification_params(self, params):
         """Validator for params"""
