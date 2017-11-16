@@ -108,3 +108,4 @@ tags
 *.pyc
 migrations
 db.sqlite3
+node_modules/
