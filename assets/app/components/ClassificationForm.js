@@ -14,7 +14,7 @@ export class ClassificationForm extends React.Component {
         this.setState({text:event.target.value});
     }
     handleSubmit(event) {
-        // make an api call
+        // make an api call, and pass data to parent
         fetch('/api/classify/?text='+this.state.text)
         .then(response => {return response.json()})
         .then(data => {this.props.sendData(data);});
