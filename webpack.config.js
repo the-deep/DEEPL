@@ -1,6 +1,6 @@
 // webpack.config.js
 
-const HtmlPlugin = require('html-webpack-plugin')
+//const HtmlPlugin = require('html-webpack-plugin')
 const path = require('path')
 
 module.exports = {
