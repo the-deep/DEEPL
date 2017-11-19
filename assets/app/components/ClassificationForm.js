@@ -26,7 +26,7 @@ export class ClassificationForm extends React.Component {
         return (
             <form>
                 <div className="form-group">
-                    <label htmlFor="email">Text:</label>
+                    <label htmlFor="email"><b>Enter Text To Classify</b></label>
                     <textarea className="form-control" onChange={this.handleChange}></textarea><br/>
                 </div>
                 <div className="form-group">

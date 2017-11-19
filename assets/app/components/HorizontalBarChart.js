@@ -131,12 +131,15 @@ class HorizontalBarChart extends React.Component {
     }
 
     render() {
-        return (
-            <svg
-                className="horizontalbar"
-                ref={(elem) => { this.svg = elem; }}
-            />
-        );
+        if (this.props.show) {
+            return (
+                <svg
+                    className="horizontalbar"
+                    ref={(elem) => { this.svg = elem; }}
+                />
+            );
+        }
+        return (<div/>);
     }
 }
 

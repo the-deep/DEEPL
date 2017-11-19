@@ -9,10 +9,20 @@ const d3 = require('d3');
 class PieChart extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            data : []
+        };
     }
 
     componentDidMount = () => {
-        this.renderPie();
+        //this.renderPie();
+    }
+
+    componentWillReceiveProps = (newprops) => {
+        this.setState({data:newprops.data.slice(0,5)});
+        //this.renderPie();
+        //console.log('COMPONENT will receive');
+        //console.log(newprops);
     }
 
     renderPie = () => {
@@ -21,10 +31,12 @@ class PieChart extends React.Component {
             outerRadius,
             labelAccessor,
             valueAccessor,
-            data,
+            //data,
             boundingClientRect,
             margins,
         } = this.props;
+
+        let data = this.state.data;
 
         if (!boundingClientRect.width) {
             return;
@@ -68,7 +80,7 @@ class PieChart extends React.Component {
             .append('path')
             .attr('d', arc)
             .attr('fill', function(d) {
-                return color(d.data.label);
+                return color(labelAccessor(d.data));
             });
         labels
             .append("title")
@@ -96,15 +108,17 @@ class PieChart extends React.Component {
             .style('stroke', color);
 
         // calculate total
-        let total = data.map(x=> valueAccessor(x)).reduce((s, x)=> s+x);
+        let total = data.map(x=> valueAccessor(x)).reduce((s, x)=> s+x, 0);
 
         legend.append('text')
             .attr('x', legendRectSize + legendSpacing)
             .attr('y', legendRectSize - legendSpacing)
-            .text((d, i) => d+"("+valueAccessor(data[i])*100/total+"%)");
+            .text((d, i) => d+"("+
+                (valueAccessor(data[i])*100/total).toFixed(2)+"%)");
     }
 
     render() {
+        this.renderPie();
         return (
             <svg
                 className="piechart"

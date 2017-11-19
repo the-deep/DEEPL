@@ -3,20 +3,14 @@ import ClassificationForm from './ClassificationForm';
 import PieChart from './PieChart';
 import HorizontalBarChart from './HorizontalBarChart';
 
-let dataset = [
-  { label: 'Abulia', count: 10 },
-  { label: 'Betelgeuse', count: 20 },
-  { label: 'Cantaloupe', count: 30 },
-  { label: 'Dijkstra', count: 40 }
-];
-
 export class Main extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            data: dataset,
             domain: {x: [0, 30], y: [0, 100]},
-            dataset: dataset,
+            dataset: [],
+            labelAccessor: (d => d[0]),
+            valueAccessor: (d => d[1]),
         };
         this.getData = this.getData.bind(this);
     }
@@ -26,18 +20,21 @@ export class Main extends React.Component {
     render() {
         return (
             <div className="row">
-                <div className="col-md-4">
+                <div className="col-md-5">
+                    <br/>
                     <ClassificationForm sendData={this.getData} />
                 </div>
-                <div className="col-md-4">
+                <div className="col-md-7 text-center">
+                    <h3>Classification Results</h3>
                     <PieChart
                         innerRadius={100}
-                        outerRadius={175}
-                        boundingClientRect={{width:400, height:400}}
-                        margins={{top:10,left:10, right:10,bottom:10}}
-                        labelAccessor={d=>d.label}
-                        valueAccessor={d=>d.count}
+                        outerRadius={200}
+                        boundingClientRect={{width:500, height:500}}
+                        margins={{top:15,left:10, right:10,bottom:10}}
+                        labelAccessor={this.state.labelAccessor}
+                        valueAccessor={this.state.valueAccessor}
                         data={this.state.dataset}
+                        show={true}
                     />
                 </div>
                 <div className="col-md-4">
@@ -47,6 +44,7 @@ export class Main extends React.Component {
                         labelAccessor={d=>d.label}
                         valueAccessor={d=>d.count}
                         data={this.state.dataset}
+                        show={false}
                     />
                 </div>
             </div>
