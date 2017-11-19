@@ -1,6 +1,5 @@
 import React from 'react';
 
-
 export class ClassificationForm extends React.Component {
     constructor(props) {
         super(props);
@@ -17,16 +16,22 @@ export class ClassificationForm extends React.Component {
     handleSubmit(event) {
         // make an api call
         fetch('/api/classify/?text='+this.state.text)
-        .then(response => {alert();return response.json()})
+        .then(response => {return response.json()})
+        .then(data => {this.props.sendData(data);});
+        event.preventDefault();
     }
 
     render () {
         let v = this.state.renderVal;
         return (
             <form>
-            {v}
-                <textarea onChange={this.handleChange}></textarea><br/>
-                <input type="submit" value="Submit" onClick={this.handleSubmit}></input>
+                <div className="form-group">
+                    <label htmlFor="email">Text:</label>
+                    <textarea className="form-control" onChange={this.handleChange}></textarea><br/>
+                </div>
+                <div className="form-group">
+                    <button className="btn btn-success form-control" type="submit" onClick={this.handleSubmit}> Classify </button>
+                </div>
             </form>
         );
     }
