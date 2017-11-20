@@ -15,14 +15,10 @@ class PieChart extends React.Component {
     }
 
     componentDidMount = () => {
-        //this.renderPie();
     }
 
     componentWillReceiveProps = (newprops) => {
         this.setState({data:newprops.data.slice(0,5)});
-        //this.renderPie();
-        //console.log('COMPONENT will receive');
-        //console.log(newprops);
     }
 
     renderPie = () => {
@@ -31,7 +27,6 @@ class PieChart extends React.Component {
             outerRadius,
             labelAccessor,
             valueAccessor,
-            //data,
             boundingClientRect,
             margins,
         } = this.props;
@@ -97,8 +92,8 @@ class PieChart extends React.Component {
             .attr('transform', function(d, i) {
                 var height = legendRectSize + legendSpacing;
                 var offset =  height * color.domain().length / 2;
-                var horz = -2 * legendRectSize;
-                var vert = i * height - offset;
+                var horz = outerRadius+30;
+                var vert = outerRadius - (color.domain().length - i) * height;
                 return 'translate(' + horz + ',' + vert + ')';
             });
         legend.append('rect')

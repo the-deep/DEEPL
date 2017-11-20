@@ -27,8 +27,8 @@ export class Main extends React.Component {
                 <div className="col-md-7 text-center">
                     <h3>Classification Results</h3>
                     <PieChart
-                        innerRadius={100}
-                        outerRadius={200}
+                        innerRadius={50}
+                        outerRadius={150}
                         boundingClientRect={{width:500, height:500}}
                         margins={{top:15,left:10, right:10,bottom:10}}
                         labelAccessor={this.state.labelAccessor}
