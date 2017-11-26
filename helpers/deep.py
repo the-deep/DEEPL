@@ -36,15 +36,15 @@ def get_sub_sectors_excerpt(df):
 
 def get_classifier(num=1000):
     """ TEMPORARY FUNCTION TO HELP WITH CREATING DEEP DATA"""
-    from core.tasks import process_deep_entries_data
-    from core.helpers.common import (
+    from classifier.tasks import process_deep_entries_data
+    from helpers.common import (
         rm_punc_not_nums, rm_punc_not_nums_list,
         rm_stop_words_txt, rm_stop_words_txt_list,
         translate_to_english_txt,
         compose
     )
-    from core.feature_selectors import UnigramFeatureSelector, BigramFeatureSelector
-    from core.classifiers.NaiveBayes_classifier import NaiveBayesClassifier
+    from classifier.feature_selectors import UnigramFeatureSelector, BigramFeatureSelector
+    from classifier.NaiveBayes_classifier import NaiveBayesClassifier
     import nltk
     from nltk.stem.snowball import SnowballStemmer
     from nltk.stem.porter import PorterStemmer
@@ -102,7 +102,7 @@ def get_classifier(num=1000):
     print('DONE')
 
     print('CREATING FEATURE SELECTOR')
-    from core.tf_idf import relevant_terms
+    from classifier.tf_idf import relevant_terms
     #most_relevant_terms = list(relevant_terms(all_tokenized_documents))
     #selector = UnigramFeatureSelector.new(freq_words=most_relevant_terms)
     selector = UnigramFeatureSelector.new(corpus=data, top=2000) # use top 2000 words
@@ -124,7 +124,7 @@ def get_classifier(num=1000):
     print(classifier.get_confusion_matrix(test_data))
 
     import pickle
-    from core.models import ClassifierModel
+    from classifier.models import ClassifierModel
     c = ClassifierModel(
         name='Naive Bayes',
         version='1.1',

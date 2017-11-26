@@ -1,5 +1,5 @@
 from django.contrib import admin
-from core.models import ClassifierModel
+from classifier.models import ClassifierModel
 
 # Register your models here.
 

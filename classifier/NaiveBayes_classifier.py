@@ -1,4 +1,4 @@
-from core.classifiers.generic_classifier import GenericClassifier
+from classifier.generic_classifier import GenericClassifier
 
 import nltk
 from nltk.stem.snowball import SnowballStemmer

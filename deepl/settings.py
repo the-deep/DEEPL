@@ -40,7 +40,10 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'core',
-    'api'
+    'api',
+    'helpers',
+    'classifier',
+    'topic_modeling',
 ]
 
 MIDDLEWARE = [

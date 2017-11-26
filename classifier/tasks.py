@@ -7,7 +7,7 @@ import nltk
 import googletrans
 import langid
 
-from core.helpers.deep import (
+from helpers.deep import (
     get_sector_excerpt,
 )
 

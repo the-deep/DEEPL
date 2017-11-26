@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 import pickle
 
-from core.models import ClassifierModel
+from classifier.models import ClassifierModel
 
 class DocumentClassifierView(APIView):
     """
@@ -37,3 +37,9 @@ class DocumentClassifierView(APIView):
         return {
             'status': True,
         }
+
+class TopicModelingView(APIView):
+    """API for topic modeling"""
+    def get(self, request):
+        """Handle API GET request"""
+        pass
