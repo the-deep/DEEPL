@@ -1,4 +1,4 @@
-from core.helpers.functional import compose, curry2, curried_map, curried_filter
+from helpers.functional import compose, curry2, curried_map, curried_filter
 from stop_words import get_stop_words
 from nltk.tokenize import RegexpTokenizer
 from nltk.stem.porter import PorterStemmer

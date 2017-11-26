@@ -34,7 +34,7 @@ class DocumentClassifierView(APIView):
         """Validator for params"""
         errors = {}
         if not params.get('text'):
-            errors['text'] = 'Please provide the text to be classified'
+            errors['text'] = 'text to be classified is missing.'
         if errors:
             return {
                 'status': False,
@@ -48,10 +48,49 @@ class TopicModelingView(APIView):
     """API for topic modeling"""
     def get(self, request):
         """Handle API GET request"""
-        data = dict(request.query_params.items())
-        validation_details = self._validate_classification_params(data)
+        # data = dict(request.query_params.items())
+        validation_details = self._validate_classification_params(request.query_params)
         if not validation_details['status']:
             return Response(
                 validation_details['error_data'],
                 status=status.HTTP_400_BAD_REQUEST
             )
+        params = validation_details['params']
+        ldamodel = LDAModel()
+        ldamodel.create_model(params['documents'], params['number_of_topics'])
+        topics_and_keywords = ldamodel.get_topics_and_keywords(
+            params['keywords_per_topic']
+        )
+        return Response({'Topic {}'.format(i+1): v for i,v in enumerate(topics_and_keywords)})
+
+    def _validate_classification_params(self, queryparams):
+        """Validator for params"""
+        errors = {}
+        params = {}
+        if not queryparams.get('documents'):
+            errors['documents'] = 'Missing documents on which modeling is to be done'
+        else:
+            # this is a list
+            params['documents'] = queryparams.getlist('documents')
+        try:
+            num_topics = int(queryparams.get('number_of_topics')[0])
+        except:
+            errors['number_of_topics'] = 'Missing/invalid number of topics. Should be present as a positive integer'
+        else:
+            params['number_of_topics'] = num_topics
+        try:
+            kw_per_topic = int(queryparams.get('keywords_per_topic'))
+        except:
+            errors['keywords_per_topic'] = 'Missing/invalid number of keywords per topic. Should be present as a positive integer'
+        else:
+            params['keywords_per_topic'] =  kw_per_topic
+        if errors:
+            return {
+                'status': False,
+                'error_data': errors
+            }
+        # TODO: Might need to add validation for the depth
+        return {
+            'status': True,
+            'params': params
+        }
