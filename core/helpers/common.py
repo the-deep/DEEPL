@@ -11,6 +11,10 @@ def compose(*functions):
         return lambda *args: f1(f2(*args))
     return reduce(compose2, functions)
 
+def curry2(func):
+    """Curry function with two arguments"""
+    return lambda x : lambda y: func(x,y)
+
 def rm_punc_not_nums_list(strlist):
     return list(map(rm_punc_not_nums, strlist))
 
