@@ -49,7 +49,7 @@ class TopicModelingView(APIView):
     def get(self, request):
         """Handle API GET request"""
         # data = dict(request.query_params.items())
-        validation_details = self._validate_classification_params(request.query_params)
+        validation_details = self._validate_topic_modeling_params(request.query_params)
         if not validation_details['status']:
             return Response(
                 validation_details['error_data'],
@@ -63,7 +63,7 @@ class TopicModelingView(APIView):
         )
         return Response({'Topic {}'.format(i+1): v for i,v in enumerate(topics_and_keywords)})
 
-    def _validate_classification_params(self, queryparams):
+    def _validate_topic_modeling_params(self, queryparams):
         """Validator for params"""
         errors = {}
         params = {}
