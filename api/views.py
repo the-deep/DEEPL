@@ -7,7 +7,7 @@ from rest_framework.response import Response
 import pickle
 
 from classifier.models import ClassifierModel
-from topic_modeling.lda import LDAModel
+from topic_modeling.lda import LDAModel, get_topics_and_subtopics
 
 class DocumentClassifierView(APIView):
     """
@@ -57,6 +57,13 @@ class TopicModelingView(APIView):
             )
         params = validation_details['params']
         ldamodel = LDAModel()
+        lda_output = get_topics_and_subtopics(
+            params['documents'],
+            params['number_of_topics'],
+            params['keywords_per_topic'],
+            depth=5 if params['depth'] > 5 else params['depth']
+        )
+        return Response(lda_output)
         ldamodel.create_model(params['documents'], params['number_of_topics'])
         topics_and_keywords = ldamodel.get_topics_and_keywords(
             params['keywords_per_topic']
@@ -84,12 +91,17 @@ class TopicModelingView(APIView):
             errors['keywords_per_topic'] = 'Missing/invalid number of keywords per topic. Should be present as a positive integer'
         else:
             params['keywords_per_topic'] =  kw_per_topic
+        try:
+            depth = int(queryparams.get('depth'))
+        except:
+            errors['depth'] = 'Missing/invalid depth of subtopics. Should be present as a positive integer'
+        else:
+            params['depth'] = depth
         if errors:
             return {
                 'status': False,
                 'error_data': errors
             }
-        # TODO: Might need to add validation for the depth
         return {
             'status': True,
             'params': params
