@@ -46,10 +46,10 @@ class DocumentClassifierView(APIView):
 
 class TopicModelingView(APIView):
     """API for topic modeling"""
-    def get(self, request):
+    def post(self, request):
         """Handle API GET request"""
         # data = dict(request.query_params.items())
-        validation_details = self._validate_topic_modeling_params(request.query_params)
+        validation_details = self._validate_topic_modeling_params(request.data)
         if not validation_details['status']:
             return Response(
                 validation_details['error_data'],
