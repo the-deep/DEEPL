@@ -1,4 +1,4 @@
-from core.classifiers.exceptions import MethodNotImplemented
+from classifier.exceptions import MethodNotImplemented
 from collections import Counter
 # from tf_idf import 
 

@@ -1,4 +1,4 @@
-from core.classifiers.exceptions import MethodNotImplemented
+from classifier.exceptions import MethodNotImplemented
 
 class GenericClassifier():
     """
