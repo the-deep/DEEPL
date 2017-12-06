@@ -7,3 +7,10 @@ ol, ul {
   padding-left: 30px;
 }
 
+ul.nav-menu {
+    padding: 0;
+}
+
+ul.nav-menu li {
+    display:inline;
+}

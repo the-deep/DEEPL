@@ -1,55 +1,27 @@
 import React from 'react';
-import ClassificationForm from './ClassificationForm';
-import PieChart from './PieChart';
-import HorizontalBarChart from './HorizontalBarChart';
+import Classification from './Classification';
+import TopicModeling from './TopicModeling';
+import {Link, Switch, Router, Route, hashHistory} from 'react-router-dom';
 
 export class Main extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            domain: {x: [0, 30], y: [0, 100]},
-            dataset: [],
-            labelAccessor: (d => d[0]),
-            valueAccessor: (d => d[1]),
-        };
-        this.getData = this.getData.bind(this);
-    }
-    getData (data) {
-        this.setState({dataset:data.tags});
-    }
     render() {
         return (
-            <div className="row">
-                <div className="col-md-5">
-                    <br/>
-                    <ClassificationForm sendData={this.getData} />
-                </div>
-                <div className="col-md-7 text-center">
-                    <h3>Classification Results</h3>
-                    <PieChart
-                        innerRadius={50}
-                        outerRadius={150}
-                        boundingClientRect={{width:500, height:500}}
-                        margins={{top:15,left:10, right:10,bottom:10}}
-                        labelAccessor={this.state.labelAccessor}
-                        valueAccessor={this.state.valueAccessor}
-                        data={this.state.dataset}
-                        show={true}
-                    />
-                </div>
-                <div className="col-md-4">
-                    <HorizontalBarChart
-                        boundingClientRect={{width:400, height:400}}
-                        margins={{top:10,left:10, right:10,bottom:10}}
-                        labelAccessor={d=>d.label}
-                        valueAccessor={d=>d.count}
-                        data={this.state.dataset}
-                        show={false}
-                    />
-                </div>
-            </div>
+            <main>
+                <ul className="nav-menu">
+                    <li><Link to="/classification"><b>Classify</b></Link> | </li>
+                    <li><Link to="/topic-modeling"><b>Topic Modeling</b></Link></li>
+                </ul>
+                <Switch>
+                    <Route exact path='/' component={TopicModeling}/>
+                    <Route path='/classification' component={Classify}/>
+                    <Route path='/topic-modeling' component={TopicModeling}/>
+                </Switch>
+            </main>
         );
     }
 }
+
+const Classify = () => <Classification />
+//const TopicModel = () => <TopicModeling/>
 
 export default Main;
