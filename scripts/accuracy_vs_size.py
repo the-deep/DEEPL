@@ -18,7 +18,7 @@ from helpers.deep import get_classifier, get_deep_data
 
 try:
     print('.. GETTING DEEP DATA')
-    deepdata = []#get_deep_data(debug=False)
+    deepdata = get_deep_data(debug=False)
     print('.. SHUFFLING DEEP DATA')
     random.shuffle(deepdata)
 
