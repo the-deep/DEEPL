@@ -8,6 +8,7 @@ import pickle
 
 from classifier.models import ClassifierModel
 from topic_modeling.lda import LDAModel, get_topics_and_subtopics
+from topic_modeling.keywords_extraction import get_key_unigrams_bigrams
 
 class DocumentClassifierView(APIView):
     """
@@ -47,7 +48,7 @@ class DocumentClassifierView(APIView):
 class TopicModelingView(APIView):
     """API for topic modeling"""
     def post(self, request):
-        """Handle API GET request"""
+        """Handle API POST request"""
         # data = dict(request.query_params.items())
         validation_details = self._validate_topic_modeling_params(request.data)
         if not validation_details['status']:
@@ -100,6 +101,37 @@ class TopicModelingView(APIView):
             errors['depth'] = 'Missing/invalid depth of subtopics. Should be present as a positive integer'
         else:
             params['depth'] = depth
+        if errors:
+            return {
+                'status': False,
+                'error_data': errors
+            }
+        return {
+            'status': True,
+            'params': params
+        }
+
+class KeywordsExtractionView(APIView):
+    def post(self, request):
+        """Handle API POST request"""
+        # data = dict(request.query_params.items())
+        validation_details = self._validate_keywords_extraction_params(request.data)
+        if not validation_details['status']:
+            return Response(
+                validation_details['error_data'],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        params = validation_details['params']
+        return Response(get_key_unigrams_bigrams(params['document']))
+
+    def _validate_keywords_extraction_params(self, queryparams):
+        """Validator for params"""
+        errors = {}
+        params = {}
+        if not queryparams.get('document'):
+            errors['document'] = "document should be present"
+        else:
+            params['document'] = queryparams['document']
         if errors:
             return {
                 'status': False,

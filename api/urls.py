@@ -1,7 +1,12 @@
 from django.conf.urls import url
-from api.views import DocumentClassifierView, TopicModelingView
+from api.views import (
+    DocumentClassifierView,
+    TopicModelingView,
+    KeywordsExtractionView
+)
 
 urlpatterns = [
     url(r'^(?P<version>[a-z0-9A-Z\.]+)/classify/$', DocumentClassifierView.as_view()),
     url(r'topic-modeling/$', TopicModelingView.as_view()),
+    url(r'keywords-extraction/$', KeywordsExtractionView.as_view()),
 ]
