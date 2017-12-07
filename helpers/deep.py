@@ -33,32 +33,47 @@ def get_sub_sectors_excerpt(df):
             l.append(([k['sector'], k['subsectors']], v[1].excerpt))
     return l
 
+def get_deep_data(debug=True):
+    def printd(*args):
+        if debug:
+            print(*args)
 
-def get_classifier(num=1000):
-    """ TEMPORARY FUNCTION TO HELP WITH CREATING DEEP DATA"""
     from classifier.tasks import process_deep_entries_data
+
+    from classifier.feature_selectors import UnigramFeatureSelector, BigramFeatureSelector
+    from classifier.NaiveBayes_classifier import NaiveBayesClassifier
+
+    csv_file_path = '_playground/sample_data/nlp_out.csv'
+
+    printd('PROCESSING DEEP ENTRIES DATA')
+    data = process_deep_entries_data(csv_file_path)
+    printd('DONE')
+    return data
+
+def get_classifier(num=1000, confusion_mat=True, get_model=True, debug=True, data=None):
+    """ TEMPORARY FUNCTION TO HELP WITH CREATING DEEP DATA"""
+
+    def printd(*args):
+        if debug:
+            print(*args)
+
+    from classifier.feature_selectors import UnigramFeatureSelector, BigramFeatureSelector
+    from classifier.NaiveBayes_classifier import NaiveBayesClassifier
+    from nltk.stem.porter import PorterStemmer
+    import random
+    import langid
     from helpers.common import (
         rm_punc_not_nums, rm_punc_not_nums_list,
         rm_stop_words_txt, rm_stop_words_txt_list,
         translate_to_english_txt,
         compose
     )
-    from classifier.feature_selectors import UnigramFeatureSelector, BigramFeatureSelector
-    from classifier.NaiveBayes_classifier import NaiveBayesClassifier
-    import nltk
-    from nltk.stem.snowball import SnowballStemmer
-    from nltk.stem.porter import PorterStemmer
-    import random
-    from nltk.corpus import names, movie_reviews
-    import langid
 
-    csv_file_path = '_playground/sample_data/nlp_out.csv'
+    printd('PROCESSING DEEP ENTRIES DATA')
+    data = data or get_deep_data(debug)[:num]
+    printd('DONE')
 
-    print('PROCESSING DEEP ENTRIES DATA')
-    data = process_deep_entries_data(csv_file_path)[:num]
-    print('DONE')
-
-    print('REMOVING PUNC AND STOP WORDS')
+    printd('REMOVING PUNC AND STOP WORDS')
     stemmer = PorterStemmer()
     rm_punc_and_stop = compose(
         rm_punc_not_nums_list,
@@ -68,60 +83,64 @@ def get_classifier(num=1000):
     )
     rm_punc_and_stop = lambda x: x
     data = [(rm_punc_and_stop(str(ex).split()), l) for (ex, l) in data if langid.classify(str(ex))[0] == 'en']
-    print('DONE')
+    printd('DONE')
 
     #data = [(list(movie_reviews.words(fileid)), category)
     #       for category in movie_reviews.categories()
     #      for fileid in movie_reviews.fileids(category)
     #]
-    #print(data[0])
+    #printd(data[0])
     tags_data = {}
     for ex, l in data:
         tags_data[l] = tags_data.get(l, '') + " "+ str(ex)
         
     all_tokenized_documents = list(map(lambda x:x.split(), [v for k, v in tags_data.items()]))
 
-    print('SHUFFLING DATA')
+    printd('SHUFFLING DATA')
     random.shuffle(data)
-    print('DONE')
+    printd('DONE')
 
     data_len = len(data)
     test_len = int(data_len * 0.25)
 
-    print('TAKING OUT TEST/TRAIN DATA')
+    printd('TAKING OUT TEST/TRAIN DATA')
     train_data = data[test_len:]
-    print("length of training data", len(train_data))
+    printd("length of training data", len(train_data))
     test_data = data[:test_len]
-    print('DONE')
+    printd('DONE')
 
-    print('COUNTING TAG FREQUENCIES in TRAIN DATA')
+    printd('COUNTING TAG FREQUENCIES in TRAIN DATA')
     d = {}
     for ex, l in train_data:
         d[l] = d.get(l, 0) + 1
-    print(d)
-    print('DONE')
+    printd(d)
+    printd('DONE')
 
-    print('CREATING FEATURE SELECTOR')
+    printd('CREATING FEATURE SELECTOR')
     from classifier.tf_idf import relevant_terms
     #most_relevant_terms = list(relevant_terms(all_tokenized_documents))
     #selector = UnigramFeatureSelector.new(freq_words=most_relevant_terms)
     selector = UnigramFeatureSelector.new(corpus=data, top=2000) # use top 2000 words
-    print('DONE')
+    printd('DONE')
 
-    # print('CREATING BIGRAM FEATURE SELECTOR')
+    # printd('CREATING BIGRAM FEATURE SELECTOR')
     # selector = BigramFeatureSelector.new(corpus=data, top=2000)
     # selector = DocumentFeatureSelector.new(corpus=data, top=2000)
-    # print('DONE')
+    # printd('DONE')
 
-    print('CREATING CLASSIFIER')
+    printd('CREATING CLASSIFIER')
     classifier = NaiveBayesClassifier.new(selector, train_data)
-    print('DONE')
+    printd('DONE')
+    if not get_model:
+        # test_data is returned for calculating accuracy outside this function
+        return classifier, test_data
 
-    print('CALCULATING ACCURACY')
-    print(classifier.get_accuracy(test_data))
+    printd('CALCULATING ACCURACY')
+    printd(classifier.get_accuracy(test_data))
 
-    print('CONFUSION MATRIX')
-    print(classifier.get_confusion_matrix(test_data))
+    if confusion_mat:
+        printd('CONFUSION MATRIX')
+        printd(classifier.get_confusion_matrix(test_data))
 
     import pickle
     from classifier.models import ClassifierModel
