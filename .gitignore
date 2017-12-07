@@ -109,3 +109,4 @@ tags
 migrations
 db.sqlite3
 node_modules/
+*.rest
