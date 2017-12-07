@@ -74,13 +74,13 @@ class TopicModelingView(APIView):
         """Validator for params"""
         errors = {}
         params = {}
-        if not queryparams.get('documents', []):
+        if not queryparams.getlist('documents', []):
             errors['documents'] = 'Missing documents on which modeling is to be done'
-        elif not type(queryparams['documents']) == list:
+        elif not type(queryparams.getlist('documents')) == list:
             errors['documents'] = 'documents should be list'
         else:
             # this is a list
-            params['documents'] = queryparams.get('documents', [])
+            params['documents'] = queryparams.getlist('documents')
             # params['documents'] = queryparams.getlist('documents')
         try:
             num_topics = int(queryparams.get('number_of_topics'))
