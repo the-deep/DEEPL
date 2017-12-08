@@ -15,6 +15,7 @@ def get_key_unigrams_bigrams(document):
     }
     for score, phrase in phrases:
         splitted = phrase.split()
+        score = round(score, 2)
         length = len(splitted)
         if length == 1:
             data['unigrams'].append((phrase, score))
