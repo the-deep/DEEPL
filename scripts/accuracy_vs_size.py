@@ -46,7 +46,7 @@ try:
     logfile.write('.. RUNNING LOOP')
     while dataset_num<=total:
         logfile.write('.. dataset_num:{}\n'.format(dataset_num))
-        classifier, test_data = get_classifier(4, False, False, debug=False)
+        classifier, test_data = get_classifier(dataset_num, False, False, debug=False)
         accuracy = classifier.get_accuracy(test_data)
         logfile.write('.. accuracy: {}\n'.format(accuracy))
 
