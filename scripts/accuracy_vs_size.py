@@ -16,38 +16,47 @@ sys.path.insert(0, base)
 
 from helpers.deep import get_classifier, get_deep_data
 
+# CREATE LOGFILE DIR FIRST
+logfiledir = os.path.join(os.path.expanduser('~'), 'logs_DEEPL')
+subprocess.call(['mkdir', '-p', logfiledir])
+logfilepath = os.path.join(logfiledir, 'accuracy_vs_size.log')
+
+logfile = open(logfilepath, 'w')
+
 try:
-    print('.. GETTING DEEP DATA')
+    logfile.write('.. GETTING DEEP DATA\n')
     deepdata = get_deep_data(debug=False)
-    print('.. SHUFFLING DEEP DATA')
+    logfile.write('.. SHUFFLING DEEP DATA\n')
     random.shuffle(deepdata)
 
     total = len(deepdata)
 
-    print('.. INITIALIZING DATASETSIZE TO 100')
+    logfile.write('.. INITIALIZING DATASETSIZE TO 100\n')
     dataset_num = 100
-    print('.. SETTING SIZE INCREMENT TO 150')
+    logfile.write('.. SETTING SIZE INCREMENT TO 150\n')
     increment = 150
 
     # first create dir to store accuracy vs size data
-    print('.. CREATING DIRECTORY `DEEP_DATA` FOR STORING DATA')
-    dirpath = os.path.join(os.path.expanduser('~'), 'DEEP_DATA')
+    logfile.write('.. CREATING DIRECTORY `DEEP_DATA` FOR STORING DATA\n')
+    dirpath = os.path.join(os.path.expanduser('~'), 'data_DEEPL')
     subprocess.call(['mkdir', '-p', dirpath])
 
     filepath = os.path.join(dirpath, 'accuracy_vs_size.txt')
     f = open(filepath, 'w')
-    print('.. RUNNING LOOP')
+    logfile.write('.. RUNNING LOOP')
     while dataset_num<=total:
-        print('.. dataset_num:', dataset_num)
+        logfile.write('.. dataset_num:{}\n'.format(dataset_num))
         classifier, test_data = get_classifier(4, False, False, debug=False)
         accuracy = classifier.get_accuracy(test_data)
-        print('.. accuracy:', accuracy)
+        logfile.write('.. accuracy: {}\n'.format(accuracy))
 
         f.write('{}:{}\n'.format(dataset_num, accuracy))
         dataset_num += increment
-    f.close()
-    print('.. DONE!!!')
+    logfile.write('.. DONE!!!')
 except:
     import traceback
-    print(traceback.format_exc())
-    print()
+    logfile.write(traceback.format_exc())
+    logfile.write('\n')
+finally:
+    f.close()
+    logfile.close()
