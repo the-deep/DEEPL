@@ -7,8 +7,8 @@ export default class KeywordsExtraction extends React.Component {
         super(props);
         this.state = {
             data: {
-                unigrams: [],
-                bigrams: []
+                '1grams': [],
+                '2grams': []
             },
             loaded: false,
         };
@@ -39,7 +39,7 @@ export default class KeywordsExtraction extends React.Component {
                     <tbody>
                     <tr><th>Unigram</th><th>Strength</th></tr>
                     {
-                        this.state.data.unigrams.map((x, i) => (
+                        this.state.data['1grams'].map((x, i) => (
                             <tr key={i}><td>{x[0]}</td><td>{x[1]}</td></tr>
                         ))
                     }
@@ -52,7 +52,7 @@ export default class KeywordsExtraction extends React.Component {
                     <tbody>
                     <tr><th>Bigram</th><th>Strength</th></tr>
                     {
-                        this.state.data.bigrams.map((x, i) => (
+                        this.state.data['2grams'].map((x, i) => (
                             <tr key={i}><td>{x[0]}</td><td>{x[1]}</td></tr>
                         ))
                     }

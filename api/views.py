@@ -8,7 +8,7 @@ import pickle
 
 from classifier.models import ClassifierModel
 from topic_modeling.lda import LDAModel, get_topics_and_subtopics
-from topic_modeling.keywords_extraction import get_key_unigrams_bigrams
+from topic_modeling.keywords_extraction import get_key_ngrams
 
 class DocumentClassifierView(APIView):
     """
@@ -122,7 +122,10 @@ class KeywordsExtractionView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         params = validation_details['params']
-        return Response(get_key_unigrams_bigrams(params['document']))
+        doc = params['document']
+        args = (doc, params['max_grams']) if params['max_grams'] else (doc,)
+        key_ngrams = get_key_ngrams(*args)
+        return Response(key_ngrams)
 
     def _validate_keywords_extraction_params(self, queryparams):
         """Validator for params"""
@@ -132,6 +135,15 @@ class KeywordsExtractionView(APIView):
             errors['document'] = "document should be present"
         else:
             params['document'] = queryparams['document']
+        if queryparams.get('max_grams'):
+            try:
+                params['max_grams'] = int(queryparams['max_grams'])
+                if params['max_grams'] < 1:
+                    raise Exception
+            except:
+                errors['max_grams'] = 'max_grams, if present, should be a positive integer'
+        else:
+            params['max_grams'] = None
         if errors:
             return {
                 'status': False,
