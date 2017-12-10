@@ -1,4 +1,5 @@
 bleach==2.1.1
+bz2file==0.98
 certifi==2017.7.27.1
 chardet==3.0.4
 cycler==0.10.0
@@ -7,6 +8,7 @@ Django==1.11
 djangorestframework==3.7.1
 entrypoints==0.2.3
 future==0.16.0
+gensim==3.1.0
 googletrans==2.2.0
 gunicorn==19.7.1
 html5lib==1.0b10
@@ -42,15 +44,18 @@ ptyprocess==0.5.2
 Pygments==2.2.0
 pyparsing==2.2.0
 python-dateutil==2.6.1
-pytz==2017.2
+pytz==2017.3
 PyYAML==3.12
 pyzmq==16.0.2
 qtconsole==4.3.1
+rake-nltk==1.0.1
 requests==2.18.4
 scikit-learn==0.19.1
 scipy==1.0.0rc1
 simplegeneric==0.8.1
 six==1.11.0
+smart-open==1.5.3
+stop-words==2015.2.23.1
 terminado==0.6
 testpath==0.3.1
 tornado==4.5.2
