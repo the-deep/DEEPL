@@ -2,6 +2,7 @@ import os
 import sys
 import random
 import subprocess
+import json
 
 def get_nth_parent_dir(path, n):
     dirname = os.path.dirname(path)
@@ -30,6 +31,8 @@ logger.addHandler(hdlr)
 logger.setLevel(logging.WARNING)
 
 #logfile = open(logfilepath, 'w')
+
+num_accuracy = []
 
 try:
     logger.info('.. GETTING DEEP DATA\n')
@@ -63,11 +66,13 @@ try:
         logger.info('.. dataset_num:{}\n'.format(dataset_num))
         classifier, test_data = get_classifier(dataset_num, False, False, debug=False, data=deepdata[:dataset_num])
         accuracy = classifier.get_accuracy(test_data)
+        num_accuracy.append((dataset_num, accuracy))
         logger.info('.. accuracy: {}\n'.format(accuracy))
         print('.. accuracy: {}\n'.format(accuracy))
 
-        f.write('{}:{}\n'.format(dataset_num, accuracy))
+        #f.write('{}:{}\n'.format(dataset_num, accuracy))
         dataset_num += increment
+    f.write(json.dumps(num_accuracy, indent=2))
     logger.info('.. DONE!!!')
 except:
     import traceback
@@ -76,4 +81,4 @@ except:
     logger.info('\n')
 finally:
     f.close()
-    logfile.close()
+    # logfile.close()
