@@ -45,8 +45,9 @@ try:
     f = open(filepath, 'w')
     logfile.write('.. RUNNING LOOP')
     while dataset_num<=total:
+        random.shuffle(deepdata)
         logfile.write('.. dataset_num:{}\n'.format(dataset_num))
-        classifier, test_data = get_classifier(dataset_num, False, False, debug=False)
+        classifier, test_data = get_classifier(dataset_num, False, False, debug=False, data=deepdata[:dataset_num])
         accuracy = classifier.get_accuracy(test_data)
         logfile.write('.. accuracy: {}\n'.format(accuracy))
 

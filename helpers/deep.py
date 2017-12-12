@@ -33,7 +33,7 @@ def get_sub_sectors_excerpt(df):
             l.append(([k['sector'], k['subsectors']], v[1].excerpt))
     return l
 
-def get_deep_data(debug=True):
+def get_deep_data(debug=True, filter_non_english=False):
     def printd(*args):
         if debug:
             print(*args)
@@ -47,12 +47,13 @@ def get_deep_data(debug=True):
 
     printd('PROCESSING DEEP ENTRIES DATA')
     data = process_deep_entries_data(csv_file_path)
+    if filter_non_english:
+        data = [(str(ex), l) for (ex, l) in data if langid.classify(str(ex))[0] == 'en']
     printd('DONE')
     return data
 
 def get_classifier(num=1000, confusion_mat=True, get_model=True, debug=True, data=None):
     """ TEMPORARY FUNCTION TO HELP WITH CREATING DEEP DATA"""
-
     def printd(*args):
         if debug:
             print(*args)
