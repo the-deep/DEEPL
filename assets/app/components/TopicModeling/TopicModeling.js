@@ -20,8 +20,8 @@ export default class TopicModeling extends React.Component {
         let subtopicsmap = (x, i) => (
             <ul >
                 <li className='child-li' key={i}><b>Sub-{x[0]}</b> -> {
-                    x[1].map(x=>(
-                        <span>{x}, &nbsp;</span>
+                    x[1].map((x, j)=>(
+                        <span key={j}>{x}, &nbsp;</span>
                     ))
                 }
                 </li>
