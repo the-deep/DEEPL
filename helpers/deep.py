@@ -33,7 +33,7 @@ def get_sub_sectors_excerpt(df):
             l.append(([k['sector'], k['subsectors']], v[1].excerpt))
     return l
 
-def get_deep_data(debug=True, filter_non_english=False):
+def get_deep_data(debug=True, filter_non_english=False, filepath=None):
     def printd(*args):
         if debug:
             print(*args)
@@ -44,6 +44,8 @@ def get_deep_data(debug=True, filter_non_english=False):
     from classifier.NaiveBayes_classifier import NaiveBayesClassifier
 
     csv_file_path = '_playground/sample_data/nlp_out.csv'
+    if filepath:
+        csv_file_path = filepath
 
     printd('PROCESSING DEEP ENTRIES DATA')
     data = process_deep_entries_data(csv_file_path)

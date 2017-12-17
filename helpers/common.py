@@ -15,6 +15,14 @@ def curry2(func):
     """Curry function with two arguments"""
     return lambda x : lambda y: func(x,y)
 
+def remove_punc_and_nums(input):
+    """remove punctuations and replace numbers"""
+    punc = string.punctuation
+    punc = punc.replace('-', '')
+    transtable = str.maketrans("", "", punc)
+    punc_removed = input.translate(transtable)
+    return re.sub('[0-9]+', 'NN', punc_removed)
+
 def rm_punc_not_nums_list(strlist):
     return list(map(rm_punc_not_nums, strlist))
 
