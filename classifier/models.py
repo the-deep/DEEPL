@@ -2,6 +2,7 @@ import uuid
 import base64
 from django.db import models
 from django.utils import timezone
+from django.contrib.postgres.fields import JSONField
 
 class BaseModel(models.Model):
     """BaseModel for all other models"""
@@ -15,7 +16,6 @@ class BaseModel(models.Model):
             self.created_on = timezone.now()
         self.modified_on = timezone.now()
         return super().save( *args, **kwargs)
-
 
 class ClassifierModel(BaseModel):
     """
@@ -38,3 +38,28 @@ class ClassifierModel(BaseModel):
 
     def __str__(self):
         return 'v{}-{}'.format(self.version, self.name)
+
+
+class ClassifiedDocument(BaseModel):
+    classifier = models.ForeignKey(ClassifierModel)
+    group_id = models.CharField(max_length=20)
+    classification = models.CharField(max_length=50)
+    confidence = models.FloatField(default=0)
+    classification_probabilities = JSONField(default=[])
+    text = models.TextField()
+    details = models.TextField()
+
+    def __str__(self):
+        return '{} {}'.format(group_id, classification)
+
+
+class ClassifiedExcerpt(BaseModel):
+    classified_document = models.ForeignKey(ClassifiedDocument, related_name="excerpts")
+    start_pos = models.IntegerField()
+    end_pos = models.IntegerField()
+    classification = models.CharField(max_length=50)
+    confidence = models.FloatField(default=0)
+    classification_probabilities = JSONField(default=[])
+
+    def __str__(self):
+        return '{} - {} : {}'.format(start_pos, end_pos, classification)
