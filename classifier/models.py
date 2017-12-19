@@ -41,6 +41,9 @@ class ClassifierModel(BaseModel):
 
 
 class ClassifiedDocument(BaseModel):
+    """
+    Model to store the classified document details(especially for deeper
+    """
     classifier = models.ForeignKey(ClassifierModel)
     group_id = models.CharField(max_length=20)
     classification = models.CharField(max_length=50)
@@ -54,6 +57,9 @@ class ClassifiedDocument(BaseModel):
 
 
 class ClassifiedExcerpt(BaseModel):
+    """
+    Model to store classified excerpts from the documents
+    """
     classified_document = models.ForeignKey(ClassifiedDocument, related_name="excerpts")
     start_pos = models.IntegerField()
     end_pos = models.IntegerField()
