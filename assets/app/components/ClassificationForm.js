@@ -32,7 +32,15 @@ export class ClassificationForm extends React.Component {
     }
     handleSubmit(event) {
         // make an api call, and pass data to parent
-        fetch('/api/v'+this.state.version+'/classify/?text='+this.state.text)
+        let headers = new Headers();
+        headers.append('accept', 'application/json');
+        let formdata = new FormData();
+        formdata.append('text', this.state.text)
+        fetch('/api/v'+this.state.version+'/classify/', {
+            method: 'POST',
+            headers: headers,
+            body: formdata
+        })
         .then(response => {return response.json()})
         .then(data => {this.props.sendData(data);});
         event.preventDefault();
