@@ -38,6 +38,7 @@ class DocumentClassifierView(APIView):
                 status.HTTP_404_NOT_FOUND
             )
         text = data['text']
+        grp_id = data.get('group_id')
         classified = classifier['classifier'].classify_as_label_probs(text.split())
         classified.sort(key=lambda x: x[1], reverse=True)
         # create classified Document
@@ -46,7 +47,8 @@ class DocumentClassifierView(APIView):
             classifier = classifier['classifier_model'],
             confidence = classified[0][1],
             classification = classified[0][0],
-            classification_probabilities = classified
+            classification_probabilities = classified,
+            group_id = grp_id
         )
         return Response({'status': True, 'doc_id': doc.id, 'tags': classified})
 

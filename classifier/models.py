@@ -48,7 +48,7 @@ class ClassifiedDocument(BaseModel):
     group_id = models.CharField(max_length=20)
     classification = models.CharField(max_length=50)
     confidence = models.FloatField(default=0)
-    classification_probabilities = JSONField(defaut=[])
+    classification_probabilities = JSONField(null=True)
     text = models.TextField()
     details = models.TextField()
 
