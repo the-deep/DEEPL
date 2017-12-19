@@ -1,6 +1,7 @@
 ## [GET] /api/versions
-### Params: None
-### Response:
+#### Purpose: To get the available classifier versions
+#### Params: None
+#### Response:
 <pre>
 {
   "versions": [
