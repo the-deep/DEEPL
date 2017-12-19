@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 import pickle
 
-from classifier.models import ClassifierModel
+from classifier.models import ClassifierModel, ClassifiedDocument, ClassifiedExcerpt
 from topic_modeling.lda import LDAModel, get_topics_and_subtopics
 from topic_modeling.keywords_extraction import get_key_ngrams
 
@@ -14,6 +14,16 @@ class DocumentClassifierView(APIView):
     """
     API for document classification
     """
+    classifiers = {'v'+str(x.version) : {
+        'classifier': pickle.loads(x.data),
+        'classifier_model': x
+        }
+            for x in ClassifierModel.objects.all()
+    }
+    def __init__(self):
+        # load all the classifiers
+        pass
+
     def post(self, request, version):
         data = dict(request.data.items())
         validation_details = self._validate_classification_params(data)
@@ -22,14 +32,23 @@ class DocumentClassifierView(APIView):
                 validation_details['error_data'],
                 status=status.HTTP_400_BAD_REQUEST
             )
-        # strip 'v' at the beginning
-        version = version[1:]
-        classifier_model = get_object_or_404(ClassifierModel, version=version)
-        classifier = pickle.loads(classifier_model.data)
-        classified = classifier.classify_as_label_probs(data['text'].split())
+        classifier = DocumentClassifierView.classifiers.get(version)
+        if not classifier:
+            return Response({'status': False, 'message': 'Classifier not found'},
+                status.HTTP_404_NOT_FOUND
+            )
+        text = data['text']
+        classified = classifier['classifier'].classify_as_label_probs(text.split())
         classified.sort(key=lambda x: x[1], reverse=True)
-        # classified = classifier.classify(data['text'].split())
-        return Response({'status': True, 'tags': classified})
+        # create classified Document
+        doc = ClassifiedDocument.objects.create(
+            text = text,
+            classifier = classifier['classifier_model'],
+            confidence = classified[0][1],
+            classification = classified[0][0],
+            classification_probabilities = classified
+        )
+        return Response({'status': True, 'doc_id': doc.id, 'tags': classified})
 
     def _validate_classification_params(self, params):
         """Validator for params"""

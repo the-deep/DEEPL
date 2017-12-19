@@ -48,12 +48,12 @@ class ClassifiedDocument(BaseModel):
     group_id = models.CharField(max_length=20)
     classification = models.CharField(max_length=50)
     confidence = models.FloatField(default=0)
-    classification_probabilities = JSONField(default=[])
+    classification_probabilities = JSONField(defaut=[])
     text = models.TextField()
     details = models.TextField()
 
     def __str__(self):
-        return '{} {}'.format(group_id, classification)
+        return '{} {}'.format(self.group_id, self.classification)
 
 
 class ClassifiedExcerpt(BaseModel):
