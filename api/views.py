@@ -153,3 +153,8 @@ class KeywordsExtractionView(APIView):
             'status': True,
             'params': params
         }
+
+class ApiVersionsView(APIView):
+    def get(self, request):
+        versions = ClassifierModel.objects.values("version", "accuracy")
+        return Response({"versions":versions})

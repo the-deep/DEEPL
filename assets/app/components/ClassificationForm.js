@@ -4,10 +4,27 @@ export class ClassificationForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            text: null
+            text: null,
+            versions: [],
+            version: null
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.versionSelect= this.versionSelect.bind(this);
+    }
+
+    versionSelect(e) {
+        console.log(e.target.value);
+        this.setState({version:e.target.value});
+    }
+
+    componentDidMount() {
+        fetch('/api/versions/')
+        .then(response => response.json())
+        .then(data => {
+            const versions = data.versions.map(x=>x.version);
+            const version = versions[0] | 1;
+            this.setState({versions, version})})
     }
 
     handleChange(event) {
@@ -15,7 +32,7 @@ export class ClassificationForm extends React.Component {
     }
     handleSubmit(event) {
         // make an api call, and pass data to parent
-        fetch('/api/v1/classify/?text='+this.state.text)
+        fetch('/api/v'+this.state.version+'/classify/?text='+this.state.text)
         .then(response => {return response.json()})
         .then(data => {this.props.sendData(data);});
         event.preventDefault();
@@ -26,8 +43,16 @@ export class ClassificationForm extends React.Component {
         return (
             <form>
                 <div className="form-group">
-                    <label htmlFor="email"><b>Enter Text To Classify</b></label>
+                    <label htmlFor=""><b>Enter Text To Classify</b></label>
                     <textarea className="form-control" onChange={this.handleChange}></textarea><br/>
+                </div>
+                <div className="form-group">
+                    <label htmlFor="version"><b>Select Version</b></label>
+                    <select onChange={this.versionSelect}>
+                        {
+                            this.state.versions.map((x, i) => <option key={i} value={x}>{x}</option>)
+                        }
+                    </select>
                 </div>
                 <div className="form-group">
                     <button className="btn btn-success form-control" type="submit" onClick={this.handleSubmit}> Classify </button>
