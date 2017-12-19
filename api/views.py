@@ -14,8 +14,8 @@ class DocumentClassifierView(APIView):
     """
     API for document classification
     """
-    def get(self, request, version):
-        data = dict(request.query_params.items())
+    def post(self, request, version):
+        data = dict(request.data.items())
         validation_details = self._validate_classification_params(data)
         if not validation_details['status']:
             return Response(
