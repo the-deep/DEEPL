@@ -26,9 +26,9 @@
  - group_id(optional): this is for the purpose where different users are assigned with different projects
  - text(mandatory): text to be classified
  - doc_id(optional): send this to fetch classification details of already submitted lead(text). No need to send **text** field in this case. But
-#### Sample Responses
- - curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' http://localhost:8000/api/v2/classify/ -d 'deeper=1&doc_id=18'
- - curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' http://localhost:8000/api/v2/classify/ -d 'deeper=1&text=deep inside'
+#### Sample Requests
+ - curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' http://deepl.togglecorp.com/api/v2/classify/ -d 'deeper=1&doc_id=18'
+ - curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' http://deepl.togglecorp.com/api/v2/classify/ -d 'deeper=1&text=deep inside'
 #### Response: 
 <pre>
 {
