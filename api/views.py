@@ -41,7 +41,11 @@ class DocumentClassifierView(APIView):
             # get already classified data
             try:
                 classified_doc = ClassifiedDocument.objects.get(id=data['doc_id'])
-                return Response(ClassifiedDocumentSerializer(classified_doc).data)
+                return_data = ClassifiedDocumentSerializer(classified_doc).data
+                return_data['excerpts_classification'] = ClassifiedExcerptSerializer(
+                    classified_doc.excerpts, many=True
+                ).data
+                return Response(return_data)
             except ClassifiedDocument.DoesNotExist:
                 return Response({}, status=status.HTTP_404_NOT_FOUND)
             except:
