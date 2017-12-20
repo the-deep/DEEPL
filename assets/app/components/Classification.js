@@ -15,7 +15,7 @@ export class Classification extends React.Component {
         this.getData = this.getData.bind(this);
     }
     getData (data) {
-        this.setState({dataset:data.tags});
+        this.setState({dataset:data.classification});
     }
     render() {
         return (

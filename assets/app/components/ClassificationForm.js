@@ -23,7 +23,7 @@ export class ClassificationForm extends React.Component {
         .then(response => response.json())
         .then(data => {
             const versions = data.versions.map(x=>x.version);
-            const version = versions[0] | 1;
+            const version = versions[0] || 1;
             this.setState({versions, version})})
     }
 
@@ -35,7 +35,8 @@ export class ClassificationForm extends React.Component {
         let headers = new Headers();
         headers.append('accept', 'application/json');
         let formdata = new FormData();
-        formdata.append('text', this.state.text)
+        formdata.append('text', this.state.text);
+        formdata.append('deeper', '1');
         fetch('/api/v'+this.state.version+'/classify/', {
             method: 'POST',
             headers: headers,

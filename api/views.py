@@ -6,7 +6,10 @@ from rest_framework.response import Response
 
 import pickle
 
+from api.helpers import classify_text, classify_lead_excerpts
+
 from classifier.models import ClassifierModel, ClassifiedDocument, ClassifiedExcerpt
+from classifier.serializers import ClassifiedDocumentSerializer, ClassifiedExcerptSerializer
 from topic_modeling.lda import LDAModel, get_topics_and_subtopics
 from topic_modeling.keywords_extraction import get_key_ngrams
 
@@ -32,30 +35,66 @@ class DocumentClassifierView(APIView):
                 validation_details['error_data'],
                 status=status.HTTP_400_BAD_REQUEST
             )
+        # check if deeper and doc_id present
+        deeper = True if data.get('deeper') else False
+        if deeper and data.get('doc_id'):
+            # get already classified data
+            try:
+                classified_doc = ClassifiedDocument.objects.get(id=data['doc_id'])
+                return Response(ClassifiedDocumentSerializer(classified_doc).data)
+            except ClassifiedDocument.DoesNotExist:
+                return Response({}, status=status.HTTP_404_NOT_FOUND)
+            except:
+                return Resposne({
+                    'status': False,
+                    'message': 'Invalid doc_id'
+                }, status=status.HTTP_400_BAD_REQUEST)
         classifier = DocumentClassifierView.classifiers.get(version)
+
         if not classifier:
             return Response({'status': False, 'message': 'Classifier not found'},
                 status.HTTP_404_NOT_FOUND
             )
         text = data['text']
+        classified = classify_text(classifier['classifier'], text)
+
+        if not data.get('deeper'):
+            return Response({'classification': classified})
+
+        # Create classified Document
         grp_id = data.get('group_id')
-        classified = classifier['classifier'].classify_as_label_probs(text.split())
-        classified.sort(key=lambda x: x[1], reverse=True)
-        # create classified Document
+
         doc = ClassifiedDocument.objects.create(
             text = text,
             classifier = classifier['classifier_model'],
             confidence = classified[0][1],
-            classification = classified[0][0],
+            classification_label = classified[0][0],
             classification_probabilities = classified,
             group_id = grp_id
         )
-        return Response({'status': True, 'doc_id': doc.id, 'tags': classified})
+        classified_excerpts = classify_lead_excerpts(classifier['classifier'], text)
+
+        # create excerpts
+        for x in classified_excerpts:
+            ClassifiedExcerpt.objects.create(
+                classified_document=doc,
+                start_pos=x['start_pos'],
+                end_pos=x['end_pos'],
+                classification_label=x['classification'][0][0],
+                confidence=x['classification'][0][1],
+                classification_probabilities=x['classification']
+            )
+        ret = ClassifiedDocumentSerializer(doc).data
+        ret['excerpts_classification'] = classified_excerpts
+        return Response(ret)
 
     def _validate_classification_params(self, params):
         """Validator for params"""
         errors = {}
-        if not params.get('text'):
+        deeper = params.get('deeper', '')
+        doc_id = params.get('doc_id')
+
+        if not deeper and not params.get('text'):
             errors['text'] = 'text to be classified is missing.'
         if errors:
             return {

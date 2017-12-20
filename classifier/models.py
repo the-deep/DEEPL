@@ -46,14 +46,14 @@ class ClassifiedDocument(BaseModel):
     """
     classifier = models.ForeignKey(ClassifierModel)
     group_id = models.CharField(max_length=20, blank=True, null=True)
-    classification = models.CharField(max_length=50)
+    classification_label = models.CharField(max_length=50)
     confidence = models.FloatField(default=0)
-    classification_probabilities = JSONField(null=True)
+    classification_probabilities = JSONField(default={})
     text = models.TextField()
-    details = models.TextField()
+    extra_info = JSONField(default={})
 
     def __str__(self):
-        return '{} {}'.format(self.group_id, self.classification)
+        return '{} {}'.format(self.group_id, self.classification_label)
 
 
 class ClassifiedExcerpt(BaseModel):
@@ -63,9 +63,9 @@ class ClassifiedExcerpt(BaseModel):
     classified_document = models.ForeignKey(ClassifiedDocument, related_name="excerpts")
     start_pos = models.IntegerField()
     end_pos = models.IntegerField()
-    classification = models.CharField(max_length=50)
+    classification_label = models.CharField(max_length=50)
     confidence = models.FloatField(default=0)
     classification_probabilities = JSONField(default=[])
 
     def __str__(self):
-        return '{} - {} : {}'.format(start_pos, end_pos, classification)
+        return '{} - {} : {}'.format(self.start_pos, self.end_pos, self.classification_label)
