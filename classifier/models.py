@@ -45,7 +45,7 @@ class ClassifiedDocument(BaseModel):
     Model to store the classified document details(especially for deeper
     """
     classifier = models.ForeignKey(ClassifierModel)
-    group_id = models.CharField(max_length=20)
+    group_id = models.CharField(max_length=20, blank=True, null=True)
     classification = models.CharField(max_length=50)
     confidence = models.FloatField(default=0)
     classification_probabilities = JSONField(null=True)
