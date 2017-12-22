@@ -80,3 +80,16 @@ class SKNaiveBayesClassifier(GenericClassifier):
 
     def get_confusion_matrix(self, test_labeled):
         pass
+
+    def retrain(self, labeled_data):
+        clf = self.__classifier # actually this is pipeline
+        x, Y = zip(*labeled_data)
+        steps = list(clf.named_steps.keys())
+        for step in steps[:-1]:
+            x = clf.named_steps[step].transform(x)
+        classes = clf.classes_
+        clf.named_steps[steps[-1]].partial_fit(
+            x, Y, classes=clf.classes_
+        )
+        return self
+

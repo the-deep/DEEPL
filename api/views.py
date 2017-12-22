@@ -8,7 +8,12 @@ import pickle
 
 from api.helpers import classify_text, classify_lead_excerpts
 
-from classifier.models import ClassifierModel, ClassifiedDocument, ClassifiedExcerpt
+from classifier.models import (
+    ClassifierModel,
+    ClassifiedDocument,
+    ClassifiedExcerpt,
+    Recommendation,
+)
 from classifier.serializers import ClassifiedDocumentSerializer, ClassifiedExcerptSerializer
 from topic_modeling.lda import LDAModel, get_topics_and_subtopics
 from topic_modeling.keywords_extraction import get_key_ngrams
@@ -222,3 +227,37 @@ class ApiVersionsView(APIView):
     def get(self, request):
         versions = ClassifierModel.objects.values("version", "accuracy")
         return Response({"versions":versions})
+
+class RecommendationView(APIView):
+    def post(self, request, version):
+        data = dict(request.data.items())
+        validation_details = self._validate_recommendation_params(data)
+        if not validation_details['status']:
+            return Response(validation_details, status=status.HTTP_400_BAD_REQUEST)
+
+        classifier = DocumentClassifierView.classifiers.get(version)
+        if not classifier:
+            return Response (
+                {'message': 'Classifier not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        # create a Recommendation object
+        recomm = Recommendation.objects.create (
+            classifier=classifier['classifier_model'],
+            text=data['text'],
+            classification_label=data['classification_label']
+        )
+        return Response({'message': 'Recommendation added successfully.'})
+
+    def _validate_recommendation_params(self, data):
+        errors = {}
+        if not data.get('text'):
+            errors['text'] = 'text for recommendation is missing'
+        if not data.get('classification_label'):
+            errors['classification_label'] = 'classissification_label is missing'
+        if errors:
+            return {
+                'status': False,
+                'error_data': errors
+            }
+        return {'status': True}

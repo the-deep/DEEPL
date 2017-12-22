@@ -3,7 +3,8 @@ from api.views import (
     DocumentClassifierView,
     TopicModelingView,
     KeywordsExtractionView,
-    ApiVersionsView
+    ApiVersionsView,
+    RecommendationView
 )
 
 urlpatterns = [
@@ -11,4 +12,5 @@ urlpatterns = [
     url(r'topic-modeling/$', TopicModelingView.as_view()),
     url(r'versions/$', ApiVersionsView.as_view()),
     url(r'keywords-extraction/$', KeywordsExtractionView.as_view()),
+    url(r'^(?P<version>[a-z0-9A-Z\.]+)/recommendation/$', RecommendationView.as_view()),
 ]

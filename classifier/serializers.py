@@ -13,9 +13,12 @@ class ClassifiedDocumentSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'text': {'write_only': True},
         }
+
     def get_classification(self, obj):
         return obj.classification_probabilities
+
     def create(self, validated_data):
+        # TODO: add classifier
         classification = validated_data['classification']
         return ClassifiedDocument.objects.create(
             text=validated_data['text'],

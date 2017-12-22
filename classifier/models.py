@@ -69,3 +69,14 @@ class ClassifiedExcerpt(BaseModel):
 
     def __str__(self):
         return '{} - {} : {}'.format(self.start_pos, self.end_pos, self.classification_label)
+
+class Recommendation(BaseModel):
+    classifier = models.ForeignKey(ClassifierModel)
+    text = models.TextField()
+    classification_label = models.CharField(max_length=50)
+    is_used = models.BooleanField(default=False)
+    used_date = models.DateTimeField(default=timezone.now)
+    extra_info = JSONField(default={})
+
+    def __str__(self):
+        return self.classification_label
