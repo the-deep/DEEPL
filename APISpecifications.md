@@ -94,7 +94,7 @@
     }
   ]
 }
-
+</pre>
 ## [POST] /api/v{n}/recommendation/
 #### Purpose: to recommend the correct class for a text
 #### Content-Type: application/x-www-form-urlencoded
