@@ -94,3 +94,12 @@
     }
   ]
 }
+
+## [POST] /api/v{n}/recommendation/
+#### Purpose: to recommend the correct class for a text
+#### Content-Type: application/x-www-form-urlencoded
+#### Params:
+ - text: the text for which recommendation is being generated(can be whole lead or sentence)
+ - classification_label: recommended label for the class
+#### Sample Requests
+ - curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' http://deepl.togglecorp.com/api/v2/recommendation/ -d 'text=deep is awesome&classification_label=True'
