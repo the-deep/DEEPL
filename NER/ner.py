@@ -21,7 +21,6 @@ def get_ner_tagging(text):
             new_splitted.append('DATETIME')
         else:
             new_splitted.append(x)
-    return new_splitted
     st = StanfordNERTagger('english.all.3class.distsim.crf.ser.gz')
     tagged = st.tag(new_splitted)
     count = 0
