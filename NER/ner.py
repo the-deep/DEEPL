@@ -28,6 +28,7 @@ def get_ner_tagging(text):
     for x, tag in tagged:
         if x == 'DATETIME':
             final.append((date_txts[count].replace('_', ' '), 'DATETIME'))
+            count+=1
         else:
             final.append((x, tag))
     return final
