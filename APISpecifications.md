@@ -100,6 +100,7 @@
 #### Content-Type: application/x-www-form-urlencoded
 #### Params:
  - text: the text for which recommendation is being generated(can be whole lead or sentence)
- - classification_label: recommended label for the class
+ - classification_label: classified label by the classifier vn
+ - useful: string value of 'true' or 'false' indicating the classification was useful or not
 #### Sample Requests
- - curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' http://deepl.togglecorp.com/api/v2/recommendation/ -d 'text=deep is awesome&classification_label=True'
+ - curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' http://deepl.togglecorp.com/api/v2/recommendation/ -d 'text=deep is awesome&classification_label=Health&useful=true'

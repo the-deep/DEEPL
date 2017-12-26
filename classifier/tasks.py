@@ -38,6 +38,9 @@ def process_deep_entries_data(csv_file_path):
     return get_sector_excerpt(df)
 
 
+# NOTE: this is for older classifier update, where user inputs recommended label for classification
+# But at present, we have user giving feedback as just the classification was
+#  userful or not
 def update_classifiers():
     from classifier.models import Recommendation
     reccos = Recommendation.objects.filter(is_used=False)

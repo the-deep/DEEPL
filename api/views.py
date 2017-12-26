@@ -245,7 +245,8 @@ class RecommendationView(APIView):
         recomm = Recommendation.objects.create (
             classifier=classifier['classifier_model'],
             text=data['text'],
-            classification_label=data['classification_label']
+            classification_label=data['classification_label'],
+            useful=True if data['classification_label'].lower() == 'true' else False
         )
         return Response({'message': 'Recommendation added successfully.'})
 
@@ -255,6 +256,8 @@ class RecommendationView(APIView):
             errors['text'] = 'text for recommendation is missing'
         if not data.get('classification_label'):
             errors['classification_label'] = 'classissification_label is missing'
+        if not data.get('useful'):
+            errors['useful'] = 'Missing value for usefulness of the recommendation'
         if errors:
             return {
                 'status': False,
