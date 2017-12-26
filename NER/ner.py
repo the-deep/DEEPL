@@ -21,6 +21,7 @@ def get_ner_tagging(text):
             new_splitted.append('DATETIME')
         else:
             new_splitted.append(x)
+    return new_splitted
     st = StanfordNERTagger('english.all.3class.distsim.crf.ser.gz')
     tagged = st.tag(new_splitted)
     count = 0
@@ -47,14 +48,20 @@ def get_date_tagged(text):
             # new.append('**M**')
         elif re.match('\d{4}', x):
             new.append('**{}**'.format(x))
-        elif re.match('\d{2}', x):
-            v = int(x)
-            if v>0 and v<=32:
-                new.append('**{}**'.format(x))
+        elif re.match('\d{1,2}', x):
+            new.append('**{}**'.format(x))
+        elif re.match('\d{1,2}[\-/]\d{1,2}[\-/]\d{4}', x):
+            new.append('**{}**'.format(x))
             # new.append('**N4**')
+        elif re.match('\d{4}[\-/]\d{1,2}[\-/]\d{1,2}', x):
+            new.append('**{}**'.format(x))
         elif x.lower() in TIMES:
             new.append('**{}**'.format(x))
             # new.append('**T**')
+        elif re.match('\d{4}[\-/]', x):
+            new.append('**{}**'.format(x))
+        elif re.match('\d{1,2}[\-/]', x):
+            new.append('**{}**'.format(x))
         # NOTE: the following do not work because it has been splitted by space
         elif re.match('\d{1,2} *[aApP].{0,1}[mM]', x.lower()):
             new.append('**{}**'.format(x))
@@ -71,11 +78,13 @@ def get_date_tagged(text):
     while index < len(new):
         if re.match('\*\*.*\*\*', new[index]):
             txts = []
-            while index<len(new) and re.match('\*\*.*\*\*', new[index]):
+            while index<len(new) and (new[index] in ['/', '-'] or re.match('\*\*.*\*\*', new[index])):
                 txts.append(new[index].split('**')[1])
                 index+=1
             txt = '_'.join(txts)
             merged.append('**{}**'.format(txt))
+            if index < len(new):
+                merged.append(new[index])
         else:
             merged.append(new[index])
         index+=1
