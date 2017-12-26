@@ -17,6 +17,7 @@ from classifier.models import (
 from classifier.serializers import ClassifiedDocumentSerializer, ClassifiedExcerptSerializer
 from topic_modeling.lda import LDAModel, get_topics_and_subtopics
 from topic_modeling.keywords_extraction import get_key_ngrams
+from NER.ner import get_ner_tagging
 
 class DocumentClassifierView(APIView):
     """
@@ -264,3 +265,26 @@ class RecommendationView(APIView):
                 'error_data': errors
             }
         return {'status': True}
+
+class NERView(APIView):
+    def post(self, request):
+        data = dict(request.data.items())
+        validation_details = self._validate_ner_params(data)
+        if not validation_details['status']:
+            return Response(validation_details, status=status.HTTP_400_BAD_REQUEST)
+        ner_tagged = get_ner_tagging(data['text'].split())
+        return Response(ner_tagged)
+
+    def _validate_ner_params(self, data):
+        errors = {}
+        if not data.get('text'):
+            errors['text'] = "Missing text to be NER tagged"
+        if errors:
+            return {
+                'status': False,
+                'error_data': errors
+            }
+        return {
+            'status': True,
+            'error_data': {}
+        }

@@ -4,12 +4,14 @@ from api.views import (
     TopicModelingView,
     KeywordsExtractionView,
     ApiVersionsView,
-    RecommendationView
+    RecommendationView,
+    NERView
 )
 
 urlpatterns = [
     url(r'^(?P<version>[a-z0-9A-Z\.]+)/classify/$', DocumentClassifierView.as_view()),
     url(r'topic-modeling/$', TopicModelingView.as_view()),
+    url(r'ner/$', NERView.as_view()),
     url(r'versions/$', ApiVersionsView.as_view()),
     url(r'keywords-extraction/$', KeywordsExtractionView.as_view()),
     url(r'^(?P<version>[a-z0-9A-Z\.]+)/recommendation/$', RecommendationView.as_view()),
