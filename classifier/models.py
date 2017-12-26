@@ -39,7 +39,6 @@ class ClassifierModel(BaseModel):
     def __str__(self):
         return 'v{}-{}'.format(self.version, self.name)
 
-
 class ClassifiedDocument(BaseModel):
     """
     Model to store the classified document details(especially for deeper
@@ -54,7 +53,6 @@ class ClassifiedDocument(BaseModel):
 
     def __str__(self):
         return '{} {}'.format(self.group_id, self.classification_label)
-
 
 class ClassifiedExcerpt(BaseModel):
     """
@@ -73,7 +71,8 @@ class ClassifiedExcerpt(BaseModel):
 class Recommendation(BaseModel):
     classifier = models.ForeignKey(ClassifierModel)
     text = models.TextField()
-    classification_label = models.CharField(max_length=50)
+    classification_label = models.CharField(max_length=50) # classification made by classifier
+    useful = models.BooleanField(default=False)
     is_used = models.BooleanField(default=False)
     used_date = models.DateTimeField(default=timezone.now)
     extra_info = JSONField(default={})
