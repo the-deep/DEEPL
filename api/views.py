@@ -272,7 +272,7 @@ class NERView(APIView):
         validation_details = self._validate_ner_params(data)
         if not validation_details['status']:
             return Response(validation_details, status=status.HTTP_400_BAD_REQUEST)
-        ner_tagged = get_ner_tagging(data['text'].split())
+        ner_tagged = get_ner_tagging(data['text'])
         return Response(ner_tagged)
 
     def _validate_ner_params(self, data):
