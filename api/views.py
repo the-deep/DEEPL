@@ -138,8 +138,16 @@ class TopicModelingView(APIView):
                 validation_details['error_data'],
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         params = validation_details['params']
-        ldamodel = LDAModel()
+        if params.get('doc_ids'):
+            documents = ClassifiedDocument.objects.filter(
+                id__in=params.get('doc_ids')
+            )
+            params['documents'] = [
+                doc.text for doc in documents
+            ]
+
         lda_output = get_topics_and_subtopics(
             params['documents'],
             params['number_of_topics'],
@@ -147,28 +155,34 @@ class TopicModelingView(APIView):
             depth=5 if params['depth'] > 5 else params['depth']
         )
         return Response(lda_output)
-        ldamodel.create_model(params['documents'], params['number_of_topics'])
-        topics_and_keywords = ldamodel.get_topics_and_keywords(
-            params['keywords_per_topic']
-        )
-        return Response({
-            'Topic {}'.format(i+1): v
-            for i, v in enumerate(topics_and_keywords)
-        })
+
+        # ldamodel = LDAModel()
+        # ldamodel.create_model(params['documents'],
+        #                       params['number_of_topics'])
+        # topics_and_keywords = ldamodel.get_topics_and_keywords(
+        #     params['keywords_per_topic']
+        # )
+        # return Response({
+        #     'Topic {}'.format(i+1): v
+        #     for i, v in enumerate(topics_and_keywords)
+        # })
 
     def _validate_topic_modeling_params(self, queryparams):
         """Validator for params"""
         errors = {}
         params = {}
-        if not queryparams.getlist('documents', []):
-            errors['documents'] = (
-                'Missing documents on which modeling is to be done'
-            )
-        elif not type(queryparams.getlist('documents')) == list:
+        if not queryparams.get('documents', []):
+            if not queryparams.get('doc_ids', []):
+                errors['documents'] = (
+                    'Missing documents on which modeling is to be done'
+                )
+            else:
+                params['doc_ids'] = queryparams.get('doc_ids')
+        elif not type(queryparams.get('documents')) == list:
             errors['documents'] = 'documents should be list'
         else:
             # this is a list
-            params['documents'] = queryparams.getlist('documents')
+            params['documents'] = queryparams.get('documents')
             # params['documents'] = queryparams.getlist('documents')
         try:
             num_topics = int(queryparams.get('number_of_topics'))
