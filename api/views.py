@@ -296,7 +296,7 @@ class RecommendationView(APIView):
             text=data['text'],
             classification_label=data['classification_label'],
             useful=True
-            if data['classification_label'].lower() == 'true'
+            if data['useful'].lower() == 'true'
             else False
         )
         return Response({'message': 'Recommendation added successfully.'})
