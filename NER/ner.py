@@ -29,8 +29,25 @@ def get_ner_tagging(text):
                 'length': split[1],
                 'entity': tag[1],
             })
+        else:
+            result.append(None)
 
-    return result
+    combined_result = []
+    prev_item = None
+    for item in result:
+        if not prev_item:
+            prev_item = item
+        elif item and item['entity'] == prev_item['entity']:
+            prev_item['length'] = (item['start'] - prev_item['start']) + \
+                item['length']
+        else:
+            combined_result.append(prev_item)
+            prev_item = item
+
+    if prev_item:
+        combined_result.append(prev_item)
+
+    return combined_result
 
 
 def ___get_ner_tagging(text):
