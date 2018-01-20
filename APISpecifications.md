@@ -104,3 +104,8 @@
  - useful: string value of 'true' or 'false' indicating the classification was useful or not
 #### Sample Requests
  - curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' http://deepl.togglecorp.com/api/v2/recommendation/ -d 'text=deep is awesome&classification_label=Health&useful=true'
+ 
+ ## [GET] /api/subtopics/correlation/
+#### Purpose: to get correlation among subtopics
+#### Content-Type: application/x-www-form-urlencoded
+#### Params: None
