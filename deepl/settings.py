@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'helpers',
     'classifier',
     'topic_modeling',
+    'correlation',
 ]
 
 MIDDLEWARE = [
