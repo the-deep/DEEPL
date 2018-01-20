@@ -7,31 +7,76 @@ MONTHS = [
 ]
 MONTHS_INITIALS = list(map(lambda x: x[:3], MONTHS))
 TIMES = ['midnight', 'afternoon', 'noon', 'evening', 'morning', 'night']
-DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+DAYS = ['sunday', 'monday', 'tuesday', 'wednesday',
+        'thursday', 'friday', 'saturday']
+
 
 def get_ner_tagging(text):
-    """text is unsplitted text"""
-    date_txts = []
-    date_tagged = get_date_tagged(text)
-    splitted = date_tagged.split()
-    new_splitted = []
-    for x in splitted:
-        if re.match('\*\*.*\*\*', x):
-            date_txts.append(x.split('**')[1])
-            new_splitted.append('DATETIME')
-        else:
-            new_splitted.append(x)
+    # Split the text using regex (to record their split positions)
+    matches = re.finditer(r'\S+', text)
+    splits = [(m.group(0), (m.start(), m.end() - m.start()))
+              for m in matches]
+
     st = StanfordNERTagger('english.all.3class.distsim.crf.ser.gz')
-    tagged = st.tag(new_splitted)
-    count = 0
-    final = []
-    for x, tag in tagged:
-        if x == 'DATETIME':
-            final.append((date_txts[count].replace('_', ' '), 'DATETIME'))
-            count+=1
+    tags = st.tag([s[0] for s in splits])
+
+    result = []
+    for i, tag in enumerate(tags):
+        if tag[1] != 'O':
+            split = splits[i][1]
+            result.append({
+                'start': split[0],
+                'length': split[1],
+                'entity': tag[1],
+            })
         else:
-            final.append((x, tag))
-    return final
+            result.append(None)
+
+    combined_result = []
+    prev_item = None
+    for item in result:
+        if not prev_item:
+            prev_item = item
+        elif item and item['entity'] == prev_item['entity']:
+            prev_item['length'] = (item['start'] - prev_item['start']) + \
+                item['length']
+        else:
+            combined_result.append(prev_item)
+            prev_item = item
+
+    if prev_item:
+        combined_result.append(prev_item)
+
+    return combined_result
+
+
+def ___get_ner_tagging(text):
+    """text is unsplitted text"""
+    # date_txts = []
+    # date_tagged = get_date_tagged(text)
+    # splitted = date_tagged.split()
+    # new_splitted = []
+    # for x in splitted:
+    #     if re.match('\*\*.*\*\*', x):
+    #         date_txts.append(x.split('**')[1])
+    #         new_splitted.append('DATETIME')
+    #     else:
+    #         new_splitted.append(x)
+    st = StanfordNERTagger('english.all.3class.distsim.crf.ser.gz')
+    tagged = st.tag(text.strip().split())
+    # tagged = st.tag(new_splitted)
+
+    return tagged
+    # count = 0
+    # final = []
+    # for x, tag in tagged:
+    #     if x == 'DATETIME':
+    #         final.append((date_txts[count].replace('_', ' '), 'DATETIME'))
+    #         count += 1
+    #     else:
+    #         final.append((x, tag))
+    # return final
+
 
 def get_date_tagged(text):
     splitted = text.strip().split()

@@ -1,6 +1,4 @@
-from django.shortcuts import render, get_object_or_404
 from rest_framework import status
-from rest_framework.viewsets import ViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -14,7 +12,11 @@ from classifier.models import (
     ClassifiedExcerpt,
     Recommendation,
 )
-from classifier.serializers import ClassifiedDocumentSerializer, ClassifiedExcerptSerializer
+
+from classifier.serializers import (
+    ClassifiedDocumentSerializer,
+    ClassifiedExcerptSerializer,
+)
 from topic_modeling.lda import LDAModel, get_topics_and_subtopics
 from topic_modeling.keywords_extraction import get_key_ngrams
 from NER.ner import get_ner_tagging
@@ -25,12 +27,13 @@ class DocumentClassifierView(APIView):
     """
     API for document classification
     """
-    classifiers = {'v'+str(x.version) : {
+    classifiers = {'v'+str(x.version): {
         'classifier': pickle.loads(x.data),
         'classifier_model': x
         }
             for x in ClassifierModel.objects.all()
     }
+
     def __init__(self):
         # load all the classifiers
         pass
@@ -48,23 +51,27 @@ class DocumentClassifierView(APIView):
         if deeper and data.get('doc_id'):
             # get already classified data
             try:
-                classified_doc = ClassifiedDocument.objects.get(id=data['doc_id'])
+                classified_doc = ClassifiedDocument.objects.get(
+                    id=data['doc_id']
+                )
                 return_data = ClassifiedDocumentSerializer(classified_doc).data
-                return_data['excerpts_classification'] = ClassifiedExcerptSerializer(
-                    classified_doc.excerpts, many=True
-                ).data
+                return_data['excerpts_classification'] = \
+                    ClassifiedExcerptSerializer(
+                        classified_doc.excerpts, many=True
+                    ).data
                 return Response(return_data)
             except ClassifiedDocument.DoesNotExist:
                 return Response({}, status=status.HTTP_404_NOT_FOUND)
-            except:
-                return Resposne({
+            except Exception as e:
+                return Response({
                     'status': False,
                     'message': 'Invalid doc_id'
                 }, status=status.HTTP_400_BAD_REQUEST)
         classifier = DocumentClassifierView.classifiers.get(version)
 
         if not classifier:
-            return Response({'status': False, 'message': 'Classifier not found'},
+            return Response(
+                {'status': False, 'message': 'Classifier not found'},
                 status.HTTP_404_NOT_FOUND
             )
         text = data['text']
@@ -77,14 +84,17 @@ class DocumentClassifierView(APIView):
         grp_id = data.get('group_id')
 
         doc = ClassifiedDocument.objects.create(
-            text = text,
-            classifier = classifier['classifier_model'],
-            confidence = classified[0][1],
-            classification_label = classified[0][0],
-            classification_probabilities = classified,
-            group_id = grp_id
+            text=text,
+            classifier=classifier['classifier_model'],
+            confidence=classified[0][1],
+            classification_label=classified[0][0],
+            classification_probabilities=classified,
+            group_id=grp_id
         )
-        classified_excerpts = classify_lead_excerpts(classifier['classifier'], text)
+        classified_excerpts = classify_lead_excerpts(
+            classifier['classifier'],
+            text,
+        )
 
         # create excerpts
         for x in classified_excerpts:
@@ -117,6 +127,7 @@ class DocumentClassifierView(APIView):
             'status': True,
         }
 
+
 class TopicModelingView(APIView):
     """API for topic modeling"""
     def post(self, request):
@@ -128,8 +139,16 @@ class TopicModelingView(APIView):
                 validation_details['error_data'],
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         params = validation_details['params']
-        ldamodel = LDAModel()
+        if params.get('doc_ids'):
+            documents = ClassifiedDocument.objects.filter(
+                id__in=params.get('doc_ids')
+            )
+            params['documents'] = [
+                doc.text for doc in documents
+            ]
+
         lda_output = get_topics_and_subtopics(
             params['documents'],
             params['number_of_topics'],
@@ -137,40 +156,60 @@ class TopicModelingView(APIView):
             depth=5 if params['depth'] > 5 else params['depth']
         )
         return Response(lda_output)
-        ldamodel.create_model(params['documents'], params['number_of_topics'])
-        topics_and_keywords = ldamodel.get_topics_and_keywords(
-            params['keywords_per_topic']
-        )
-        return Response({'Topic {}'.format(i+1): v for i,v in enumerate(topics_and_keywords)})
+
+        # ldamodel = LDAModel()
+        # ldamodel.create_model(params['documents'],
+        #                       params['number_of_topics'])
+        # topics_and_keywords = ldamodel.get_topics_and_keywords(
+        #     params['keywords_per_topic']
+        # )
+        # return Response({
+        #     'Topic {}'.format(i+1): v
+        #     for i, v in enumerate(topics_and_keywords)
+        # })
 
     def _validate_topic_modeling_params(self, queryparams):
         """Validator for params"""
         errors = {}
         params = {}
-        if not queryparams.getlist('documents', []):
-            errors['documents'] = 'Missing documents on which modeling is to be done'
-        elif not type(queryparams.getlist('documents')) == list:
+        if not queryparams.get('documents', []):
+            if not queryparams.get('doc_ids', []):
+                errors['documents'] = (
+                    'Missing documents on which modeling is to be done'
+                )
+            else:
+                params['doc_ids'] = queryparams.get('doc_ids')
+        elif not type(queryparams.get('documents')) == list:
             errors['documents'] = 'documents should be list'
         else:
             # this is a list
-            params['documents'] = queryparams.getlist('documents')
+            params['documents'] = queryparams.get('documents')
             # params['documents'] = queryparams.getlist('documents')
         try:
             num_topics = int(queryparams.get('number_of_topics'))
-        except:
-            errors['number_of_topics'] = 'Missing/invalid number of topics. Should be present as a positive integer'
+        except Exception as e:
+            errors['number_of_topics'] = (
+                'Missing/invalid number of topics. '
+                'Should be present as a positive integer'
+            )
         else:
             params['number_of_topics'] = num_topics
         try:
             kw_per_topic = int(queryparams.get('keywords_per_topic'))
-        except:
-            errors['keywords_per_topic'] = 'Missing/invalid number of keywords per topic. Should be present as a positive integer'
+        except Exception as e:
+            errors['keywords_per_topic'] = (
+                'Missing/invalid number of keywords per topic. '
+                'Should be present as a positive integer'
+            )
         else:
-            params['keywords_per_topic'] =  kw_per_topic
+            params['keywords_per_topic'] = kw_per_topic
         try:
             depth = int(queryparams.get('depth'))
-        except:
-            errors['depth'] = 'Missing/invalid depth of subtopics. Should be present as a positive integer'
+        except Exception as e:
+            errors['depth'] = (
+                'Missing/invalid depth of subtopics. '
+                'Should be present as a positive integer'
+            )
         else:
             params['depth'] = depth
         if errors:
@@ -183,11 +222,14 @@ class TopicModelingView(APIView):
             'params': params
         }
 
+
 class KeywordsExtractionView(APIView):
     def post(self, request):
         """Handle API POST request"""
         # data = dict(request.query_params.items())
-        validation_details = self._validate_keywords_extraction_params(request.data)
+        validation_details = self._validate_keywords_extraction_params(
+            request.data
+        )
         if not validation_details['status']:
             return Response(
                 validation_details['error_data'],
@@ -212,8 +254,10 @@ class KeywordsExtractionView(APIView):
                 params['max_grams'] = int(queryparams['max_grams'])
                 if params['max_grams'] < 1:
                     raise Exception
-            except:
-                errors['max_grams'] = 'max_grams, if present, should be a positive integer'
+            except Exception as e:
+                errors['max_grams'] = (
+                    'max_grams, if present, should be a positive integer'
+                )
         else:
             params['max_grams'] = None
         if errors:
@@ -226,21 +270,24 @@ class KeywordsExtractionView(APIView):
             'params': params
         }
 
+
 class ApiVersionsView(APIView):
     def get(self, request):
         versions = ClassifierModel.objects.values("version", "accuracy")
-        return Response({"versions":versions})
+        return Response({"versions": versions})
+
 
 class RecommendationView(APIView):
     def post(self, request, version):
         data = dict(request.data.items())
         validation_details = self._validate_recommendation_params(data)
         if not validation_details['status']:
-            return Response(validation_details, status=status.HTTP_400_BAD_REQUEST)
+            return Response(validation_details,
+                            status=status.HTTP_400_BAD_REQUEST)
 
         classifier = DocumentClassifierView.classifiers.get(version)
         if not classifier:
-            return Response (
+            return Response(
                 {'message': 'Classifier not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
@@ -249,7 +296,9 @@ class RecommendationView(APIView):
             classifier=classifier['classifier_model'],
             text=data['text'],
             classification_label=data['classification_label'],
-            useful=True if data['classification_label'].lower() == 'true' else False
+            useful=True
+            if data['useful'].lower() == 'true'
+            else False
         )
         return Response({'message': 'Recommendation added successfully.'})
 
@@ -258,9 +307,13 @@ class RecommendationView(APIView):
         if not data.get('text'):
             errors['text'] = 'text for recommendation is missing'
         if not data.get('classification_label'):
-            errors['classification_label'] = 'classissification_label is missing'
+            errors['classification_label'] = (
+                'classissification_label is missing'
+            )
         if not data.get('useful'):
-            errors['useful'] = 'Missing value for usefulness of the recommendation'
+            errors['useful'] = (
+                'Missing value for usefulness of the recommendation'
+            )
         if errors:
             return {
                 'status': False,
@@ -268,12 +321,14 @@ class RecommendationView(APIView):
             }
         return {'status': True}
 
+
 class NERView(APIView):
     def post(self, request):
         data = dict(request.data.items())
         validation_details = self._validate_ner_params(data)
         if not validation_details['status']:
-            return Response(validation_details, status=status.HTTP_400_BAD_REQUEST)
+            return Response(validation_details,
+                            status=status.HTTP_400_BAD_REQUEST)
         ner_tagged = get_ner_tagging(data['text'])
         return Response(ner_tagged)
 
