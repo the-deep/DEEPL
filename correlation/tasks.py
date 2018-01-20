@@ -49,7 +49,9 @@ def create_correlation_data(version, correlated_entity="subtopics"):
     for k, v in class_words_freq.items():
         len_sq = (sum([x**2 for x in v]))**0.5
         class_words_freq[k] = [round(float(x)/len_sq, 6) for x in v]
+
     # now we have words class matrix
+    # calculate dot product for each combination
     correlation = {}
     for x in class_words_freq:
         correlation[x] = {}

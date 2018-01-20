@@ -5,7 +5,8 @@ from api.views import (
     KeywordsExtractionView,
     ApiVersionsView,
     RecommendationView,
-    NERView
+    NERView,
+    CorrelationView
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     url(r'versions/$', ApiVersionsView.as_view()),
     url(r'keywords-extraction/$', KeywordsExtractionView.as_view()),
     url(r'^(?P<version>[a-z0-9A-Z\.]+)/recommendation/$', RecommendationView.as_view()),
+    url(r'^(?P<entity>[a-zA-Z\.]+)/correlation/$', CorrelationView.as_view()),
 ]

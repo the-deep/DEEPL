@@ -19,6 +19,8 @@ from topic_modeling.lda import LDAModel, get_topics_and_subtopics
 from topic_modeling.keywords_extraction import get_key_ngrams
 from NER.ner import get_ner_tagging
 
+from correlation.models import Correlation
+
 class DocumentClassifierView(APIView):
     """
     API for document classification
@@ -288,3 +290,14 @@ class NERView(APIView):
             'status': True,
             'error_data': {}
         }
+
+class CorrelationView(APIView):
+    def get(self, request, entity):
+        try:
+            correlation_obj = Correlation.objects.get(correlated_entity=entity)
+        except Correlation.DoesNotExist:
+            return Response(
+                {'message': 'No such correlation found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        return Response(correlation_obj.correlation_data)
