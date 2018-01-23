@@ -238,7 +238,7 @@ class KeywordsExtractionView(APIView):
         params = validation_details['params']
         doc = params['document']
         args = (doc, params['max_grams']) if params['max_grams'] else (doc,)
-        key_ngrams = get_key_ngrams(*args)
+        key_ngrams = get_key_ngrams(*args, include_numbers=params.get('include_numbers', False))
         return Response(key_ngrams)
 
     def _validate_keywords_extraction_params(self, queryparams):
@@ -260,6 +260,10 @@ class KeywordsExtractionView(APIView):
                 )
         else:
             params['max_grams'] = None
+
+        if queryparams.get('include_numbers'):
+            params['include_numbers'] = True
+
         if errors:
             return {
                 'status': False,
