@@ -1,5 +1,5 @@
 from rake_nltk import Rake
-from helpers.common import remove_puc_and_nums
+from helpers.common import remove_punc_and_nums
 
 def get_key_ngrams(document, max_grams=3):
     r = Rake() # Uses stopwords for english from NLTK, and all puntuation characters.
