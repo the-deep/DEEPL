@@ -4,7 +4,12 @@ from rest_framework.response import Response
 
 import pickle
 
-from api.helpers import classify_text, classify_lead_excerpts
+from api.helpers import (
+    classify_text,
+    classify_lead_excerpts,
+)
+
+from helpers.google import get_location_info
 
 from classifier.models import (
     ClassifierModel,
@@ -349,6 +354,60 @@ class NERView(APIView):
             'status': True,
             'error_data': {}
         }
+
+
+class NERWithDocIdView(APIView):
+    def post(self, request):
+        data = dict(request.data.items())
+        validation_details = self._validate_ner_params(data)
+        if not validation_details['status']:
+            return Response(validation_details,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        documents = ClassifiedDocument.objects.filter(
+            id__in=data.get('doc_ids', [])
+        )
+        text = [doc.text for doc in documents]
+        text = ' '.join(text)
+
+        ner_tagged = get_ner_tagging(text)
+        locations = []
+        for ner in ner_tagged:
+            if ner.get('entity') == 'LOCATION':
+                try:
+                    start = ner['start']
+                    end = start + ner['length']
+                    location = text[start:end]
+
+                    if location not in locations:
+                        locations.append(location)
+                except (IndexError, KeyError):
+                    pass
+
+        response = []
+        # only process 25 location for now
+        for location in locations[:25]:
+            response.append({
+                'name': location,
+                'info': get_location_info(location),
+            })
+
+        return Response({'locations': response})
+
+    def _validate_ner_params(self, data):
+        errors = {}
+        if not data.get('doc_ids'):
+            errors['doc_ids'] = "Missing doc_ids to be NER tagged"
+        if errors:
+            return {
+                'status': False,
+                'error_data': errors
+            }
+        return {
+            'status': True,
+            'error_data': {}
+        }
+
 
 class CorrelationView(APIView):
     def get(self, request, entity):
