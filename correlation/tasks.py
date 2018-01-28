@@ -16,13 +16,24 @@ def create_correlation_data(version, correlated_entity="subtopics"):
         raise Exception("Correlation object of version {} already exists. Provide another version".format(version))
     except Correlation.DoesNotExist:
         pass
-    word_count = 0
-    word_id = {} # contains word-> id of the word
-    class_words_frequency = {} # contains classes and the words frequencies
 
+    classified_documents = ClassifiedDocument.objects.all()
+    correlation = get_documents_correlation(classified_documents)
+    correlation_obj = Correlation.objects.create(
+        correlated_entity=correlated_entity,
+        version=version,
+        correlation_data=correlation
+    )
+    return correlation_obj
+
+
+def get_documents_correlation(classified_document_objects):
+    word_count = 0
+    word_id = {}  # contains word-> id of the word
+    class_words_frequency = {}  # contains classes and the words frequencies
     # iterate through ClassifiedDocument
-    for d in ClassifiedDocument.objects.all():
-    # - get text and remove stop words and stem words
+    for d in classified_document_objects:
+        # - get text and remove stop words and stem words
         pre_processed_text = remove_punc_and_nums(
             rm_stop_words_txt(d.text)
         )
@@ -34,14 +45,16 @@ def create_correlation_data(version, correlated_entity="subtopics"):
         splitted = pre_processed_text.split()
         # - add the words to words dict if not present
         for x in splitted:
-            if not x in word_id:
+            if x not in word_id:
                 word_id[x] = word_count
-                word_count+=1
+                word_count += 1
             # - also increment the count of the word for the class
             class_words_frequency[text_class][x] = class_words_frequency[text_class].get(x, 0) + 1
 
     # transform the dict of words-> count to list of counts where indices are ids of words
-    class_words_freq = {k:[0]*word_count for k,_ in class_words_frequency.items()}
+    class_words_freq = {
+        k: [0]*word_count for k, _ in class_words_frequency.items()
+    }
     for k, v in class_words_frequency.items():
         for w, cnt in v.items():
             class_words_freq[k][word_id[w]] = cnt
@@ -57,9 +70,4 @@ def create_correlation_data(version, correlated_entity="subtopics"):
         correlation[x] = {}
         for y in class_words_freq:
             correlation[x][y] = sum([round(a*b, 6) for a,b in zip(class_words_freq[x], class_words_freq[y])])
-    correlation_obj = Correlation.objects.create(
-        correlated_entity=correlated_entity,
-        version=version,
-        correlation_data=correlation
-    )
-    return correlation_obj
+    return correlation

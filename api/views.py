@@ -22,11 +22,17 @@ from classifier.serializers import (
     ClassifiedDocumentSerializer,
     ClassifiedExcerptSerializer,
 )
-from topic_modeling.lda import LDAModel, get_topics_and_subtopics
+from topic_modeling.lda import get_topics_and_subtopics
 from topic_modeling.keywords_extraction import get_key_ngrams
 from NER.ner import get_ner_tagging
 
 from correlation.models import Correlation
+from correlation.tasks import get_documents_correlation
+
+import traceback
+import logging
+logger = logging.getLogger(__name__)
+
 
 class DocumentClassifierView(APIView):
     """
@@ -411,11 +417,44 @@ class NERWithDocIdView(APIView):
 
 class CorrelationView(APIView):
     def get(self, request, entity):
-        try:
-            correlation_obj = Correlation.objects.get(correlated_entity=entity)
-        except Correlation.DoesNotExist:
+        validation_details = self._validate_params(request.data)
+        if not validation_details['status']:
             return Response(
-                {'message': 'No such correlation found'},
-                status=status.HTTP_404_NOT_FOUND
+                validation_details['error_data'],
+                status=status.HTTP_400_BAD_REQUEST
             )
-        return Response(correlation_obj.correlation_data)
+        params = validation_details['params']
+        classified_docs = ClassifiedDocument.objects.filter(
+            id__in=params['doc_ids']
+        )
+        print(classified_docs)
+        try:
+            correlated_data = get_documents_correlation(classified_docs)
+        except:
+            logger.warning(traceback.format_exc())
+            return Response(
+                {"error": "Something went wrong. Try later"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(correlated_data)
+
+    def _validate_params(self, params):
+        errors = {}
+        doc_ids = params.get('doc_ids', [])
+        if not doc_ids or type(doc_ids) != list:
+            errors['doc_ids'] = 'Provide doc_ids. It should be a list of integers.'
+        for x in doc_ids:
+            try:
+                int(x)
+            except ValueError:
+                errors['doc_ids'] = 'Invlid doc_id value "{}". Provide integer value.'
+                break
+        if errors:
+            return {
+                'status': False,
+                'error_data': errors
+            }
+        return {
+            'status': True,
+            'params': params
+        }
