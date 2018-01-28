@@ -416,7 +416,7 @@ class NERWithDocIdView(APIView):
 
 
 class CorrelationView(APIView):
-    def get(self, request, entity):
+    def post(self, request, entity):
         validation_details = self._validate_params(request.data)
         if not validation_details['status']:
             return Response(
@@ -427,10 +427,9 @@ class CorrelationView(APIView):
         classified_docs = ClassifiedDocument.objects.filter(
             id__in=params['doc_ids']
         )
-        print(classified_docs)
         try:
             correlated_data = get_documents_correlation(classified_docs)
-        except:
+        except Exception:
             logger.warning(traceback.format_exc())
             return Response(
                 {"error": "Something went wrong. Try later"},
