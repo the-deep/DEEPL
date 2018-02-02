@@ -53,7 +53,7 @@ class LDAModel:
         self.__stop_words = stop_words
         self._compose_pre_process_functions()
 
-    def create_model(self, documents, num_topics, passes=20):
+    def create_model(self, documents, num_topics, passes=10):
         """
         Create LDA model.
         @documents - List of documents on which modeling is to be done
@@ -153,7 +153,7 @@ def _get_subtopics(corpus, dictionary, num_topics, num_words, depth):
         corpus,
         num_topics=num_topics,
         id2word=dictionary,
-        passes=25
+        passes=15
     )
     lda_output = {}
     topics = ldamodel.get_topics()
