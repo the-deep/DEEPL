@@ -306,14 +306,16 @@ class RecommendationView(APIView):
                 {'message': 'Classifier not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
+        extra = self._get_extra_info(data)
         # create a Recommendation object
-        recomm = Recommendation.objects.create (
+        recomm = Recommendation.objects.create(
             classifier=classifier['classifier_model'],
             text=data['text'],
             classification_label=data['classification_label'],
             useful=True
-            if data['useful'].lower() == 'true'
-            else False
+                if data['useful'].lower() == 'true'
+                else False,
+            extra_info=extra
         )
         return Response({'message': 'Recommendation added successfully.'})
 
@@ -335,6 +337,18 @@ class RecommendationView(APIView):
                 'error_data': errors
             }
         return {'status': True}
+
+    def _get_extra_info(self, data):
+        extra = {}
+        if 'user_id' in data and len(str(data['user_id'])) <= 12:
+            extra['user_id'] = data['user_id']
+        if 'lead_id' in data and len(str(data['lead_id'])) <= 12:
+            extra['lead_id'] = data['lead_id']
+        if 'entry_id' in data and len(str(data['entry_id'])) <= 12:
+            extra['entry_id'] = data['entry_id']
+        if 'date_captured' in data and len(str(data['date_captured'])) <= 20:
+            extra['date_captured'] = data['date_captured']
+        return extra
 
 
 class NERView(APIView):
