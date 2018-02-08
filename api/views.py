@@ -435,6 +435,7 @@ class CorrelationView(APIView):
             classified_docs = ClassifiedDocument.objects.filter(
                 id__in=params['doc_ids']
             )
+            classified_docs = [(x.classification_label, x.text) for x in classified_docs]
         try:
             correlated_data = get_documents_correlation(classified_docs)
         except Exception:
