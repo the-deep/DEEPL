@@ -164,7 +164,7 @@ def _get_subtopics(corpus, dictionary, num_topics, num_words, depth):
             reverse=True
         )[:num_words]
         lda_output['Topic {}'.format(i)] = {
-            'keywords': [(dictionary.get(i), x) for i, x in sorted_words],
+            'keywords': [(dictionary.get(i), x) for i, x in sorted_words if len(x)>2],
             'subtopics': {}
         }
     if depth <= 1:
