@@ -26,7 +26,6 @@ from topic_modeling.lda import get_topics_and_subtopics
 from topic_modeling.keywords_extraction import get_key_ngrams
 from NER.ner import get_ner_tagging
 
-from correlation.models import Correlation
 from correlation.tasks import get_documents_correlation
 
 import traceback
@@ -156,6 +155,11 @@ class TopicModelingView(APIView):
             documents = ClassifiedDocument.objects.filter(
                 id__in=params.get('doc_ids')
             )
+            if not documents:
+                return Response(
+                    {"error": "doc_ids not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
             params['documents'] = [
                 doc.text for doc in documents
             ]
@@ -168,33 +172,24 @@ class TopicModelingView(APIView):
         )
         return Response(lda_output)
 
-        # ldamodel = LDAModel()
-        # ldamodel.create_model(params['documents'],
-        #                       params['number_of_topics'])
-        # topics_and_keywords = ldamodel.get_topics_and_keywords(
-        #     params['keywords_per_topic']
-        # )
-        # return Response({
-        #     'Topic {}'.format(i+1): v
-        #     for i, v in enumerate(topics_and_keywords)
-        # })
-
     def _validate_topic_modeling_params(self, queryparams):
         """Validator for params"""
         errors = {}
         params = {}
+        # convert to dict and list is retained, else in querydict only first element is retained
+        dictparams = dict(queryparams)
         if not queryparams.get('documents', []):
-            if not queryparams.get('doc_ids', []):
+            if not dictparams.get('doc_ids', []):
                 errors['documents'] = (
                     'Missing documents on which modeling is to be done'
                 )
             else:
-                params['doc_ids'] = queryparams.get('doc_ids')
-        elif not type(queryparams.get('documents')) == list:
+                params['doc_ids'] = dictparams.get('doc_ids')
+        elif not type(dictparams.get('documents')) == list:
             errors['documents'] = 'documents should be list'
         else:
             # this is a list
-            params['documents'] = queryparams.get('documents')
+            params['documents'] = dictparams.get('documents')
             # params['documents'] = queryparams.getlist('documents')
         try:
             num_topics = int(queryparams.get('number_of_topics'))
@@ -308,13 +303,11 @@ class RecommendationView(APIView):
             )
         extra = self._get_extra_info(data)
         # create a Recommendation object
-        recomm = Recommendation.objects.create(
+        Recommendation.objects.create(
             classifier=classifier['classifier_model'],
             text=data['text'],
             classification_label=data['classification_label'],
-            useful=True
-                if data['useful'].lower() == 'true'
-                else False,
+            useful=True if data['useful'].lower() == 'true' else False,
             extra_info=extra
         )
         return Response({'message': 'Recommendation added successfully.'})
@@ -438,9 +431,10 @@ class CorrelationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         params = validation_details['params']
-        classified_docs = ClassifiedDocument.objects.filter(
-            id__in=params['doc_ids']
-        )
+        if params.get('doc_ids'):
+            classified_docs = ClassifiedDocument.objects.filter(
+                id__in=params['doc_ids']
+            )
         try:
             correlated_data = get_documents_correlation(classified_docs)
         except Exception:
