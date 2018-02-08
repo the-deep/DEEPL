@@ -5,6 +5,7 @@ from helpers.common import (
     rm_stop_words_txt
 )
 
+
 def create_correlation_data(version, correlated_entity="subtopics"):
     """
     Creates Correlation object from Classification documents.
@@ -18,6 +19,7 @@ def create_correlation_data(version, correlated_entity="subtopics"):
         pass
 
     classified_documents = ClassifiedDocument.objects.all()
+    classified_documents = [(x.classification_label, x.text) for x in classified_documents]
     correlation = get_documents_correlation(classified_documents)
     correlation_obj = Correlation.objects.create(
         correlated_entity=correlated_entity,
@@ -27,18 +29,20 @@ def create_correlation_data(version, correlated_entity="subtopics"):
     return correlation_obj
 
 
-def get_documents_correlation(classified_document_objects):
+def get_documents_correlation(classified_documents):
+    """
+    @classified_documents : list of tuple (label, text)
+    """
     word_count = 0
     word_id = {}  # contains word-> id of the word
     class_words_frequency = {}  # contains classes and the words frequencies
     # iterate through ClassifiedDocument
-    for d in classified_document_objects:
+    for text_class, text in classified_documents:
         # - get text and remove stop words and stem words
         pre_processed_text = remove_punc_and_nums(
-            rm_stop_words_txt(d.text)
+            rm_stop_words_txt(text)
         )
         # - get class/label of the text
-        text_class = d.classification_label
         if not class_words_frequency.get(text_class):
             class_words_frequency[text_class] = {}
 

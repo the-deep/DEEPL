@@ -24,16 +24,19 @@ class ClassifiedDocumentSerializer(serializers.ModelSerializer):
             text=validated_data['text'],
             classification_probabilities=classification,
             group_id=validated_data.get('group_id'),
-            classification_label = classification[0][0],
-            confidence = classification[0][1]
+            classification_label=classification[0][0],
+            confidence=classification[0][1]
         )
+
 
 class ClassifiedExcerptSerializer(serializers.ModelSerializer):
     """Serialiser for classified excerpt"""
     classification = serializers.SerializerMethodField()
+
     class Meta:
         model = ClassifiedExcerpt
         fields = ('start_pos', 'end_pos', 'classification')
+
     def get_classification(self, obj):
         return obj.classification_probabilities
 

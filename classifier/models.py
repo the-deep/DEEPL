@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 
+
 class BaseModel(models.Model):
     """BaseModel for all other models"""
     idx = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
@@ -16,6 +17,7 @@ class BaseModel(models.Model):
             self.created_on = timezone.now()
         self.modified_on = timezone.now()
         return super().save( *args, **kwargs)
+
 
 class ClassifierModel(BaseModel):
     """
@@ -39,6 +41,7 @@ class ClassifierModel(BaseModel):
     def __str__(self):
         return 'v{}-{}'.format(self.version, self.name)
 
+
 class ClassifiedDocument(BaseModel):
     """
     Model to store the classified document details(especially for deeper
@@ -54,6 +57,7 @@ class ClassifiedDocument(BaseModel):
     def __str__(self):
         return '{} {}'.format(self.group_id, self.classification_label)
 
+
 class ClassifiedExcerpt(BaseModel):
     """
     Model to store classified excerpts from the documents
@@ -68,10 +72,11 @@ class ClassifiedExcerpt(BaseModel):
     def __str__(self):
         return '{} - {} : {}'.format(self.start_pos, self.end_pos, self.classification_label)
 
+
 class Recommendation(BaseModel):
     classifier = models.ForeignKey(ClassifierModel)
     text = models.TextField()
-    classification_label = models.CharField(max_length=50) # classification made by classifier
+    classification_label = models.CharField(max_length=50)  # classification made by classifier
     useful = models.BooleanField(default=False)
     is_used = models.BooleanField(default=False)
     used_date = models.DateTimeField(default=timezone.now)
