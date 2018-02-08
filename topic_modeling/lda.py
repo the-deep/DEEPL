@@ -133,12 +133,14 @@ def get_topics_and_subtopics(documents, num_topics, num_words, depth=3, pre_proc
         map_stem = curried_map(stemmer)
         map_rm_punc = curried_map(rm_punc_not_nums)
         stop_words = get_stop_words('en')
-        not_stop = lambda x: x not in stop_words
+        not_stop = lambda x: x not in stop_words and len(x) > 2
         map_lower = curried_map(str.lower)
 
         # compose the functions into one
         pre_processing_func = compose(
-            list, map_stem, curried_filter(not_stop),
+            list,
+            # map_steam,
+            curried_filter(not_stop),
             map_rm_punc, map_lower, tokenizer
         )
         texts = [pre_processing_func(document) for document in documents]
@@ -162,9 +164,9 @@ def _get_subtopics(corpus, dictionary, num_topics, num_words, depth):
             list(enumerate(topic_words)),
             key=lambda x: x[1],
             reverse=True
-        )[:num_words]
+        )
         lda_output['Topic {}'.format(i)] = {
-            'keywords': [(dictionary.get(i), x) for i, x in sorted_words if len(x)>2],
+            'keywords': [(dictionary.get(i), x) for i, x in sorted_words],
             'subtopics': {}
         }
     if depth <= 1:
