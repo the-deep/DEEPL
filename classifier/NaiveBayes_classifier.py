@@ -5,8 +5,15 @@ from nltk.stem.snowball import SnowballStemmer
 from nltk.metrics import ConfusionMatrix
 from collections import Counter
 
+from helpers.common import (
+    rm_punc_not_nums,
+    rm_stop_words_txt,
+    compose
+)
+
 import logging
 logger = logging.getLogger(__name__)
+
 
 def identity(x):
     return x
@@ -26,8 +33,21 @@ class NaiveBayesClassifier(GenericClassifier):
         self.__pre_processor = identity
         self.__classifier = classifier
         self.__labels = labels
-        self.__threshold = 0.50 # TODO: auto_calculate this( or maybe let it pass through constructor)
+        self.__threshold = 0.50
+        # TODO: auto_calculate threshold(or maybe pass through constructor)
         self.__stemmer = SnowballStemmer('english')
+
+    @staticmethod
+    def preprocess(inp):
+        func = compose(
+            rm_punc_not_nums,
+            rm_stop_words_txt,
+            ' '.join,
+            str.split,
+            str.lower,
+            str
+        )
+        return func(inp)
 
     @classmethod
     def new(cls, feature_selector_obj, labeled_data, **kwargs):

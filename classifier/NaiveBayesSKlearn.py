@@ -7,12 +7,9 @@ from sklearn.pipeline import Pipeline
 
 import numpy as np
 
-from helpers.functional import curried_map, curried_filter, curried_zip
 from helpers.common import (
-    rm_punc_not_nums, rm_punc_not_nums_list,
-    rm_stop_words_txt, rm_stop_words_txt_list,
-    remove_punc_and_nums,
-    translate_to_english_txt,
+    rm_punc_not_nums,
+    rm_stop_words_txt,
     compose
 )
 
@@ -45,7 +42,7 @@ class SKNaiveBayesClassifier(GenericClassifier):
         Create a new classifier
         """
         text_clf = Pipeline([
-            ('vect', CountVectorizer(ngram_range=(1,2))),
+            ('vect', CountVectorizer(ngram_range=(1, 2))),
             ('tfidf', TfidfTransformer(use_idf=False)),
             ('clf', MultinomialNB(alpha=0.01, fit_prior=False))
         ])
@@ -62,11 +59,16 @@ class SKNaiveBayesClassifier(GenericClassifier):
         return prediction[0] if inp_type == str else prediction
 
     def classify_as_label_probs(self, processed_input):
-        inp_type = type(processed_input)
+        # inp_type = type(processed_input)
         classes = self.__classifier.classes_
         prediction = self.__classifier.predict_proba(processed_input)
         prediction = list(
-            map(lambda pred: sorted(zip(classes, pred), key=lambda x:x[1], reverse=True),
+            map(
+                lambda pred: sorted(
+                    zip(classes, pred),
+                    key=lambda x: x[1],
+                    reverse=True
+                ),
                 prediction
             )
         )
@@ -82,14 +84,13 @@ class SKNaiveBayesClassifier(GenericClassifier):
         pass
 
     def retrain(self, labeled_data):
-        clf = self.__classifier # actually this is pipeline
+        clf = self.__classifier  # actually this is pipeline
         x, Y = zip(*labeled_data)
         steps = list(clf.named_steps.keys())
         for step in steps[:-1]:
             x = clf.named_steps[step].transform(x)
-        classes = clf.classes_
+
         clf.named_steps[steps[-1]].partial_fit(
             x, Y, classes=clf.classes_
         )
         return self
-
