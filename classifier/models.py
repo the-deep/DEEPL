@@ -30,9 +30,11 @@ class ClassifierModel(BaseModel):
     _data = models.TextField(db_column='data')
     accuracy = models.FloatField(default=0)
     description = models.TextField()
+    metadata = JSONField(default={})
 
     def set_data(self, data):
         self._data = base64.b64encode(data)
+
     def get_data(self):
         return base64.b64decode(self._data)
 
@@ -62,7 +64,10 @@ class ClassifiedExcerpt(BaseModel):
     """
     Model to store classified excerpts from the documents
     """
-    classified_document = models.ForeignKey(ClassifiedDocument, related_name="excerpts")
+    classified_document = models.ForeignKey(
+        ClassifiedDocument,
+        related_name="excerpts"
+    )
     start_pos = models.IntegerField()
     end_pos = models.IntegerField()
     classification_label = models.CharField(max_length=50)
@@ -70,13 +75,18 @@ class ClassifiedExcerpt(BaseModel):
     classification_probabilities = JSONField(default=[])
 
     def __str__(self):
-        return '{} - {} : {}'.format(self.start_pos, self.end_pos, self.classification_label)
+        return '{} - {} : {}'.format(
+            self.start_pos,
+            self.end_pos,
+            self.classification_label
+        )
 
 
 class Recommendation(BaseModel):
     classifier = models.ForeignKey(ClassifierModel)
     text = models.TextField()
-    classification_label = models.CharField(max_length=50)  # classification made by classifier
+    # label predicted by classifier
+    classification_label = models.CharField(max_length=50)
     useful = models.BooleanField(default=False)
     is_used = models.BooleanField(default=False)
     used_date = models.DateTimeField(default=timezone.now)

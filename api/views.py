@@ -37,16 +37,14 @@ class DocumentClassifierView(APIView):
     """
     API for document classification
     """
-    classifiers = {'v'+str(x.version): {
-        'classifier': pickle.loads(x.data),
-        'classifier_model': x
-        }
-            for x in ClassifierModel.objects.all()
-    }
-
     def __init__(self):
         # load all the classifiers
-        pass
+        self.classifiers = {'v'+str(x.version): {
+            'classifier': pickle.loads(x.data),
+            'classifier_model': x
+            }
+            for x in ClassifierModel.objects.all()
+        }
 
     def post(self, request, version):
         data = dict(request.data.items())
@@ -77,7 +75,7 @@ class DocumentClassifierView(APIView):
                     'status': False,
                     'message': 'Invalid doc_id'
                 }, status=status.HTTP_400_BAD_REQUEST)
-        classifier = DocumentClassifierView.classifiers.get(version)
+        classifier = self.classifiers.get(version)
 
         if not classifier:
             return Response(
