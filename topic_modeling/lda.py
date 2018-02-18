@@ -1,13 +1,15 @@
 from helpers.functional import compose, curry2, curried_map, curried_filter
-from helpers.common import rm_punc_not_nums
+from helpers.common import rm_punc_not_nums, lemmatize
 from stop_words import get_stop_words
+
 from nltk.tokenize import RegexpTokenizer
 from nltk.stem.porter import PorterStemmer
-from nltk.stem.snowball import SnowballStemmer
+from nltk.stem.wordnet import WordNetLemmatizer
 
 from gensim import corpora, models
 
 DOCUMENT_NUM_TOPICS = 2
+
 
 class LDAModel:
     """
@@ -37,7 +39,8 @@ class LDAModel:
         Composes the pre processing functions and return a function
         """
         map_stem = curried_map(self.__stemmer)
-        map_lower = curried_map(str.lower) # NOTE: this can also be made pluggable
+        # NOTE: this can also be made pluggable
+        map_lower = curried_map(str.lower)
         return compose(
             list, map_stem, curried_filter(self._not_stop),
             map_lower, self.__tokenizer
@@ -46,9 +49,11 @@ class LDAModel:
     def set_tokenizer(self, tokenizer):
         self.__tokenizer = tokenizer
         self._compose_pre_process_functions()
+
     def set_stemmer(self, stemmer):
         self.__stemmer = stemmer
         self._compose_pre_process_functions()
+
     def set_stop_words(self, stop_words):
         self.__stop_words = stop_words
         self._compose_pre_process_functions()
@@ -58,7 +63,8 @@ class LDAModel:
         Create LDA model.
         @documents - List of documents on which modeling is to be done
         @num_topics - Number of topics to look for
-        @passes - Number of passes to run for creating model, higher -> more accurate and slower
+        @passes - Number of passes to run for creating model
+                    higher -> more accurate but slower
         """
         texts = [self.pre_process(document) for document in documents]
         self.dictionary = corpora.Dictionary(texts)
@@ -87,7 +93,9 @@ class LDAModel:
                 key=lambda x: x[1],
                 reverse=True
             )[:num_words]
-            topics_keywords.append([(self.dictionary.get(i), x) for i, x in sorted_words])
+            topics_keywords.append([
+                (self.dictionary.get(i), x) for i, x in sorted_words
+            ])
         return topics_keywords
 
     def get_subtopics_and_keywords(self, levels=3, num_words=5, depth=3):
@@ -122,15 +130,21 @@ class LDAModel:
         """
         pass
 
-def get_topics_and_subtopics(documents, num_topics, num_words, depth=3, pre_processing_func=None):
+
+def get_topics_and_subtopics(
+        documents, num_topics, num_words,
+        depth=3, pre_processing_func=None
+        ):
     """
     pre_processing_func should work on tokenized strings
     """
+    # first lemmatize all the documents
+    lemmatizer = WordNetLemmatizer()
+    documents = [lemmatize(doc, lemmatizer) for doc in documents]
+
     if not pre_processing_func:
         # pre processing functions
         tokenizer = RegexpTokenizer(r'\w+').tokenize
-        stemmer = PorterStemmer().stem
-        map_stem = curried_map(stemmer)
         map_rm_punc = curried_map(rm_punc_not_nums)
         stop_words = get_stop_words('en')
         not_stop = lambda x: x not in stop_words and len(x) > 2
@@ -139,19 +153,18 @@ def get_topics_and_subtopics(documents, num_topics, num_words, depth=3, pre_proc
         # compose the functions into one
         pre_processing_func = compose(
             list,
-            # map_steam,
             curried_filter(not_stop),
             map_rm_punc, map_lower, tokenizer
         )
-        texts = [pre_processing_func(document) for document in documents]
-        dictionary = corpora.Dictionary(texts)
-        corpus = [dictionary.doc2bow(text) for text in texts]
-        return _get_subtopics(corpus, dictionary, num_topics, num_words, depth)
+    texts = [pre_processing_func(document) for document in documents]
+    dictionary = corpora.Dictionary(texts)
+    corpus = [dictionary.doc2bow(text) for text in texts]
+    return _get_subtopics(corpus, dictionary, num_topics, num_words, depth)
 
 
 def _get_subtopics(corpus, dictionary, num_topics, num_words, depth):
     """The recursive function"""
-    ldamodel =  models.ldamodel.LdaModel(
+    ldamodel = models.ldamodel.LdaModel(
         corpus,
         num_topics=num_topics,
         id2word=dictionary,
