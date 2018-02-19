@@ -112,6 +112,7 @@ nltk_wordnet_tag_map = {
 
 def lemmatize(text, lemmatizer=WordNetLemmatizer()):
     splitted = text if type(text) == list else text.split()
+    splitted = list(map(lambda x: x.lower(), splitted))
     tagged = nltk.pos_tag(splitted)
     lemmatized = []
     for word, tag in tagged:
