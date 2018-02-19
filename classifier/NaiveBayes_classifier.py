@@ -8,7 +8,8 @@ from collections import Counter
 from helpers.common import (
     rm_punc_not_nums,
     rm_stop_words_txt,
-    compose
+    compose,
+    lemmatize
 )
 
 import logging
@@ -39,6 +40,7 @@ class NaiveBayesClassifier(GenericClassifier):
 
     @staticmethod
     def preprocess(inp):
+        inp = lemmatize(inp)
         func = compose(
             rm_punc_not_nums,
             rm_stop_words_txt,
