@@ -27,7 +27,7 @@ class SKNaiveBayesClassifier(GenericClassifier):
 
     @staticmethod
     def preprocess(inp):
-        inp = lemmatize(inp)
+        inp = lemmatize(str(inp))
         func = compose(
             rm_punc_not_nums,
             rm_stop_words_txt,

@@ -72,11 +72,11 @@ try:
     print('.. RUNNING LOOP')
     while dataset_num <= total:
         random.shuffle(deepdata)
-        one_fourth = int(len(dataset_num)/4.0)
+        one_fourth = int(dataset_num/4.0)
         train = deepdata[:dataset_num][one_fourth:]
         test = deepdata[:dataset_num][:one_fourth]
         logger.info('.. dataset_num:{}\n'.format(dataset_num))
-        classifier = CLASSIFIER(train)
+        classifier = CLASSIFIER.new(train)
         accuracy = classifier.get_accuracy(test)
         num_accuracy.append((dataset_num, accuracy))
         logger.info('.. accuracy: {}\n'.format(accuracy))
