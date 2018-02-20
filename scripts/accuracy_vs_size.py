@@ -87,6 +87,10 @@ try:
     x = list(map(lambda x: x[0], data))
     y = list(map(lambda x: x[1], data))
 
+    print("$$$$$$$$$$$$$$$$$$$")
+    print(data)
+    print("$$$$$$$$$$$$$$$$$$$")
+
     fig = plt.figure(figsize=(15, 8))
     plt.xticks([x for x in range(500, 28000, 1500)])
     plt.xlabel('# of TRAINING SETS')
