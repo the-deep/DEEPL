@@ -6,9 +6,15 @@ from classifier.models import (
     Recommendation
 )
 
-# Register your models here.
 
-admin.site.register(ClassifierModel)
+class ClassifierModelAdmin(admin.ModelAdmin):
+    exclude = ('_data',)
+
+
+admin.site.register(ClassifierModel, ClassifierModelAdmin)
 admin.site.register(ClassifiedDocument)
 admin.site.register(ClassifiedExcerpt)
 admin.site.register(Recommendation)
+
+
+
