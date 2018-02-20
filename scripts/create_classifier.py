@@ -1,8 +1,22 @@
 import random
 import pickle
+import pandas as pd
 
 from classifier.NaiveBayesSKlearn import SKNaiveBayesClassifier
 from classifier.models import ClassifierModel
+
+
+def get_processed_data(csv_file_path):
+    """
+    return processed_data [(text, label), ... ] from csv file
+    NOTE: the processed data should be csv with fields excerpt and sector
+    """
+    df = pd.read_csv(csv_file_path)
+    punc_nums_preprocessor = SKNaiveBayesClassifier.preprocess
+    processed = df.assign(excerpt=df['excerpt'].apply(punc_nums_preprocessor))
+    excerpts = processed['excerpt']
+    sector_labels = processed['sector']
+    return list(zip(excerpts, sector_labels))
 
 
 def create_classifier_model(

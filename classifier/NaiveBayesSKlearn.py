@@ -9,7 +9,8 @@ from sklearn.pipeline import Pipeline
 import numpy as np
 
 from helpers.common import (
-    rm_punc_not_nums,
+    # rm_punc_not_nums,
+    remove_punc_and_nums,
     rm_stop_words_txt,
     compose,
     lemmatize
@@ -29,13 +30,13 @@ class SKNaiveBayesClassifier(GenericClassifier):
 
     @staticmethod
     def preprocess(inp):
-        inp = lemmatize(str(inp))
         func = compose(
-            rm_punc_not_nums,
-            rm_stop_words_txt,
             ' '.join,
             str.split,
             str.lower,
+            remove_punc_and_nums,
+            lemmatize,
+            rm_stop_words_txt,
             str
         )
         return func(inp)
