@@ -46,3 +46,13 @@ class GenericClassifier():
         Retrain the classifier and return new classifier
         """
         raise MethodNotImplemented
+
+    def calculate_confusion_matrix(self, test_data):
+        """
+        Confusion matrix for classifier. Set self.__confusion_matrix attribute
+        """
+        raise MethodNotImplemented
+
+    @property
+    def confusion_matrix(self):
+        return None

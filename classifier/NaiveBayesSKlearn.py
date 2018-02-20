@@ -1,6 +1,7 @@
 from classifier.generic_classifier import GenericClassifier
 
 from sklearn.feature_extraction.text import CountVectorizer
+from nltk.metrics import ConfusionMatrix
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
@@ -24,6 +25,7 @@ class SKNaiveBayesClassifier(GenericClassifier):
     """
     def __init__(self, classifier_pipeline):
         self.__classifier = classifier_pipeline
+        self.__confusion_matrix = None
 
     @staticmethod
     def preprocess(inp):
@@ -82,8 +84,20 @@ class SKNaiveBayesClassifier(GenericClassifier):
         predicted = self.__classifier.predict(test)
         return np.mean(predicted == target)
 
-    def get_confusion_matrix(self, test_labeled):
-        pass
+    def calculate_confusion_matrix(self, test_data):
+        """
+        calculate confusion_matrix
+        """
+        correct_tags = [l for txt, l in test_data]
+        predicted_tags = [self.classify(txt) for txt, l in test_data]
+        cm = ConfusionMatrix(correct_tags, predicted_tags)
+        logger.info(cm)
+        self.__confusion_matrix = cm
+        return cm
+
+    @property
+    def confusion_matrix(self):
+        return self.__confusion_matrix
 
     def retrain(self, labeled_data):
         clf = self.__classifier  # actually this is pipeline

@@ -124,6 +124,18 @@ def lemmatize(text, lemmatizer=WordNetLemmatizer()):
     return ' '.join(lemmatized)
 
 
+def get_confidence_interval_discrete(percent, true, total):
+    factor = 2 if percent == 95 else 1.5  # TODO: add other confidence levels
+    adjusted_true = true + 2
+    adjusted_total = total + 4
+    prob = adjusted_true/float(adjusted_total)
+    var = prob * (1-prob)
+    err = var/adjusted_total
+    sqrt = err**0.5
+    error_margin = sqrt*factor
+    return (prob-error_margin, prob+error_margin)
+
+
 if __name__ == '__main__':
     import pandas as pd
     excerpt = 'Humanitarian needs are said to include access to a sufficient supply of quality water, education, shelter, child protection, health, and nutrition. '

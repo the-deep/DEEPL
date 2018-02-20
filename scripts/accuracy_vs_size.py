@@ -4,6 +4,8 @@ import random
 import subprocess
 import logging
 import json
+import matplotlib.pyplot as plt
+import datetime
 
 
 def get_nth_parent_dir(path, n):
@@ -15,7 +17,6 @@ def get_nth_parent_dir(path, n):
 
 abs_path = os.path.abspath(__file__)
 base = get_nth_parent_dir(abs_path, 2)
-print(base)
 # add helpers to path
 sys.path.insert(0, base)
 
@@ -33,7 +34,7 @@ logger = logging.getLogger('myapp')
 hdlr = logging.FileHandler(logfilepath)
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
-logger.addHandler(hdlr) 
+logger.addHandler(hdlr)
 logger.setLevel(logging.WARNING)
 
 # logfile = open(logfilepath, 'w')
@@ -67,10 +68,9 @@ try:
     subprocess.call(['mkdir', '-p', dirpath])
 
     filepath = os.path.join(dirpath, 'accuracy_vs_size.txt')
-    f = open(filepath, 'w')
     logger.info('.. RUNNING LOOP')
     print('.. RUNNING LOOP')
-    while dataset_num <= total:
+    while dataset_num <= 900:
         random.shuffle(deepdata)
         one_fourth = int(dataset_num/4.0)
         train = deepdata[:dataset_num][one_fourth:]
@@ -82,15 +82,23 @@ try:
         logger.info('.. accuracy: {}\n'.format(accuracy))
         print('.. accuracy: {}\n'.format(accuracy))
 
-        # f.write('{}:{}\n'.format(dataset_num, accuracy))
         dataset_num += increment
-    f.write(json.dumps(num_accuracy, indent=2))
+    # now plot
+    data = num_accuracy
+    x = list(map(lambda x: x[0], data))
+    y = list(map(lambda x: x[1], data))
+
+    fig = plt.figure(figsize=(15,8))
+    plt.xticks([x for x in range(500, 28000, 1500)])
+    plt.xlabel('# of TRAINING SETS')
+    plt.ylabel('ACCURACY')
+    plt.grid(True)
+    plt.plot(x, y, 'k')
+    plt.savefig(str(datetime.datetime.now())+".png")
+
     logger.info('.. DONE!!!')
 except Exception as e:
     import traceback
     logger.info(traceback.format_exc())
     print(traceback.format_exc())
     logger.info('\n')
-finally:
-    f.close()
-    # logfile.close()

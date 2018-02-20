@@ -2,7 +2,9 @@
 Helper functions [ DEEP specific ]
 """
 import pandas as pd
+import math
 import json
+
 
 def get_all_sectors(df):
     """
@@ -15,15 +17,19 @@ def get_all_sectors(df):
             l.append(k['sector'])
     return l
 
+
 def get_sector_excerpt(df):
     """Return list of tuples with sector and excerpt -> [(excerpt, sector)...]
     @df : DataFrame
     """
     l = []
-    for v in df[df['twodim'].notnull()][['twodim','excerpt']].iterrows():
+    for v in df[df['twodim'].notnull()][['twodim', 'excerpt']].iterrows():
         for k in v[1].twodim:
+            if type(v[1].excerpt) != str:
+                continue
             l.append((v[1].excerpt, k['sector']))
     return l
+
 
 def get_sub_sectors_excerpt(df):
     """
@@ -35,6 +41,7 @@ def get_sub_sectors_excerpt(df):
         for k in v[1].twodim:
             l.append(([k['sector'], k['subsectors']], v[1].excerpt))
     return l
+
 
 def process_deep_entries_data(csv_file_path):
     """
@@ -59,6 +66,7 @@ def process_deep_entries_data(csv_file_path):
 
     return get_sector_excerpt(df)
 
+
 def get_deep_data(debug=True, filter_non_english=False, filepath=None):
     def printd(*args):
         if debug:
@@ -77,6 +85,7 @@ def get_deep_data(debug=True, filter_non_english=False, filepath=None):
         data = [(str(ex), l) for (ex, l) in data if langid.classify(str(ex))[0] == 'en']
     printd('DONE')
     return data
+
 
 def get_classifier(num=1000, confusion_mat=True, get_model=True, debug=True, data=None):
     """ TEMPORARY FUNCTION TO HELP WITH CREATING DEEP DATA"""

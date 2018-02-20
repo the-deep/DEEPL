@@ -35,6 +35,7 @@ class NaiveBayesClassifier(GenericClassifier):
         self.__classifier = classifier
         self.__labels = labels
         self.__threshold = 0.50
+        self.__confusion_matrix = None
         # TODO: auto_calculate threshold(or maybe pass through constructor)
         self.__stemmer = SnowballStemmer('english')
 
@@ -111,15 +112,20 @@ class NaiveBayesClassifier(GenericClassifier):
         ]
         return nltk.classify.accuracy(self.__classifier, test_set)
 
-    def get_confusion_matrix(self, test_data):
+    def calculate_confusion_matrix(self, test_data):
         """
-        Return confusion_matrix
+        calculate confusion_matrix
         """
         correct_tags = [l for txt, l in test_data]
         predicted_tags = [self.classify(txt) for txt, l in test_data]
         cm = ConfusionMatrix(correct_tags, predicted_tags)
         logger.info(cm)
+        self.__confusion_matrix = cm
         return cm
+
+    @property
+    def confusion_matrix(self):
+        return self.__confusion_matrix
 
     def calculate_fscore(self, test_data):
         """
