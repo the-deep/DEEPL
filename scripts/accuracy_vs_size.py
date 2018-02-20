@@ -22,7 +22,7 @@ sys.path.insert(0, base)
 
 
 from classifier.NaiveBayesSKlearn import SKNaiveBayesClassifier
-from helpers.deep import get_deep_data
+from helpers.deep import get_deep_data, get_processed_data
 CLASSIFIER = SKNaiveBayesClassifier
 
 # CREATE LOGFILE DIR FIRST
@@ -44,10 +44,9 @@ num_accuracy = []
 try:
     logger.info('.. GETTING DEEP DATA\n')
     print('.. GETTING DEEP DATA\n')
-    deepdata = get_deep_data(debug=False)
-    deepdata = list(map(
-        lambda x: (SKNaiveBayesClassifier.preprocess(x[0]), x[1]), deepdata
-    ))
+    deepdata = get_processed_data(
+        '_playground/sample_data/processed_sectors_subsectors.csv'
+    )
     logger.info('.. SHUFFLING DEEP DATA\n')
     print('.. SHUFFLING DEEP DATA\n')
     random.shuffle(deepdata)
@@ -70,7 +69,7 @@ try:
     filepath = os.path.join(dirpath, 'accuracy_vs_size.txt')
     logger.info('.. RUNNING LOOP')
     print('.. RUNNING LOOP')
-    while dataset_num <= 900:
+    while dataset_num <= total:
         random.shuffle(deepdata)
         one_fourth = int(dataset_num/4.0)
         train = deepdata[:dataset_num][one_fourth:]
@@ -88,7 +87,7 @@ try:
     x = list(map(lambda x: x[0], data))
     y = list(map(lambda x: x[1], data))
 
-    fig = plt.figure(figsize=(15,8))
+    fig = plt.figure(figsize=(15, 8))
     plt.xticks([x for x in range(500, 28000, 1500)])
     plt.xlabel('# of TRAINING SETS')
     plt.ylabel('ACCURACY')

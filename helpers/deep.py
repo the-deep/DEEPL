@@ -2,8 +2,21 @@
 Helper functions [ DEEP specific ]
 """
 import pandas as pd
-import math
 import json
+from classifier.NaiveBayesSKlearn import SKNaiveBayesClassifier
+
+
+def get_processed_data(csv_file_path):
+    """
+    return processed_data [(text, label), ... ] from csv file
+    NOTE: the processed data should be csv with fields excerpt and sector
+    """
+    df = pd.read_csv(csv_file_path)
+    punc_nums_preprocessor = SKNaiveBayesClassifier.preprocess
+    processed = df.assign(excerpt=df['excerpt'].apply(punc_nums_preprocessor))
+    excerpts = processed['excerpt']
+    sector_labels = processed['sector']
+    return list(zip(excerpts, sector_labels))
 
 
 def get_all_sectors(df):
@@ -11,24 +24,24 @@ def get_all_sectors(df):
     Return raw list of sectors
     @df : DataFrame
     """
-    l = []
+    lst = []
     for v in df[df['twodim'].notnull()][['twodim']].iterrows():
         for k in v[1].twodim:
-            l.append(k['sector'])
-    return l
+            lst.append(k['sector'])
+    return lst
 
 
 def get_sector_excerpt(df):
     """Return list of tuples with sector and excerpt -> [(excerpt, sector)...]
     @df : DataFrame
     """
-    l = []
+    lst = []
     for v in df[df['twodim'].notnull()][['twodim', 'excerpt']].iterrows():
         for k in v[1].twodim:
             if type(v[1].excerpt) != str:
                 continue
-            l.append((v[1].excerpt, k['sector']))
-    return l
+            lst.append((v[1].excerpt, k['sector']))
+    return lst
 
 
 def get_sub_sectors_excerpt(df):
@@ -36,11 +49,11 @@ def get_sub_sectors_excerpt(df):
     Return list of tuples with sector, subsectors and excerpt
     @df : DataFrame
     """
-    l = []
-    for v in df[df['twodim'].notnull()][['twodim','excerpt']].iterrows():
+    lst = []
+    for v in df[df['twodim'].notnull()][['twodim', 'excerpt']].iterrows():
         for k in v[1].twodim:
-            l.append(([k['sector'], k['subsectors']], v[1].excerpt))
-    return l
+            lst.append(([k['sector'], k['subsectors']], v[1].excerpt))
+    return lst
 
 
 def process_deep_entries_data(csv_file_path):
@@ -53,27 +66,25 @@ def process_deep_entries_data(csv_file_path):
     And return list of tuples: [(text, label)...]
     """
 
-    df = pd.read_csv(csv_file_path, header = 0)
+    df = pd.read_csv(csv_file_path, header=0)
     # Convert json string columns to json
     df[df.filter(like="_j").columns] = df.filter(like="_j").applymap(
-        lambda x : json.loads(x)
+        lambda x: json.loads(x)
     )
     # Change column names
     for v in df.filter(like="_j"):
-        df = df.rename(columns = {v : '_'.join(v.split('_')[:-1])})
+        df = df.rename(columns={v: '_'.join(v.split('_')[:-1])})
 
     # filter texts only if langid english
 
     return get_sector_excerpt(df)
 
 
+# NOT USED
 def get_deep_data(debug=True, filter_non_english=False, filepath=None):
     def printd(*args):
         if debug:
             print(*args)
-
-    from classifier.feature_selectors import UnigramFeatureSelector, BigramFeatureSelector
-    from classifier.NaiveBayes_classifier import NaiveBayesClassifier
 
     csv_file_path = '_playground/sample_data/nlp_out.csv'
     if filepath:
@@ -82,7 +93,9 @@ def get_deep_data(debug=True, filter_non_english=False, filepath=None):
     printd('PROCESSING DEEP ENTRIES DATA')
     data = process_deep_entries_data(csv_file_path)
     if filter_non_english:
-        data = [(str(ex), l) for (ex, l) in data if langid.classify(str(ex))[0] == 'en']
+        data = [
+            (str(ex), l) for (ex, l) in data if langid.classify(str(ex))[0] == 'en'
+        ]
     printd('DONE')
     return data
 
