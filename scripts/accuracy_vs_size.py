@@ -89,6 +89,7 @@ try:
         test = deepdata[:dataset_num][:one_fourth]
         logger.info('.. dataset_num:{}\n'.format(dataset_num))
         classifier = CLASSIFIER.new(train)
+        classifier.calculate_confusion_matrix(test)
 
         # calculate accuracy for other
         indices = classifier.confusion_matrix._indices
