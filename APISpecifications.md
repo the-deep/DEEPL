@@ -34,6 +34,7 @@
 {
   "group_id": null,
   "id": 18,
+  "classification_confidence": 0.45,
   "classification": [
     [
       "WASH",
@@ -56,6 +57,7 @@
     {
       "start_pos": 0,
       "end_pos": 95,
+      "classification_confidence": 0.45,
       "classification": [
         [
           "WASH",
@@ -73,6 +75,7 @@
     {
       "start_pos": 96,
       "end_pos": 265,
+      "classification_confidence": 0.45,
       "classification": [
         [
           "Nutrition",
