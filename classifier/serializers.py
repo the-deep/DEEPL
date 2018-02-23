@@ -6,9 +6,13 @@ from classifier.models import ClassifiedDocument, ClassifiedExcerpt
 class ClassifiedDocumentSerializer(serializers.ModelSerializer):
     """Serializer for classified document"""
     classification = serializers.SerializerMethodField()
+
     class Meta:
         model = ClassifiedDocument
-        fields = ('group_id', 'id', 'classification', 'text')
+        fields = (
+            'group_id', 'id', 'classification',
+            'text', 'classification_confidence'
+        )
         read_only_fields = ('id', )
         extra_kwargs = {
             'text': {'write_only': True},
@@ -35,7 +39,10 @@ class ClassifiedExcerptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClassifiedExcerpt
-        fields = ('start_pos', 'end_pos', 'classification')
+        fields = (
+            'start_pos', 'end_pos', 'classification',
+            'classification_confidence'
+        )
 
     def get_classification(self, obj):
         return obj.classification_probabilities

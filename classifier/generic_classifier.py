@@ -3,8 +3,6 @@ from classifier.exceptions import MethodNotImplemented
 class GenericClassifier():
     """
     Base class for all the classifiers.
-    This class just provides interfaces for classes that inherit this.
-    By default, all methods raise MethodNotImplemented exception.
     Methods provided are:
     - new(labeled_data, **kwargs)
     - classify(input)

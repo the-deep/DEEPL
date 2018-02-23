@@ -5,6 +5,9 @@ from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 
 
+MIN_CONFIDENCE = 0.001
+
+
 class BaseModel(models.Model):
     """BaseModel for all other models"""
     idx = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
@@ -16,7 +19,7 @@ class BaseModel(models.Model):
         if not self.id:
             self.created_on = timezone.now()
         self.modified_on = timezone.now()
-        return super().save( *args, **kwargs)
+        return super().save(*args, **kwargs)
 
 
 class ClassifierModel(BaseModel):
@@ -56,6 +59,14 @@ class ClassifiedDocument(BaseModel):
     text = models.TextField()
     extra_info = JSONField(default={})
 
+    @property
+    def classification_confidence(self):
+        probs = self.classification_probabilities
+        numclasses = len(probs)
+        numrev = 1./numclasses
+        maxprob = sorted(probs, key=lambda x: x[1], reverse=True)[0][1]
+        return (maxprob - numrev)/(1. - numrev) or MIN_CONFIDENCE
+
     def __str__(self):
         return '{} {}'.format(self.group_id, self.classification_label)
 
@@ -73,6 +84,15 @@ class ClassifiedExcerpt(BaseModel):
     classification_label = models.CharField(max_length=50)
     confidence = models.FloatField(default=0)
     classification_probabilities = JSONField(default=[])
+
+    @property
+    def classification_confidence(self):
+        probs = self.classification_probabilities
+        numclasses = len(probs)
+        numrev = 1./numclasses
+        print(numclasses)
+        maxprob = sorted(probs, key=lambda x: x[1], reverse=True)[0][1]
+        return (maxprob - numrev)/(1. - numrev) or MIN_CONFIDENCE
 
     def __str__(self):
         return '{} - {} : {}'.format(

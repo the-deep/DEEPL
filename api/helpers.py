@@ -1,13 +1,15 @@
 import re
 
+
 def classify_text(classifier, text):
     classified = classifier.classify_as_label_probs(text.split())
     classified.sort(key=lambda x: x[1], reverse=True)
     return classified
 
+
 def classify_lead_excerpts(classifier, text):
     """
-    Classify deep lead data. i.e. classify it as well as its sentences(excerpts)
+    Classify deep lead data i.e. classify it as well as its sentences(excerpts)
     """
     begins = [m.start() for m in re.finditer('\.\W+[A-Z0-9]', text)]
     textlen = len(text)

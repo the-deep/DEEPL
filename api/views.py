@@ -122,7 +122,7 @@ class DocumentClassifierView(APIView):
         """Validator for params"""
         errors = {}
         deeper = params.get('deeper', '')
-        doc_id = params.get('doc_id')
+        # doc_id = params.get('doc_id')
 
         if not deeper and not params.get('text'):
             errors['text'] = 'text to be classified is missing.'
