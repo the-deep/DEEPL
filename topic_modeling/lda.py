@@ -1,4 +1,4 @@
-from helpers.functional import compose, curry2, curried_map, curried_filter
+from helpers.functional import compose, curried_map, curried_filter
 from helpers.common import rm_punc_not_nums, lemmatize
 from stop_words import get_stop_words
 
@@ -179,7 +179,10 @@ def _get_subtopics(corpus, dictionary, num_topics, num_words, depth):
             reverse=True
         )
         lda_output['Topic {}'.format(i)] = {
-            'keywords': [(dictionary.get(i), x) for i, x in sorted_words],
+            'keywords': [
+                (dictionary.get(i), x)
+                for i, x in sorted_words[:num_words]
+            ],
             'subtopics': {}
         }
     if depth <= 1:
@@ -195,7 +198,7 @@ def _get_subtopics(corpus, dictionary, num_topics, num_words, depth):
                 curr_set = topic_documents.get('Topic {}'.format(i), set())
                 curr_set.add(j)
                 topic_documents['Topic {}'.format(i)] = curr_set
-                # Now we have topic wise documents index, populate the lda_output
+            # Now we have topic wise documents index, populate the lda_output
         for topic in lda_output:
             if topic_documents.get(topic):
                 topic_docs = [corpus[x] for x in topic_documents[topic]]
