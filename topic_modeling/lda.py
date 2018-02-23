@@ -1,5 +1,5 @@
 from helpers.functional import compose, curried_map, curried_filter
-from helpers.common import rm_punc_not_nums, lemmatize
+from helpers.common import rm_punc_not_nums, lemmatize, get_n_largest
 from stop_words import get_stop_words
 
 from nltk.tokenize import RegexpTokenizer
@@ -173,15 +173,19 @@ def _get_subtopics(corpus, dictionary, num_topics, num_words, depth):
     lda_output = {}
     topics = ldamodel.get_topics()
     for i, topic_words in enumerate(topics):
-        sorted_words = sorted(
-            list(enumerate(topic_words)),
-            key=lambda x: x[1],
-            reverse=True
+        # sorted_words = sorted(
+            # list(enumerate(topic_words)),
+            # key=lambda x: x[1],
+            # reverse=True
+        # )
+        words = get_n_largest(
+            num_words, list(enumerate(topic_words)), lambda x: x[1]
         )
         lda_output['Topic {}'.format(i)] = {
             'keywords': [
                 (dictionary.get(i), x)
-                for i, x in sorted_words[:num_words]
+                # for i, x in sorted_words[:num_words]
+                for i, x in words[:num_words]
             ],
             'subtopics': {}
         }

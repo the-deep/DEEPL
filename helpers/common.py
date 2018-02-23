@@ -136,6 +136,22 @@ def get_confidence_interval_discrete(percent, true, total):
     return (prob-error_margin, prob+error_margin)
 
 
+def get_n_largest(n, lst, to_compare=lambda x: x):
+    """
+    This returns largest n elements from list in descending order
+    """
+    largests = [lst[0]]*n  # this will be in descending order
+    for x in lst[1:]:
+        if to_compare(x) <= to_compare(largests[-1]):
+            continue
+        else:
+            for i, y in enumerate(largests):
+                if to_compare(x) >= to_compare(y):
+                    largests = largests[:i] + [x] + largests[i:-1]
+                    break
+    return largests
+
+
 if __name__ == '__main__':
     import pandas as pd
     excerpt = 'Humanitarian needs are said to include access to a sufficient supply of quality water, education, shelter, child protection, health, and nutrition. '
