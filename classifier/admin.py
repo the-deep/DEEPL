@@ -15,6 +15,3 @@ admin.site.register(ClassifierModel, ClassifierModelAdmin)
 admin.site.register(ClassifiedDocument)
 admin.site.register(ClassifiedExcerpt)
 admin.site.register(Recommendation)
-
-
-

@@ -3,6 +3,9 @@ import requests
 import json
 
 
+from NER.models import GoogleLocationCache
+
+
 GOOGLE_GEOCODE_URL =\
     'https://maps.googleapis.com/maps/api/geocode/json?key={}&address={}'
 
@@ -15,10 +18,21 @@ def get_google_geocode_url(location):
 
 
 def get_location_info(location):
+    # First query the database, if not found, make a call
+    try:
+        cache = GoogleLocationCache.objects.get(_location=location.lower())
+        return cache.location_info
+    except GoogleLocationCache.DoesNotExist:
+        pass
     r = requests.get(get_google_geocode_url(location))
     try:
         info = json.loads(r.text)
-        print(info)
-        return info.get('results')[0]
+        location_info = info.get('results')[0]
+        # save to database
+        GoogleLocationCache.objects.create(
+            location=location,
+            location_info=location_info
+        )
+        return location_info
     except (ValueError, IndexError):
         return {}

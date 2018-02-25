@@ -122,14 +122,15 @@ def get_date_tagged(text):
     while index < len(new):
         if re.match('\*\*.*\*\*', new[index]):
             txts = []
-            while index<len(new) and (new[index] in ['/', '-'] or re.match('\*\*.*\*\*', new[index])):
+            while (index < len(new) and (new[index] in ['/', '-'])
+                    or re.match('\*\*.*\*\*', new[index])):
                 txts.append(new[index].split('**')[1])
-                index+=1
+                index += 1
             txt = '_'.join(txts)
             merged.append('**{}**'.format(txt))
             if index < len(new):
                 merged.append(new[index])
         else:
             merged.append(new[index])
-        index+=1
+        index += 1
     return ' '.join(merged)
