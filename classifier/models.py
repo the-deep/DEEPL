@@ -4,8 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 
-
-MIN_CONFIDENCE = 0.001
+from helpers.common import classification_confidence
 
 
 class BaseModel(models.Model):
@@ -61,11 +60,7 @@ class ClassifiedDocument(BaseModel):
 
     @property
     def classification_confidence(self):
-        probs = self.classification_probabilities
-        numclasses = len(probs)
-        numrev = 1./numclasses
-        maxprob = sorted(probs, key=lambda x: x[1], reverse=True)[0][1]
-        return (maxprob - numrev)/(1. - numrev) or MIN_CONFIDENCE
+        return classification_confidence(self.classification_probabilities)
 
     def __str__(self):
         return '{} {}'.format(self.group_id, self.classification_label)
@@ -86,13 +81,12 @@ class ClassifiedExcerpt(BaseModel):
     classification_probabilities = JSONField(default=[])
 
     @property
+    def text(self):
+        return self.classified_document.text[self.start_pos:self.end_pos+1]
+
+    @property
     def classification_confidence(self):
-        probs = self.classification_probabilities
-        numclasses = len(probs)
-        numrev = 1./numclasses
-        print(numclasses)
-        maxprob = sorted(probs, key=lambda x: x[1], reverse=True)[0][1]
-        return (maxprob - numrev)/(1. - numrev) or MIN_CONFIDENCE
+        return classification_confidence(self.classification_probabilities)
 
     def __str__(self):
         return '{} - {} : {}'.format(

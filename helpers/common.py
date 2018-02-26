@@ -152,6 +152,19 @@ def get_n_largest(n, lst, to_compare=lambda x: x):
     return largests
 
 
+def classification_confidence(classification_probabilities):
+    """
+    Return the classification confidence based on the probabilities.
+    @classification_probabilities: [(label, probability)]
+    """
+    MIN_CONFIDENCE = 0.01
+    probs = classification_probabilities
+    numclasses = len(probs)
+    numrev = 1./numclasses
+    maxprob = sorted(probs, key=lambda x: x[1], reverse=True)[0][1]
+    return (maxprob - numrev)/(1. - numrev) or MIN_CONFIDENCE
+
+
 if __name__ == '__main__':
     import pandas as pd
     excerpt = 'Humanitarian needs are said to include access to a sufficient supply of quality water, education, shelter, child protection, health, and nutrition. '
