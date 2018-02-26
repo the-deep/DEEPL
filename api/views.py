@@ -293,8 +293,10 @@ class RecommendationView(APIView):
             return Response(validation_details,
                             status=status.HTTP_400_BAD_REQUEST)
 
-        classifier = DocumentClassifierView.classifiers.get(version)
-        if not classifier:
+        try:
+            # Strip off 'v' from 'vX' in version
+            classifier_model = ClassifierModel.objects.get(version=version[1:])
+        except ClassifierModel.DoesNotExist:
             return Response(
                 {'message': 'Classifier not found'},
                 status=status.HTTP_404_NOT_FOUND
@@ -302,7 +304,7 @@ class RecommendationView(APIView):
         extra = self._get_extra_info(data)
         # create a Recommendation object
         Recommendation.objects.create(
-            classifier=classifier['classifier_model'],
+            classifier=classifier_model,
             text=data['text'],
             classification_label=data['classification_label'],
             useful=True if data['useful'].lower() == 'true' else False,
