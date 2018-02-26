@@ -20,6 +20,13 @@ def create_classifier_model(
     @data : labeled data list [(text, classification), ...]
     @version : version of the classifier model
     """
+
+    # check if version already exists
+    try:
+        ClassifierModel.objects.get(version=version)
+        raise Exception("Classifier version {} already exists".format(version))
+    except ClassifierModel.DoesNotExist:
+        pass
     # first create train and test data
     random.shuffle(data)
     size = len(data)

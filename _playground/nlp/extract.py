@@ -137,7 +137,10 @@ def extract_entries():
 
             # excerpt
             cent.excerpt = subent.excerpt
-
+            
+            try:
+                cent.lead_text = subent.lead.simplifiedlead.text
+            except: pass
             # has_image
             cent.has_image = subent.image == ''
 

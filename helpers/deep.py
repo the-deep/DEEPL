@@ -100,6 +100,7 @@ def get_deep_data(debug=True, filter_non_english=False, filepath=None):
     return data
 
 
+# NOT USED, use scripts.create_classifier.create_classifier instead
 def get_classifier(num=1000, confusion_mat=True, get_model=True, debug=True, data=None):
     """ TEMPORARY FUNCTION TO HELP WITH CREATING DEEP DATA"""
     def printd(*args):

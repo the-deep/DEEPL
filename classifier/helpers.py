@@ -7,6 +7,7 @@ def get_train_test_data(csv_path):
     processed = df.assign(excerpt=df['excerpt'].apply(
         SKNaiveBayesClassifier.preprocess
     ))
+    processed = processed[:100]
     processed = processed.sample(frac=1)
     l = len(processed)
     one_fourth = int(l/4)
