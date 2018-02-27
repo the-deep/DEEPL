@@ -10,6 +10,7 @@ from api.helpers import (
 )
 
 from helpers.google import get_location_info
+from helpers.common import classification_confidence
 
 from classifier.models import (
     ClassifierModel,
@@ -86,7 +87,12 @@ class DocumentClassifierView(APIView):
         classified = classify_text(classifier['classifier'], text)
 
         if not data.get('deeper'):
-            return Response({'classification': classified})
+            return Response({
+                'classification': classified,
+                'classification_confidence': classification_confidence(
+                    classified
+                )
+            })
 
         # Create classified Document
         grp_id = data.get('group_id')
@@ -103,19 +109,23 @@ class DocumentClassifierView(APIView):
             classifier['classifier'],
             text,
         )
-
         # create excerpts
+        excerpts = []
         for x in classified_excerpts:
-            ClassifiedExcerpt.objects.create(
-                classified_document=doc,
-                start_pos=x['start_pos'],
-                end_pos=x['end_pos'],
-                classification_label=x['classification'][0][0],
-                confidence=x['classification'][0][1],
-                classification_probabilities=x['classification']
+            excerpts.append(
+                ClassifiedExcerpt.objects.create(
+                    classified_document=doc,
+                    start_pos=x['start_pos'],
+                    end_pos=x['end_pos'],
+                    classification_label=x['classification'][0][0],
+                    confidence=x['classification'][0][1],
+                    classification_probabilities=x['classification']
+                )
             )
         ret = ClassifiedDocumentSerializer(doc).data
-        ret['excerpts_classification'] = classified_excerpts
+        ret['excerpts_classification'] = ClassifiedExcerptSerializer(
+            excerpts, many=True
+        ).data
         return Response(ret)
 
     def _validate_classification_params(self, params):

@@ -1,5 +1,7 @@
 import uuid
+import re
 import base64
+import pickle
 from django.db import models
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
@@ -42,6 +44,15 @@ class ClassifierModel(BaseModel):
 
     data = property(get_data, set_data)
 
+    @property
+    def classifier(self):
+        return pickle.loads(self.data)
+
+    def classify_text(self, text):
+        classified = self.classifier.classify_as_label_probs(text)
+        classified.sort(key=lambda x: x[1], reverse=True)
+        return classified
+
     def __str__(self):
         return 'v{}-{}'.format(self.version, self.name)
 
@@ -61,6 +72,30 @@ class ClassifiedDocument(BaseModel):
     @property
     def classification_confidence(self):
         return classification_confidence(self.classification_probabilities)
+
+    @classmethod
+    def new(self, text, classifier_model, group_id=None):
+        classified = classifier_model.classify_text(text)
+        return ClassifiedDocument.objects.create(
+            text=text,
+            classifier=classifier_model,
+            confidence=classified[0][1],
+            classification_label=classified[0][0],
+            classification_probabilities=classified,
+            group_id=group_id
+        )
+
+    def create_excerpts(self, text):
+        begins = [m.start() for m in re.finditer('\.\W+[A-Z0-9]', text)]
+        textlen = len(text)
+        indices = zip([-1]+begins, begins+[textlen-1])
+        return [
+            {
+                'start_pos': s+1,
+                'end_pos': e,
+                'classification': self.classifier.classify_text(text[s+1:e+1])
+            } for s, e in indices
+        ]
 
     def __str__(self):
         return '{} {}'.format(self.group_id, self.classification_label)
