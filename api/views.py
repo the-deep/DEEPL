@@ -70,7 +70,10 @@ class DocumentClassifierView(APIView):
                     ).data
                 return Response(return_data)
             except ClassifiedDocument.DoesNotExist:
-                return Response({}, status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {'error': 'Classified Document not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
             except Exception as e:
                 return Response({
                     'status': False,
@@ -184,7 +187,8 @@ class TopicModelingView(APIView):
         """Validator for params"""
         errors = {}
         params = {}
-        # convert to dict and list is retained, else in querydict only first element is retained
+        # Convert to dict and list is retained,
+        # else in querydict only first element is retained
         dictparams = dict(queryparams)
         if not queryparams.get('documents', []):
             if not dictparams.get('doc_ids', []):
