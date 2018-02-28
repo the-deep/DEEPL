@@ -19,13 +19,24 @@ class TestClassificationAPI(APITestCase):
             confidence=0.2,
             classification_label="ABC",
             classification_probabilities=self.classifier_model.classifier.
-                    classify_as_label_probs("Sample text")
+                classify_as_label_probs("Sample text")
         )
         self.url = '/api/v1/classify/'
 
-    def itest_no_text_and_deeper_param(self):
+    def test_no_text_and_no_deeper_param(self):
         params = {}
-        resposne = self.post()
+        response = self.client.post(self.url, params)
+        assert response.status_code == 400, "No params should be a bad request"
+        data = response.json()
+        assert 'text' in data
+
+    def test_no_text_and_deeper_param(self):
+        params = {'deeper': '1'}
+        response = self.client.post(self.url, params)
+        assert response.status_code == 400, "Should be a bad request"
+        data = response.json()
+        assert 'text' in data
+        assert 'doc_id' in data
 
     def test_api_with_text(self):
         params = {'text': 'This is to be classified'}
@@ -93,18 +104,24 @@ class TestClassificationAPI(APITestCase):
 
 
 def assertion_structure_data(structure, data):
-    # TODO: complete this
-    data = {
-        'classification': [(str, str)],
-        'classification_confidence': float,
-        'id': int,
-        'excerpts_classification': [{
-            'classification': [(str, str)],
-            'classification_confidence': float,
-            'start_pos': int,
-            'end_pos': int,
-        }]
-    }
-    assert type(structure) == type(data)
-    if type(structure) == list:
-        pass
+    """
+    Automatic checks if data matches structure
+    """
+    # TODO: fix this, currently errors
+    print(structure)
+    if type(structure) == dict:
+        assert isinstance(data, dict)
+        for k, v in structure.items():
+            assert k in data
+            assertion_structure_data(structure[k], data[k])
+    elif type(structure) == list:
+        assert isinstance(data, list)
+        for x in data:
+            assertion_structure_data(structure[0], x)
+    elif type(structure) == tuple:
+        assert len(structure) == len(data)
+        for i, k in enumerate(data):
+            assert isinstance(k, type(structure[i]))
+    else:
+        # primitive type
+        assert isinstance(data, structure)

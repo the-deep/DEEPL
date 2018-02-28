@@ -139,6 +139,9 @@ class DocumentClassifierView(APIView):
 
         if not deeper and not params.get('text'):
             errors['text'] = 'text to be classified is missing.'
+        elif deeper and not params.get('text') and not params.get('doc_id'):
+            errors['text'] = 'Either text or doc_id should be present'
+            errors['doc_id'] = 'Either text or doc_id should be present'
         if errors:
             return {
                 'status': False,
