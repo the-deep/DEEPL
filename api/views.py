@@ -259,7 +259,10 @@ class KeywordsExtractionView(APIView):
         params = validation_details['params']
         doc = params['document']
         args = (doc, params['max_grams']) if params['max_grams'] else (doc,)
-        key_ngrams = get_key_ngrams(*args, include_numbers=params.get('include_numbers', False))
+        key_ngrams = get_key_ngrams(
+            *args,
+            include_numbers=params.get('include_numbers', False)
+        )
         return Response(key_ngrams)
 
     def _validate_keywords_extraction_params(self, queryparams):
@@ -282,7 +285,8 @@ class KeywordsExtractionView(APIView):
         else:
             params['max_grams'] = None
 
-        if queryparams.get('include_numbers'):
+        inc_numbers = queryparams.get('include_numbers')
+        if inc_numbers and (inc_numbers == 'true' or inc_numbers == '1'):
             params['include_numbers'] = True
 
         if errors:
@@ -366,7 +370,7 @@ class NERView(APIView):
         data = dict(request.data.items())
         validation_details = self._validate_ner_params(data)
         if not validation_details['status']:
-            return Response(validation_details,
+            return Response(validation_details['error_data'],
                             status=status.HTTP_400_BAD_REQUEST)
         ner_tagged = get_ner_tagging(data['text'])
         return Response(ner_tagged)
@@ -388,15 +392,21 @@ class NERView(APIView):
 
 class NERWithDocIdView(APIView):
     def post(self, request):
-        data = dict(request.data.items())
+        data = dict(request.data)
         validation_details = self._validate_ner_params(data)
         if not validation_details['status']:
-            return Response(validation_details,
+            return Response(validation_details['error_data'],
                             status=status.HTTP_400_BAD_REQUEST)
 
         documents = ClassifiedDocument.objects.filter(
             id__in=data.get('doc_ids', [])
         )
+        # if no documents found, return 404
+        if not documents:
+            return Response(
+                {'error': 'No documents found for NER tagging.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
         text = [doc.text for doc in documents]
         text = ' '.join(text)
 
@@ -426,8 +436,12 @@ class NERWithDocIdView(APIView):
 
     def _validate_ner_params(self, data):
         errors = {}
-        if not data.get('doc_ids'):
+        print(data)
+        doc_ids = data.get('doc_ids')
+        if not doc_ids:
             errors['doc_ids'] = "Missing doc_ids to be NER tagged"
+        elif not type(doc_ids) == list:
+            errors['doc_ids'] = "doc_ids should be a list"
         if errors:
             return {
                 'status': False,

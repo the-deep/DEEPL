@@ -12,7 +12,6 @@ class TestClassificationAPI(APITestCase):
     def setUp(self):
         self.classifier_model = self._get_model(version=1)
         self.classifier_model.save()
-        # TODO: And create some classified docs as well
         self.classified_doc = ClassifiedDocument.objects.create(
             text="Sample text",
             classifier=self.classifier_model,
