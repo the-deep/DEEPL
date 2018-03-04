@@ -27,7 +27,11 @@ class TestNERAPI(APITestCase):
         response = self.client.post(self.url, params)
         assert response.status_code == 200
         data = response.data
-        assert 'entities' in data
+        assert isinstance(data, list)
+        for x in data:
+            assert 'entity' in x
+            assert 'length' in x
+            assert 'start' in x
 
 
 class TestNERwithDocsAPI(APITestCase):
@@ -71,7 +75,40 @@ class TestNERwithDocsAPI(APITestCase):
         response = self.client.post(self.url, params)
         assert response.status_code == 200
         data = response.data
-        assert 'entities' in data
+        assert isinstance(data, dict)
+        assert 'locations' in data
+        locations = data['locations']
+        assert isinstance(locations, list)
+        for location in locations:
+            assert 'name' in location
+            assert 'info' in location
+            info = location['info']
+            assert 'types' in info
+            assert isinstance(info['types'], list)
+            assert 'address_components' in info
+            assert isinstance(info['address_components'], list)
+            for comp in info['address_components']:
+                assert 'types' in comp
+                assert isinstance(comp['types'], list)
+                assert 'short_name' in comp
+                assert 'long_name' in comp
+            assert 'geometry' in info
+            assert 'place_id' in info
+            assert 'formatted_address' in info
+            geometry = info['geometry']
+            assert 'location_type' in geometry
+            assert 'bounds' in geometry
+            assert 'northeast' in geometry['bounds']
+            assert 'lat' in geometry['bounds']['northeast']
+            assert 'lng' in geometry['bounds']['northeast']
+            assert 'southwest' in geometry['bounds']
+            assert 'lat' in geometry['bounds']['southwest']
+            assert 'lng' in geometry['bounds']['southwest']
+            assert 'location' in geometry
+            assert 'lat' in geometry['location']
+            assert 'lng' in geometry['location']
+            assert 'viewport' in geometry
+            
 
     def _get_model(self, version):
         # first create classifier
