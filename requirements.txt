@@ -1,7 +1,8 @@
+attrs==17.4.0
 bleach==2.1.1
 boto==2.48.0
 bz2file==0.98
-certifi==2017.7.27.1
+certifi==2017.11.5
 chardet==3.0.4
 cycler==0.10.0
 cymem==1.31.2
@@ -32,6 +33,8 @@ jupyter-core==4.3.0
 langid==1.1.6
 MarkupSafe==1.0
 matplotlib==2.1.0
+mediacloud-cliff==2.0.2
+mediameter-cliff==1.4.0
 mistune==0.8.1
 msgpack-numpy==0.4.1
 msgpack-python==0.4.8
@@ -48,12 +51,16 @@ pathlib==1.0.1
 pexpect==4.2.1
 pickleshare==0.7.4
 plac==0.9.6
+pluggy==0.6.0
 preshed==1.0.0
 prompt-toolkit==1.0.15
 psycopg2==2.7.3.2
 ptyprocess==0.5.2
+py==1.5.2
 Pygments==2.2.0
 pyparsing==2.2.0
+pytest==3.4.1
+pytest-django==3.1.2
 python-dateutil==2.6.1
 pytz==2017.3
 PyYAML==3.12

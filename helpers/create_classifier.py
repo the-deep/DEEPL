@@ -5,6 +5,15 @@ from classifier.NaiveBayesSKlearn import SKNaiveBayesClassifier
 from classifier.models import ClassifierModel
 
 
+def create_train_test_data(data):
+    random.shuffle(data)
+    size = len(data)
+    one_fourth = int(size/4)
+    train = data[one_fourth:]
+    test = data[:one_fourth]
+    return (train, test)
+
+
 def create_classifier_model(
         version,
         data,
@@ -27,12 +36,8 @@ def create_classifier_model(
         raise Exception("Classifier version {} already exists".format(version))
     except ClassifierModel.DoesNotExist:
         pass
-    # first create train and test data
-    random.shuffle(data)
-    size = len(data)
-    one_fourth = int(size/4)
-    train = data[one_fourth:]
-    test = data[:one_fourth]
+    # get train, test data
+    train, test = create_train_test_data(data)
 
     classifier = classifier_class.new(train)
     accuracy = classifier.get_accuracy(test)

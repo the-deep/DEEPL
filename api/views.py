@@ -10,6 +10,7 @@ from api.helpers import (
 )
 
 from helpers.google import get_location_info
+from helpers.common import classification_confidence
 
 from classifier.models import (
     ClassifierModel,
@@ -69,7 +70,10 @@ class DocumentClassifierView(APIView):
                     ).data
                 return Response(return_data)
             except ClassifiedDocument.DoesNotExist:
-                return Response({}, status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {'error': 'Classified Document not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
             except Exception as e:
                 return Response({
                     'status': False,
@@ -86,7 +90,12 @@ class DocumentClassifierView(APIView):
         classified = classify_text(classifier['classifier'], text)
 
         if not data.get('deeper'):
-            return Response({'classification': classified})
+            return Response({
+                'classification': classified,
+                'classification_confidence': classification_confidence(
+                    classified
+                )
+            })
 
         # Create classified Document
         grp_id = data.get('group_id')
@@ -103,19 +112,23 @@ class DocumentClassifierView(APIView):
             classifier['classifier'],
             text,
         )
-
         # create excerpts
+        excerpts = []
         for x in classified_excerpts:
-            ClassifiedExcerpt.objects.create(
-                classified_document=doc,
-                start_pos=x['start_pos'],
-                end_pos=x['end_pos'],
-                classification_label=x['classification'][0][0],
-                confidence=x['classification'][0][1],
-                classification_probabilities=x['classification']
+            excerpts.append(
+                ClassifiedExcerpt.objects.create(
+                    classified_document=doc,
+                    start_pos=x['start_pos'],
+                    end_pos=x['end_pos'],
+                    classification_label=x['classification'][0][0],
+                    confidence=x['classification'][0][1],
+                    classification_probabilities=x['classification']
+                )
             )
         ret = ClassifiedDocumentSerializer(doc).data
-        ret['excerpts_classification'] = classified_excerpts
+        ret['excerpts_classification'] = ClassifiedExcerptSerializer(
+            excerpts, many=True
+        ).data
         return Response(ret)
 
     def _validate_classification_params(self, params):
@@ -126,6 +139,9 @@ class DocumentClassifierView(APIView):
 
         if not deeper and not params.get('text'):
             errors['text'] = 'text to be classified is missing.'
+        elif deeper and not params.get('text') and not params.get('doc_id'):
+            errors['text'] = 'Either text or doc_id should be present'
+            errors['doc_id'] = 'Either text or doc_id should be present'
         if errors:
             return {
                 'status': False,
@@ -174,7 +190,8 @@ class TopicModelingView(APIView):
         """Validator for params"""
         errors = {}
         params = {}
-        # convert to dict and list is retained, else in querydict only first element is retained
+        # Convert to dict and list is retained,
+        # else in querydict only first element is retained
         dictparams = dict(queryparams)
         if not queryparams.get('documents', []):
             if not dictparams.get('doc_ids', []):
@@ -242,7 +259,10 @@ class KeywordsExtractionView(APIView):
         params = validation_details['params']
         doc = params['document']
         args = (doc, params['max_grams']) if params['max_grams'] else (doc,)
-        key_ngrams = get_key_ngrams(*args, include_numbers=params.get('include_numbers', False))
+        key_ngrams = get_key_ngrams(
+            *args,
+            include_numbers=params.get('include_numbers', False)
+        )
         return Response(key_ngrams)
 
     def _validate_keywords_extraction_params(self, queryparams):
@@ -265,7 +285,8 @@ class KeywordsExtractionView(APIView):
         else:
             params['max_grams'] = None
 
-        if queryparams.get('include_numbers'):
+        inc_numbers = queryparams.get('include_numbers')
+        if inc_numbers and (inc_numbers == 'true' or inc_numbers == '1'):
             params['include_numbers'] = True
 
         if errors:
@@ -349,7 +370,7 @@ class NERView(APIView):
         data = dict(request.data.items())
         validation_details = self._validate_ner_params(data)
         if not validation_details['status']:
-            return Response(validation_details,
+            return Response(validation_details['error_data'],
                             status=status.HTTP_400_BAD_REQUEST)
         ner_tagged = get_ner_tagging(data['text'])
         return Response(ner_tagged)
@@ -371,15 +392,21 @@ class NERView(APIView):
 
 class NERWithDocIdView(APIView):
     def post(self, request):
-        data = dict(request.data.items())
+        data = dict(request.data)
         validation_details = self._validate_ner_params(data)
         if not validation_details['status']:
-            return Response(validation_details,
+            return Response(validation_details['error_data'],
                             status=status.HTTP_400_BAD_REQUEST)
 
         documents = ClassifiedDocument.objects.filter(
             id__in=data.get('doc_ids', [])
         )
+        # if no documents found, return 404
+        if not documents:
+            return Response(
+                {'error': 'No documents found for NER tagging.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
         text = [doc.text for doc in documents]
         text = ' '.join(text)
 
@@ -409,8 +436,12 @@ class NERWithDocIdView(APIView):
 
     def _validate_ner_params(self, data):
         errors = {}
-        if not data.get('doc_ids'):
+        print(data)
+        doc_ids = data.get('doc_ids')
+        if not doc_ids:
             errors['doc_ids'] = "Missing doc_ids to be NER tagged"
+        elif not type(doc_ids) == list:
+            errors['doc_ids'] = "doc_ids should be a list"
         if errors:
             return {
                 'status': False,

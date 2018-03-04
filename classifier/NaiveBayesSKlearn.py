@@ -64,9 +64,9 @@ class SKNaiveBayesClassifier(GenericClassifier):
         return prediction[0] if inp_type == str else prediction
 
     def classify_as_label_probs(self, processed_input):
-        # inp_type = type(processed_input)
+        inp = processed_input.split()
         classes = self.__classifier.classes_
-        prediction = self.__classifier.predict_proba(processed_input)
+        prediction = self.__classifier.predict_proba(inp)
         prediction = list(
             map(
                 lambda pred: sorted(
