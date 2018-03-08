@@ -40,7 +40,7 @@ def get_confidences(classifier):
     correct_confidences = []
     incorrect_confidences = []
 
-    for text, label in deep_data[:20]:
+    for text, label in deep_data:
         classification = classifier.classify_as_label_probs(text)
         confidence = classification_confidence(classification)
         classified_label = classification[0][0]  # get the max
@@ -48,6 +48,12 @@ def get_confidences(classifier):
             correct_confidences.append(confidence)
         else:
             incorrect_confidences.append(confidence)
+        print(
+                "correct:",
+                len(correct_confidences),
+                "incorrect:",
+                len(incorrect_confidences)
+            )
     return {
         'correct_confidences': correct_confidences,
         'incorrect_confidences': incorrect_confidences
