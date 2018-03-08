@@ -59,12 +59,13 @@ def scatter_plot(confidences):
     maxlen = max([len(x) for k, x in confidences.items()])
     for key, confs in confidences.items():
         color = COLORS[random.randrange(len(COLORS))]
-        avg = np.mean(confs)
+        mean = np.mean(confs)
         # median = np.median(confs)
-        plt.scatter(np.arange(len(confs)), confs, color=color, label=key, s=20)
+        plt.scatter(np.arange(maxlen), confs, color=color, label=key, s=5)
         meanX = [x for x in range(maxlen)]
-        meanY = [avg for _ in range(maxlen)]
-        plt.plot(meanX, meanY, color=color, label=key+" mean")
+        meanY = [mean for _ in range(maxlen)]
+        plt.plot(meanX, meanY, color=color, label="{} mean [{}]".format(
+            key, mean))
     plt.legend()
     return fig
 
