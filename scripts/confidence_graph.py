@@ -40,7 +40,7 @@ def get_confidences(classifier):
     correct_confidences = []
     incorrect_confidences = []
 
-    for text, label in deep_data:
+    for text, label in deep_data[:20]:
         classification = classifier.classify_as_label_probs(text)
         confidence = classification_confidence(classification)
         classified_label = classification[0][0]  # get the max
@@ -61,7 +61,7 @@ def scatter_plot(confidences):
         color = COLORS[random.randrange(len(COLORS))]
         mean = np.mean(confs)
         # median = np.median(confs)
-        plt.scatter(np.arange(maxlen), confs, color=color, label=key, s=5)
+        plt.scatter(np.arange(len(confs)), confs, color=color, label=key, s=5)
         meanX = [x for x in range(maxlen)]
         meanY = [mean for _ in range(maxlen)]
         plt.plot(meanX, meanY, color=color, label="{} mean [{}]".format(
@@ -82,5 +82,6 @@ def main():
     confs = get_confidences(classifier)
     f = scatter_plot(confs)
     name = '{}-scatter.png'.format(datetime.datetime.now())
+    name = name.replace(' ', '.')
     print("saving plot as {}".format(name))
     f.savefig(name)
