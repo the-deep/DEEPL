@@ -64,7 +64,12 @@ class SKNaiveBayesClassifier(GenericClassifier):
         return prediction[0] if inp_type == str else prediction
 
     def classify_as_label_probs(self, processed_input):
-        inp = processed_input.split()
+        """
+        Takes single string as input, not list of strings
+        """
+        if type(processed_input) == list or type(processed_input) != str:
+            raise Exception("The paramerter should be a string, not list")
+        inp = [processed_input]
         classes = self.__classifier.classes_
         prediction = self.__classifier.predict_proba(inp)
         prediction = list(

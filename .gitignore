@@ -111,3 +111,4 @@ db.sqlite3
 node_modules/
 *.rest
 *.png
+.pytest_cache/
