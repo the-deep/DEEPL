@@ -1,10 +1,6 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import datetime
-from scipy.interpolate import spline
 from scipy import ndimage
-
-
 
 
 COLORS = [
