@@ -4,6 +4,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+import math
 
 from helpers.deep import get_processed_data
 from helpers.common import classification_confidence
@@ -35,12 +36,13 @@ def get_confidences(classifier):
     """
     deep_data = get_processed_data(
         '_playground/sample_data/processed_sectors_subsectors.csv'
+        # 'fixtures/processed_data_for_testing.csv'
     )
     # confidences for correct and incorrect prediction
     correct_confidences = []
     incorrect_confidences = []
 
-    for text, label in deep_data[:20]:
+    for text, label in deep_data:
         classification = classifier.classify_as_label_probs(text)
         confidence = classification_confidence(classification)
         classified_label = classification[0][0]  # get the max
@@ -61,7 +63,7 @@ def get_confidences(classifier):
 
 
 def scatter_plot(confidences):
-    fig = plt.figure(figsize=(15, 8))
+    fig = plt.figure(figsize=(20, 8))
     maxlen = max([len(x) for k, x in confidences.items()])
     for key, confs in confidences.items():
         color = COLORS[random.randrange(len(COLORS))]
@@ -76,16 +78,73 @@ def scatter_plot(confidences):
     return fig
 
 
+def prepare_bar_chart_data(confidence_values, label=''):
+    initial_ranges = [round(x*0.05, 2) for x in range(0, 21)]
+    zipped = zip(initial_ranges, initial_ranges[1:])
+    x_axes = ["{}-{}".format(x[0], x[1]) for x in zipped]
+    xvals = np.arange(len(x_axes))
+    counts = [0]*len(x_axes)
+    for x in confidence_values:
+        index = math.ceil(x/0.05) or 1  # can't be 0 else index will be -1
+        counts[index-1] += 1
+    return {
+        'x_axes': x_axes,
+        'xvals': xvals,
+        'yvals': counts,
+        'label': label
+    }
+
+
+def bar_chart(datas):
+    fig = plt.figure(figsize=(15, 8))
+    for i, data in enumerate(datas):
+        plt.bar(
+            data['xvals']+i*data['bar_width'],
+            data['yvals'],
+            data['bar_width'],
+            align='center',
+            alpha=0.5,
+            label=data.get('label', "X")
+        )
+        plt.ylabel('# Entries')
+    plt.xticks(datas[0]['xvals'], data['x_axes'], rotation=30)
+    plt.title('Classifier_confidences')
+    plt.legend()
+    plt.tight_layout()
+    return fig
+
+
 def main(*args):
-    print('confidence graph args', args)
     import pickle
     import datetime
     from classifier.models import ClassifierModel
     c = ClassifierModel.objects.last()
     classifier = pickle.loads(c.data)
+    print("Getting confidences of the latest model")
     confs = get_confidences(classifier)
-    f = scatter_plot(confs)
-    name = '{}-scatter.png'.format(datetime.datetime.now())
+
+    name = '{}-{}.png'.format(datetime.datetime.now(), {})
     name = name.replace(' ', '.')
-    print("saving plot as {}".format(name))
-    f.savefig(name)
+    if args and args[0] == 'scatterplot':
+        print("Creating scatterplot of the confidences")
+        f = scatter_plot(confs)
+        name = name.format('scatter')
+        f.savefig(name)
+    else:  # default is bar
+        print("Creating bar chart for the confidences")
+        BAR_WIDTH = 0.4
+        bardata = prepare_bar_chart_data(
+            confs['correct_confidences'],
+            'Correct Classifications'
+        )
+        bardata['label'] = 'Correct classifications'
+        bardata['bar_width'] = BAR_WIDTH
+        inc_bardata = prepare_bar_chart_data(
+            confs['incorrect_confidences'],
+            'Incorrect Classifications'
+        )
+        inc_bardata['bar_width'] = BAR_WIDTH
+        f = bar_chart([bardata, inc_bardata])
+        name = name.format('bar')
+        f.savefig(name)
+    print("Saved graph as {}".format(name))
