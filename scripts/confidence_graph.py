@@ -40,7 +40,7 @@ def get_confidences(classifier):
     correct_confidences = []
     incorrect_confidences = []
 
-    for text, label in deep_data:
+    for text, label in deep_data[:20]:
         classification = classifier.classify_as_label_probs(text)
         confidence = classification_confidence(classification)
         classified_label = classification[0][0]  # get the max
@@ -48,12 +48,12 @@ def get_confidences(classifier):
             correct_confidences.append(confidence)
         else:
             incorrect_confidences.append(confidence)
-        print(
-                "correct:",
-                len(correct_confidences),
-                "incorrect:",
-                len(incorrect_confidences)
-            )
+    print(
+            "correct:",
+            len(correct_confidences),
+            "incorrect:",
+            len(incorrect_confidences)
+        )
     return {
         'correct_confidences': correct_confidences,
         'incorrect_confidences': incorrect_confidences
@@ -76,13 +76,11 @@ def scatter_plot(confidences):
     return fig
 
 
-def main():
-    print('in main of confidence graph')
-    import os
+def main(*args):
+    print('confidence graph args', args)
     import pickle
     import datetime
     from classifier.models import ClassifierModel
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'deepl.settings'
     c = ClassifierModel.objects.last()
     classifier = pickle.loads(c.data)
     confs = get_confidences(classifier)
