@@ -10,7 +10,7 @@ def main(*args):
     classifier_models = ClassifierModel.objects.all()
     classifiers_map = {c.id: pickle.loads(c.data) for c in classifier_models}
     # first run for ClassifiedDocuments
-    chunksize = 50
+    chunksize = 20
     start = 0
     while True:
         frm = start * chunksize
