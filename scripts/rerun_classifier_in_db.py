@@ -27,7 +27,6 @@ def main(*args):
 
         # now the excerpts
         for excerpt in doc.excerpts.all():
-            print('excerpt id', excerpt.id)
             txt = processed[excerpt.start_pos:excerpt.end_pos+1]
             classification_probs = classifier.classify_as_label_probs(txt)
             classification_label = classification_probs[0][0]
