@@ -2,6 +2,7 @@ import re
 
 
 def classify_text(classifier, text):
+    text = classifier.preprocess(text)
     classified = classifier.classify_as_label_probs(text)
     classified.sort(key=lambda x: x[1], reverse=True)
     return classified
