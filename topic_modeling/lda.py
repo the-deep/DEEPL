@@ -134,7 +134,8 @@ class LDAModel:
 
 def get_topics_and_subtopics(
         documents, num_topics, num_words,
-        depth=3, pre_processing_func=None
+        depth=3, pre_processing_func=None,
+        passes=40
         ):
     """
     pre_processing_func should work on tokenized strings
@@ -160,16 +161,16 @@ def get_topics_and_subtopics(
     texts = [pre_processing_func(document) for document in documents]
     dictionary = corpora.Dictionary(texts)
     corpus = [dictionary.doc2bow(text) for text in texts]
-    return _get_subtopics(corpus, dictionary, num_topics, num_words, depth)
+    return _get_subtopics(corpus, dictionary, num_topics, num_words, depth, passes)
 
 
-def _get_subtopics(corpus, dictionary, num_topics, num_words, depth):
+def _get_subtopics(corpus, dictionary, num_topics, num_words, depth, passes=40):
     """The recursive function"""
     ldamodel = models.ldamodel.LdaModel(
         corpus,
         num_topics=num_topics,
         id2word=dictionary,
-        passes=15
+        passes=passes
     )
     lda_output = {}
     topics = ldamodel.get_topics()
