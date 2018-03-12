@@ -7,6 +7,7 @@ import pickle
 from api.helpers import (
     classify_text,
     classify_lead_excerpts,
+    check_if_test
 )
 
 from helpers.google import get_location_info
@@ -154,6 +155,7 @@ class DocumentClassifierView(APIView):
 
 class TopicModelingView(APIView):
     """API for topic modeling"""
+    @check_if_test('topic_modeling')
     def post(self, request):
         """Handle API POST request"""
         # data = dict(request.query_params.items())

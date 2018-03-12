@@ -1,4 +1,6 @@
 import re
+from rest_framework.response import Response
+from static_responses import topic_modeling
 
 
 def classify_text(classifier, text):
@@ -22,3 +24,18 @@ def classify_lead_excerpts(classifier, text):
             'classification': classify_text(classifier, text[s+1:e+1])
         } for s, e in indices
     ]
+
+
+def check_if_test(static_script, *dec_args):
+    def actual_decorator(f):
+        def wrapper(*args, **kwargs):
+            test = args[1].GET.get('test')
+            if  test and (test == '1') or (test == 'true'):
+                if static_script == 'topic_modeling':
+                    return Response(topic_modeling.static_data())
+                else:
+                    return f(*args, **kwargs)
+            else:
+                return f(*args, **kwargs)
+        return wrapper
+    return actual_decorator
