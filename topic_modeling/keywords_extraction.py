@@ -23,7 +23,7 @@ def get_key_ngrams(document, max_grams=3, include_numbers=False):
     data = {'{}grams'.format(x+1): [] for x in range(max_grams)}
 
     for score, phrase in phrases:
-        if 'NN' in phrase:
+        if 'NN' in phrase.upper():
             continue
         splitted = phrase.split()
         score = round(score, 2)
