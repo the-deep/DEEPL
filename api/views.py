@@ -456,7 +456,7 @@ class NERWithDocIdView(APIView):
 
 
 class CorrelationView(APIView):
-    @check_if_test('subtopics_correlation')
+    @check_if_test('correlation')
     def post(self, request, entity):
         validation_details = self._validate_params(request.data)
         if not validation_details['status']:
@@ -469,7 +469,10 @@ class CorrelationView(APIView):
             classified_docs = ClassifiedDocument.objects.filter(
                 id__in=params['doc_ids']
             )
-            classified_docs = [(x.classification_label, x.text) for x in classified_docs]
+            classified_docs = [
+                (x.classification_label, x.text)
+                for x in classified_docs
+            ]
         try:
             correlated_data = get_documents_correlation(classified_docs)
         except Exception:

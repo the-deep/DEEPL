@@ -1,6 +1,6 @@
 import re
 from rest_framework.response import Response
-from static_responses import topic_modeling, subtopics_correlation
+from importlib import import_module
 
 
 def classify_text(classifier, text):
@@ -31,11 +31,12 @@ def check_if_test(static_script, *dec_args):
         def wrapper(*args, **kwargs):
             test = args[1].GET.get('test')
             if  test and (test == '1') or (test == 'true'):
-                if static_script == 'topic_modeling':
-                    return Response(topic_modeling.static_data())
-                elif static_script == 'subtopics_correlation':
-                    return Response(subtopics_correlation.static_data())
-                else:
+                # try to import static_resposnes
+                try:
+                    imported = import_module('static_responses.'+static_script)
+                    return Response(imported.static_data(*args, **kwargs))
+                except (ImportError, ModuleNotFoundError):
+                    print('Import error, ModuleNotFound Error')
                     return f(*args, **kwargs)
             else:
                 return f(*args, **kwargs)
