@@ -322,5 +322,5 @@ data = {
 }
 
 
-def static_data():
+def static_data(*args, **kwargs):
     return data
