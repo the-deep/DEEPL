@@ -1,3 +1,6 @@
+import random
+
+
 data = {
     "Nutrition": {
         "Nutrition": 1.0008370000000204,
@@ -169,8 +172,103 @@ data = {
     }
 }
 
-def keywords_correlation():
-    import random
+keywords_data = {'edges': [{'source': 'rohingya', 'target': 'crisis', 'value': 11},
+  {'source': 'rohingya', 'target': 'esk', 'value': 13},
+  {'source': 'rohingya', 'target': 'bangladesh', 'value': 1},
+  {'source': 'rohingya', 'target': 'called', 'value': 7},
+  {'source': 'rohingya', 'target': 'government', 'value': 5},
+  {'source': 'said', 'target': 'leave', 'value': 1},
+  {'source': 'said', 'target': 'bamboo', 'value': 1},
+  {'source': 'said', 'target': 'myanmar', 'value': 13},
+  {'source': 'people', 'target': 'shelter', 'value': 1},
+  {'source': 'people', 'target': 'flee', 'value': 13},
+  {'source': 'people', 'target': 'usk', 'value': 11},
+  {'source': 'people', 'target': 'plan', 'value': 7},
+  {'source': 'people', 'target': 'week', 'value': 1},
+  {'source': 'border', 'target': 'shelter', 'value': 13},
+  {'source': 'border', 'target': 'leave', 'value': 11},
+  {'source': 'border', 'target': 'health', 'value': 11},
+  {'source': 'border', 'target': 'week', 'value': 7},
+  {'source': 'esk', 'target': 'shelter', 'value': 5},
+  {'source': 'esk', 'target': 'persecution', 'value': 1},
+  {'source': 'esk', 'target': 'message', 'value': 1},
+  {'source': 'esk', 'target': 'government', 'value': 11},
+  {'source': 'shelter', 'target': 'bamboo', 'value': 11},
+  {'source': 'shelter', 'target': 'country', 'value': 7},
+  {'source': 'shelter', 'target': 'plan', 'value': 1},
+  {'source': 'shelter', 'target': 'live', 'value': 11},
+  {'source': 'shelter', 'target': 'week', 'value': 13},
+  {'source': 'leave', 'target': 'flee', 'value': 1},
+  {'source': 'leave', 'target': 'bamboo', 'value': 11},
+  {'source': 'leave', 'target': 'right', 'value': 1},
+  {'source': 'leave', 'target': 'committee', 'value': 5},
+  {'source': 'leave', 'target': 'week', 'value': 1},
+  {'source': 'flee', 'target': 'right', 'value': 7},
+  {'source': 'flee', 'target': 'plan', 'value': 7},
+  {'source': 'flee', 'target': 'message', 'value': 13},
+  {'source': 'flee', 'target': 'called', 'value': 13},
+  {'source': 'flee', 'target': 'government', 'value': 1},
+  {'source': 'country', 'target': 'usk', 'value': 1},
+  {'source': 'country', 'target': 'persecution', 'value': 5},
+  {'source': 'country', 'target': 'health', 'value': 5},
+  {'source': 'country', 'target': 'criticism', 'value': 5},
+  {'source': 'country', 'target': 'week', 'value': 13},
+  {'source': 'right', 'target': 'barbed', 'value': 5},
+  {'source': 'right', 'target': 'health', 'value': 13},
+  {'source': 'right', 'target': 'criticism', 'value': 7},
+  {'source': 'right', 'target': 'government', 'value': 7},
+  {'source': 'plan', 'target': 'message', 'value': 1},
+  {'source': 'plan', 'target': 'rohingyas', 'value': 7},
+  {'source': 'plan', 'target': 'committee', 'value': 11},
+  {'source': 'plan', 'target': 'process', 'value': 1},
+  {'source': 'persecution', 'target': 'called', 'value': 7},
+  {'source': 'persecution', 'target': 'barbed', 'value': 1},
+  {'source': 'persecution', 'target': 'government', 'value': 13},
+  {'source': 'myanmar', 'target': 'message', 'value': 13},
+  {'source': 'message', 'target': 'called', 'value': 1},
+  {'source': 'message', 'target': 'committee', 'value': 13},
+  {'source': 'message', 'target': 'criticism', 'value': 11},
+  {'source': 'called', 'target': 'committee', 'value': 11},
+  {'source': 'called', 'target': 'live', 'value': 1},
+  {'source': 'called', 'target': 'week', 'value': 13},
+  {'source': 'rohingyas', 'target': 'committee', 'value': 7},
+  {'source': 'rohingyas', 'target': 'refugee', 'value': 13},
+  {'source': 'rohingyas', 'target': 'government', 'value': 7},
+  {'source': 'committee', 'target': 'live', 'value': 5},
+  {'source': 'live', 'target': 'week', 'value': 11}],
+ 'nodes': [{'group': 9, 'id': 'rohingya'},
+  {'group': 11, 'id': 'pressure'},
+  {'group': 2, 'id': 'crisis'},
+  {'group': 6, 'id': 'said'},
+  {'group': 0, 'id': 'people'},
+  {'group': 10, 'id': 'border'},
+  {'group': 11, 'id': 'esk'},
+  {'group': 4, 'id': 'shelter'},
+  {'group': 0, 'id': 'leave'},
+  {'group': 9, 'id': 'flee'},
+  {'group': 4, 'id': 'bamboo'},
+  {'group': 8, 'id': 'country'},
+  {'group': 5, 'id': 'usk'},
+  {'group': 3, 'id': 'right'},
+  {'group': 2, 'id': 'bangladesh'},
+  {'group': 3, 'id': 'plan'},
+  {'group': 3, 'id': 'persecution'},
+  {'group': 11, 'id': 'myanmar'},
+  {'group': 4, 'id': 'message'},
+  {'group': 2, 'id': 'called'},
+  {'group': 6, 'id': 'barbed'},
+  {'group': 1, 'id': 'rohingyas'},
+  {'group': 4, 'id': 'committee'},
+  {'group': 7, 'id': 'refugee'},
+  {'group': 11, 'id': 'process'},
+  {'group': 10, 'id': 'live'},
+  {'group': 1, 'id': 'health'},
+  {'group': 8, 'id': 'criticism'},
+  {'group': 10, 'id': 'week'},
+  {'group': 3, 'id': 'government'}]
+}
+
+def keywords_correlation(*args, **kwargs):
     from topic_modeling.keywords_extraction import get_key_ngrams
     doc = """
     Hosts feel the pressure, refugees ever grateful x Six months have passed since the latest influx from Myanmar’s Rakhine state started, but there has been no real headway in ending the ongoing Rohingya crisis. Nearly 700,000 Rohingyas managed to save their lives fleeing into Bangladesh after a military crackdown began in Rakhine on August 25 last year, leaving behind all their belongings and property. On humanitarian ground, Bangladesh allowed the Rohingyas to stay at the refugee camps set up in Cox’s Bazar’s Ukhiya and Teknaf upazilas, where several hundreds of thousands of Rohingyas were already living for many years. Although the process of providing shelter feels like somewhat of a burden to the locals and the government as the days have progressed, Rohingyas are always expressing their gratefulness to the people of Bangladesh and Prime Minister Sheikh Hasina
@@ -198,18 +296,41 @@ def keywords_correlation():
             continue
         for j in range(i+1, len(grams)):
             value = random.randrange(0, 15)
-            print(value)
             # just don't create edges for everything
             if value % 2 != 0 and value % 3 != 0:
                 data['edges'].append(
-                    {'source': x[0], 'destination': grams[j][0], 'value': value}
+                    {'source': x[0], 'target': grams[j][0], 'value': value}
                 )
     return data
 
+def subtopic_correlation(*args, **kwargs):
+    subtopics =  [
+        "Nutrition", "Shelter", "Agriculture", "Cross", "Protection",
+        "WASH", "Livelihood", "NFI", "Logistic", "Health", "Food", "Education",
+    ]
+    data = {x: {} for x in subtopics}
+    for i, k in enumerate(subtopics):
+        for j, l in enumerate(subtopics):
+            val = random.random()
+            if j < i:
+                data[k][l] = data[l][k]
+            elif j > i:
+                data[k][l] = val
+            else:
+                data[k][l] = 1.0
+    return data
+
+
 def static_data(*args, **kwargs):
     if kwargs['entity'] == 'subtopics':
-        return data
+        if kwargs.get('filter'):
+            return subtopic_correlation()
+        else:
+            return data  # TODO: think of something
     elif kwargs['entity'] == 'keywords':
-        return keywords_correlation()
+        if kwargs.get('filter'):
+            print('FILTER')
+            return keywords_correlation()
+        return keywords_data
     else:
         return {}

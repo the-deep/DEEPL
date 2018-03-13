@@ -30,7 +30,10 @@ def check_if_test(static_script, *dec_args):
     def actual_decorator(f):
         def wrapper(*args, **kwargs):
             test = args[1].GET.get('test')
-            if  test and (test == '1') or (test == 'true'):
+            tofilter = args[1].GET.get('filter')
+            if tofilter and (tofilter == '1') or (tofilter == 'true'):
+                kwargs['filter'] = True
+            if test and (test == '1') or (test == 'true'):
                 # try to import static_resposnes
                 try:
                     imported = import_module('static_responses.'+static_script)
