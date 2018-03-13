@@ -1,6 +1,6 @@
 import re
 from rest_framework.response import Response
-from static_responses import topic_modeling
+from static_responses import topic_modeling, subtopics_correlation
 
 
 def classify_text(classifier, text):
@@ -33,6 +33,8 @@ def check_if_test(static_script, *dec_args):
             if  test and (test == '1') or (test == 'true'):
                 if static_script == 'topic_modeling':
                     return Response(topic_modeling.static_data())
+                elif static_script == 'subtopics_correlation':
+                    return Response(subtopics_correlation.static_data())
                 else:
                     return f(*args, **kwargs)
             else:

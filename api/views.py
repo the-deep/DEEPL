@@ -456,6 +456,7 @@ class NERWithDocIdView(APIView):
 
 
 class CorrelationView(APIView):
+    @check_if_test('subtopics_correlation')
     def post(self, request, entity):
         validation_details = self._validate_params(request.data)
         if not validation_details['status']:
