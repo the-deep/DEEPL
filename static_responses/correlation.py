@@ -172,7 +172,7 @@ data = {
     }
 }
 
-keywords_data = {'edges': [{'source': 'rohingya', 'target': 'crisis', 'value': 11},
+keywords_data = {'links': [{'source': 'rohingya', 'target': 'crisis', 'value': 11},
   {'source': 'rohingya', 'target': 'esk', 'value': 13},
   {'source': 'rohingya', 'target': 'bangladesh', 'value': 1},
   {'source': 'rohingya', 'target': 'called', 'value': 7},
@@ -289,16 +289,16 @@ def keywords_correlation(*args, **kwargs):
         {'id': x[0], 'group': random.choice(groups)}
         for x in grams
     ]
-    # now create edges
-    data['edges'] = []
+    # now create links
+    data['links'] = []
     for i, x in enumerate(grams):
         if random.random() < 0.3:
             continue
         for j in range(i+1, len(grams)):
             value = random.randrange(0, 15)
-            # just don't create edges for everything
+            # just don't create links for everything
             if value % 2 != 0 and value % 3 != 0:
-                data['edges'].append(
+                data['links'].append(
                     {'source': x[0], 'target': grams[j][0], 'value': value}
                 )
     return data
