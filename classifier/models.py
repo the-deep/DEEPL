@@ -34,6 +34,7 @@ class ClassifierModel(BaseModel):
     _data = models.TextField(db_column='data')
     accuracy = models.FloatField(default=0)
     description = models.TextField()
+    test_file_path = models.CharField(max_length=250, null=True)
     metadata = JSONField(default={})
 
     def set_data(self, data):
