@@ -31,15 +31,16 @@ def check_if_test(static_script, *dec_args):
         def wrapper(*args, **kwargs):
             test = args[1].GET.get('test')
             tofilter = args[1].GET.get('filter')
-            if tofilter and (tofilter == '1') or (tofilter == 'true'):
-                kwargs['filter'] = True
             if test and (test == '1') or (test == 'true'):
+                if tofilter and (tofilter == '1') or (tofilter == 'true'):
+                    kwargs['filter'] = True
                 # try to import static_resposnes
                 try:
                     imported = import_module('static_responses.'+static_script)
                     return Response(imported.static_data(*args, **kwargs))
                 except (ImportError, ModuleNotFoundError):
-                    print('Import error, ModuleNotFound Error')
+                    if 'filter' in kwargs:
+                        del kwargs['filter']
                     return f(*args, **kwargs)
             else:
                 return f(*args, **kwargs)
