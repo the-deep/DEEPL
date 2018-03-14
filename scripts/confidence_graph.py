@@ -27,22 +27,23 @@ COLORS = [
 ]
 
 
-def get_confidences(classifier):
+def get_confidences(classifier, test_data):
     """
     Get the confidences values for all the datasets
     @classifier: classifier object
+    @test_data: test data specific to the classifier
 
     It returns {correct_confidences: [float], incorrect_confidences:[float]}
     """
-    deep_data = get_processed_data(
-        '_playground/sample_data/processed_sectors_subsectors.csv'
-        # 'fixtures/processed_data_for_testing.csv'
-    )
+    # deep_data = get_processed_data(
+        # '_playground/sample_data/processed_sectors_subsectors.csv'
+        # # 'fixtures/processed_data_for_testing.csv'
+    # )
     # confidences for correct and incorrect prediction
     correct_confidences = []
     incorrect_confidences = []
 
-    for text, label in deep_data:
+    for text, label in test_data:
         classification = classifier.classify_as_label_probs(text)
         confidence = classification_confidence(classification)
         classified_label = classification[0][0]  # get the max
@@ -118,14 +119,28 @@ def main(*args):
     import pickle
     import datetime
     from classifier.models import ClassifierModel
-    c = ClassifierModel.objects.last()
+    if not args:
+        print("ERROR: Please provide model version number.\nUSAGE: ./manage.py runscript classifier_confidence <version number> [scatterplot|bar]")
+        return
+    pk = args[0]
+    c = ClassifierModel.objects.get(version=pk)
+    # Get test data
+    try:
+        testdata = pickle.load(open(c.test_file_path, 'rb'))
+    except FileNotFoundError:
+        print("ERROR: Test data file could not be found")
+        return
+    except TypeError:
+        print("ERROR: Could not load test data file. Does classifier Model have file path set?")
+        return
+
     classifier = pickle.loads(c.data)
     print("Getting confidences of the latest model")
-    confs = get_confidences(classifier)
+    confs = get_confidences(classifier, testdata)
 
     name = '{}-{}.png'.format(datetime.datetime.now(), {})
     name = name.replace(' ', '.')
-    if args and args[0] == 'scatterplot':
+    if len(args) > 1 and args[1] == 'scatterplot':
         print("Creating scatterplot of the confidences")
         f = scatter_plot(confs)
         name = name.format('scatter')
