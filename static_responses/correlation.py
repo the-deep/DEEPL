@@ -268,6 +268,7 @@ keywords_data = {'links': [{'source': 'rohingya', 'target': 'crisis', 'value': 1
   {'group': 3, 'id': 'government'}]
 }
 
+
 def keywords_correlation(*args, **kwargs):
     from topic_modeling.keywords_extraction import get_key_ngrams
     doc = """
@@ -297,7 +298,7 @@ def keywords_correlation(*args, **kwargs):
         for j in range(i+1, len(grams)):
             value = random.randrange(0, 15)
             # just don't create links for everything
-            if value % 4 != 0:
+            if value % 2 != 0:
                 data['links'].append(
                     {'source': x[0], 'target': grams[j][0], 'value': value}
                 )
