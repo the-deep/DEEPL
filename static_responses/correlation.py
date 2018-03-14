@@ -236,35 +236,35 @@ keywords_data = {'links': [{'source': 'rohingya', 'target': 'crisis', 'value': 1
   {'source': 'rohingyas', 'target': 'government', 'value': 7},
   {'source': 'committee', 'target': 'live', 'value': 5},
   {'source': 'live', 'target': 'week', 'value': 11}],
- 'nodes': [{'group': 9, 'id': 'rohingya'},
-  {'group': 11, 'id': 'pressure'},
+ 'nodes': [{'group': 3, 'id': 'rohingya'},
+  {'group': 5, 'id': 'pressure'},
   {'group': 2, 'id': 'crisis'},
-  {'group': 6, 'id': 'said'},
+  {'group': 0, 'id': 'said'},
   {'group': 0, 'id': 'people'},
-  {'group': 10, 'id': 'border'},
-  {'group': 11, 'id': 'esk'},
+  {'group': 4, 'id': 'border'},
+  {'group': 5, 'id': 'esk'},
   {'group': 4, 'id': 'shelter'},
   {'group': 0, 'id': 'leave'},
-  {'group': 9, 'id': 'flee'},
+  {'group': 3, 'id': 'flee'},
   {'group': 4, 'id': 'bamboo'},
-  {'group': 8, 'id': 'country'},
+  {'group': 2, 'id': 'country'},
   {'group': 5, 'id': 'usk'},
   {'group': 3, 'id': 'right'},
   {'group': 2, 'id': 'bangladesh'},
   {'group': 3, 'id': 'plan'},
   {'group': 3, 'id': 'persecution'},
-  {'group': 11, 'id': 'myanmar'},
+  {'group': 5, 'id': 'myanmar'},
   {'group': 4, 'id': 'message'},
   {'group': 2, 'id': 'called'},
-  {'group': 6, 'id': 'barbed'},
+  {'group': 0, 'id': 'barbed'},
   {'group': 1, 'id': 'rohingyas'},
   {'group': 4, 'id': 'committee'},
-  {'group': 7, 'id': 'refugee'},
-  {'group': 11, 'id': 'process'},
-  {'group': 10, 'id': 'live'},
+  {'group': 1, 'id': 'refugee'},
+  {'group': 5, 'id': 'process'},
+  {'group': 4, 'id': 'live'},
   {'group': 1, 'id': 'health'},
-  {'group': 8, 'id': 'criticism'},
-  {'group': 10, 'id': 'week'},
+  {'group': 2, 'id': 'criticism'},
+  {'group': 4, 'id': 'week'},
   {'group': 3, 'id': 'government'}]
 }
 
@@ -281,7 +281,7 @@ def keywords_correlation(*args, **kwargs):
     The Children’s Consultation exercise collected a wealth of information however, due to time required for data encoding following the consultations there were significant limitations for detailed analysis. Therefore, main findings have been organised by sector allowing readers to easily navigate and influence their HRP contributions. It should be noted that this Children’s Consultation is not a sectoral needs assessment in itself but rather a collation of issues affecting children and their own perceptions of what is important to them based on what they believe to be their current reality.
     """
     # generate static data
-    groups  = [x for x in range(12)]
+    groups  = [x for x in range(6)]
     grams = get_key_ngrams(doc, max_grams=1)['1grams']
     grams = grams[:30]
     data = {}
@@ -297,11 +297,12 @@ def keywords_correlation(*args, **kwargs):
         for j in range(i+1, len(grams)):
             value = random.randrange(0, 15)
             # just don't create links for everything
-            if value % 2 != 0 and value % 3 != 0:
+            if value % 3 != 0:
                 data['links'].append(
                     {'source': x[0], 'target': grams[j][0], 'value': value}
                 )
     return data
+
 
 def subtopic_correlation(*args, **kwargs):
     subtopics =  [
