@@ -473,14 +473,20 @@ class CorrelationView(APIView):
                 (x.classification_label, x.text)
                 for x in classified_docs
             ]
-        try:
-            correlated_data = get_documents_correlation(classified_docs)
-        except Exception:
-            logger.warning(traceback.format_exc())
-            return Response(
-                {"error": "Something went wrong. Try later"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if entity == 'subtopics':
+            try:
+                correlated_data = get_documents_correlation(classified_docs)
+            except Exception:
+                logger.warning(traceback.format_exc())
+                return Response(
+                    {"error": "Something went wrong. Try later"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        elif entity == 'keywords':
+            from static_responses.correlation import keywords_data
+            correlated_data = keywords_data
+        else:
+            correlated_data = {}
         return Response(correlated_data)
 
     def _validate_params(self, params):
