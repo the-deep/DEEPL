@@ -297,7 +297,7 @@ def keywords_correlation(*args, **kwargs):
         for j in range(i+1, len(grams)):
             value = random.randrange(0, 15)
             # just don't create links for everything
-            if value % 3 != 0:
+            if value % 4 != 0:
                 data['links'].append(
                     {'source': x[0], 'target': grams[j][0], 'value': value}
                 )

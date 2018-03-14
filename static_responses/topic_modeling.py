@@ -345,7 +345,7 @@ def get_levels(topics, keywords, depth, words):
         level['Topic {}'.format(x)] = {
             'keywords': [random.choice(words) for _ in range(keywords)],
             'subtopics': get_levels(topics, keywords, depth-1, words) \
-                if random.random() > 0.7/(0.3*depth) else {}
+                if random.random() > 0.7/(0.25*depth) else {}
         }
     return level
 
@@ -358,4 +358,4 @@ def get_random_data(topics=3, keywords=3, depth=5):
 
 
 def static_data(*args, **kwargs):
-    return get_random_data(3, 4, 5)
+    return get_random_data(4, 4, 5)
