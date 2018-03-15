@@ -11,16 +11,17 @@ def main(*args):
     classifiers_map = {c.id: pickle.loads(c.data) for c in classifier_models}
     # first run for ClassifiedDocuments
     chunksize = 20
-    start = 0
+    chunkcounter = 0
     while True:
-        frm = start * chunksize
-        to = (start + 1) * chunksize
+        frm = chunkcounter * chunksize
+        to = (chunkcounter + 1) * chunksize
         objs = ClassifiedDocument.objects.all()[frm:to]
         if not objs:
             print("No more data")
             break
         for doc in objs:
-            print('doc_id', doc.id)
+            print('chunk number', chunkcounter, 'doc_id', doc.id)
+            prev = doc.classification_probabilities[0]
             classifier = classifiers_map.get(doc.classifier.id)
             if not classifier:
                 continue
@@ -33,6 +34,7 @@ def main(*args):
             doc.confidence = confidence
             doc.classification_probabilities = classification_probs
             doc.save()
+            print("prev", prev, "current", classification_probs[0])
 
             # now the excerpts
             for excerpt in doc.excerpts.all():
@@ -45,4 +47,4 @@ def main(*args):
                 excerpt.classification_probabilities = classification_probs
                 excerpt.classification_label = classification_label
                 excerpt.save()
-        start+=1
+        chunkcounter += 1
