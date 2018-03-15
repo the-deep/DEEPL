@@ -1,9 +1,11 @@
 import pickle
 
 from classifier.models import (
-    ClassifiedDocument, ClassifierModel
+    ClassifiedDocument, ClassifierModel, ClassifiedExcerpt
 )
 from helpers.common import classification_confidence
+
+from django.db import transaction
 
 
 def main(*args):
@@ -15,36 +17,49 @@ def main(*args):
     while True:
         frm = chunkcounter * chunksize
         to = (chunkcounter + 1) * chunksize
-        objs = ClassifiedDocument.objects.all()[frm:to]
-        if not objs:
+        texts = ClassifiedDocument.objects.all().\
+            values('id', 'text', 'classifier')[frm:to]
+        if not texts:
             print("No more data")
             break
-        for doc in objs:
-            print('chunk number', chunkcounter, 'doc_id', doc.id)
-            prev = doc.classification_probabilities[0]
-            classifier = classifiers_map.get(doc.classifier.id)
-            if not classifier:
-                continue
-            processed = classifier.preprocess(doc.text)
-            classification_probs = classifier.classify_as_label_probs(processed)
-            classification_label = classification_probs[0][0]
-            confidence = classification_confidence(classification_probs)
-            # update
-            doc.classification_label = classification_label
-            doc.confidence = confidence
-            doc.classification_probabilities = classification_probs
-            doc.save()
-            print("prev", prev, "current", classification_probs[0])
+        print('RUNNING CHUNK', chunkcounter)
 
-            # now the excerpts
-            for excerpt in doc.excerpts.all():
-                txt = processed[excerpt.start_pos:excerpt.end_pos+1]
-                classification_probs = classifier.classify_as_label_probs(txt)
-                classification_label = classification_probs[0][0]
-                confidence = classification_confidence(classification_probs)
-                # update
-                excerpt.confidence = confidence
-                excerpt.classification_probabilities = classification_probs
-                excerpt.classification_label = classification_label
-                excerpt.save()
+        for x in texts:
+            clf = classifiers_map.get(x['classifier'])
+            clfn = clf.classify_as_label_probs(clf.preprocess(x['text']))
+            x['classification_probabilities'] = clfn
+            x['confidence'] = classification_confidence(clfn)
+
+        # make atomic transaction
+        with transaction.atomic():
+            for x in texts:
+                probs = x['classification_probabilities']
+                ClassifiedDocument.objects.filter(id=x['id']).update(
+                    classification_label=probs[0][0],
+                    confidence=x['confidence'],
+                    classification_probabilities=probs
+                )
+
+        # now the excerpts
+        for x in texts:
+            excerpts = ClassifiedExcerpt.objects.filter(
+                classified_document__id=x['id']
+            ).values('id', 'start_pos', 'end_pos')
+            for y in excerpts:
+                clf = classifiers_map.get(x['classifier'])
+                clfn = clf.classify_as_label_probs(clf.preprocess(
+                    x['text'][y['start_pos']:y['end_pos']]
+                ))
+                y['classification_probabilities'] = clfn
+                y['confidence'] = classification_confidence(clfn)
+
+        # update the excerpts
+        with transaction.atomic():
+            for x in excerpts:
+                probs = x['classification_probabilities']
+                ClassifiedExcerpt.objects.filter(id=x['id']).update(
+                    classification_label=probs[0][0],
+                    classification_probabilities=probs,
+                    confidence=x['confidence']
+                )
         chunkcounter += 1
