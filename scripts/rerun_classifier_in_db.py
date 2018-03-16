@@ -25,6 +25,7 @@ def main(*args):
         print('RUNNING CHUNK', chunkcounter)
 
         for x in texts:
+            continue
             clf = classifiers_map.get(x['classifier'])
             clfn = clf.classify_as_label_probs(clf.preprocess(x['text']))
             x['classification_probabilities'] = clfn
@@ -33,6 +34,7 @@ def main(*args):
         # make atomic transaction
         with transaction.atomic():
             for x in texts:
+                continue
                 probs = x['classification_probabilities']
                 ClassifiedDocument.objects.filter(id=x['id']).update(
                     classification_label=probs[0][0],
@@ -45,7 +47,9 @@ def main(*args):
             excerpts = ClassifiedExcerpt.objects.filter(
                 classified_document__id=x['id']
             ).values('id', 'start_pos', 'end_pos')
+            print("LEN", len(excerpts))
             for y in excerpts:
+                print("EXC ID",  y['id'])
                 clf = classifiers_map.get(x['classifier'])
                 clfn = clf.classify_as_label_probs(clf.preprocess(
                     x['text'][y['start_pos']:y['end_pos']]
@@ -55,9 +59,11 @@ def main(*args):
 
         # update the excerpts
         with transaction.atomic():
-            for x in excerpts:
-                probs = x['classification_probabilities']
-                ClassifiedExcerpt.objects.filter(id=x['id']).update(
+            print("ATOMIC LEN", len(excerpts))
+            for y in excerpts:
+                print("ATOMIC EXC ID",  y['id'])
+                probs = y['classification_probabilities']
+                ClassifiedExcerpt.objects.filter(id=y['id']).update(
                     classification_label=probs[0][0],
                     classification_probabilities=probs,
                     confidence=x['confidence']

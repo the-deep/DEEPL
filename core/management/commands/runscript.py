@@ -15,7 +15,7 @@ class Command(BaseCommand):
         other_args = options['extra']
         try:
             script = import_module('scripts.{}'.format(scriptname))
-        except ModuleNotFoundError:
+        except ImportError:
             print("ERROR!! The script you requesed does not exist.")
             return
         # the script should have main function accepting *args
