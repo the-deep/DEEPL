@@ -36,6 +36,8 @@ class ClassifiedDocumentSerializer(serializers.ModelSerializer):
 class ClassifiedExcerptSerializer(serializers.ModelSerializer):
     """Serialiser for classified excerpt"""
     classification = serializers.SerializerMethodField()
+    start_pos = serializers.SerializerMethodField()
+    end_pos = serializers.SerializerMethodField()
 
     class Meta:
         model = ClassifiedExcerpt
@@ -43,6 +45,22 @@ class ClassifiedExcerptSerializer(serializers.ModelSerializer):
             'start_pos', 'end_pos', 'classification',
             'classification_confidence'
         )
+
+    def get_start_pos(self, obj):
+        txt = obj.classified_document.text
+        pos = obj.start_pos
+        print(txt[obj.start_pos:obj.end_pos], "....")
+        while txt[pos] in ' \n"?\'”' and pos < obj.end_pos:
+            pos+=1
+        print(txt[pos:obj.end_pos], ">>>>>")
+        return pos
+        
+    def get_end_pos(self, obj):
+        txt = obj.classified_document.text
+        pos = obj.end_pos
+        while txt[pos] in ' \n"?\'”' and pos > obj.start_pos:
+            pos-=1
+        return pos
 
     def get_classification(self, obj):
         return obj.classification_probabilities
