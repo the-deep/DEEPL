@@ -57,15 +57,17 @@ def main(*args):
                 y['classification_probabilities'] = clfn
                 y['confidence'] = classification_confidence(clfn)
 
-        # update the excerpts
-        with transaction.atomic():
+            # update the excerpts
             print("ATOMIC LEN", len(excerpts))
-            for y in excerpts:
-                print("ATOMIC EXC ID",  y['id'])
-                probs = y['classification_probabilities']
-                ClassifiedExcerpt.objects.filter(id=y['id']).update(
-                    classification_label=probs[0][0],
-                    classification_probabilities=probs,
-                    confidence=x['confidence']
-                )
+            print("Entering atomic block")
+            with transaction.atomic():
+                print("ATOMIC LEN", len(excerpts))
+                for y in excerpts:
+                    print("ATOMIC EXC ID",  y['id'])
+                    probs = y['classification_probabilities']
+                    ClassifiedExcerpt.objects.filter(id=y['id']).update(
+                        classification_label=probs[0][0],
+                        classification_probabilities=probs,
+                        confidence=y['confidence']
+                    )
         chunkcounter += 1
