@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+    db:
+        image: postgres:9.6
+        volumes:
+            - ./postgres-data:/var/lib/postgresql/data
+    web:
+        build: .
+        env_file:
+            - .nlp_env
+        command: ['/code/deploy/scripts/wait-for-it.sh', 'db:5432', '--', '/code/deploy/scripts/run_develop.sh', 'django']
+        volumes:
+            - .:/code
+            - ./media:/media
+        ports:
+            - '8000:8000'
+        depends_on:
+            - db
