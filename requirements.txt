@@ -10,6 +10,7 @@ cytoolz==0.8.2
 decorator==4.1.2
 dill==0.2.7.1
 Django==1.11
+django-cors-headers==2.2.0
 djangorestframework==3.7.1
 entrypoints==0.2.3
 ftfy==4.4.3

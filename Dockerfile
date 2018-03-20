@@ -2,12 +2,6 @@ FROM ubuntu:16.04
 
 MAINTAINER bewakes bewakepandey@gmail.com
 
-# Clean apt
-RUN apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf /var/lib/apt/lists/partial/* && \
-    rm -rf /var/cache/apt/*
-
 # Update and install common packages with apt
 RUN apt-get update -y && \
     apt-get install -y \
@@ -16,6 +10,7 @@ RUN apt-get update -y && \
         vim \
         curl \
         cron \
+        python-dev \
         python3 \
         python3-dev \
         python3-setuptools \
@@ -41,3 +36,20 @@ RUN apt-get install -y nodejs
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 RUN apt-get update && apt-get install yarn
+
+WORKDIR /code
+
+RUN pip3 install virtualenv
+RUN virtualenv /venv
+
+COPY requirements.txt /code/
+
+RUN . /venv/bin/activate && \
+    pip install -r requirements.txt &&  \
+    python -c "import nltk; nltk.download('stopwords')" && \
+    python -c "import nltk; nltk.download('wordnet')" && \
+    python -c "import nltk; nltk.download('averaged_perceptron_tagger')"
+
+COPY . /code/
+
+#CMD ./deploy/scripts/run_prod.sh
