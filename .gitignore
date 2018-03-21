@@ -112,3 +112,5 @@ node_modules/
 *.rest
 *.png
 .pytest_cache/
+model_test_datas/
+static/
