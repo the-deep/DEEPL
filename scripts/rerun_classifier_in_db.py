@@ -47,7 +47,6 @@ def main(*args):
             excerpts = ClassifiedExcerpt.objects.filter(
                 classified_document__id=x['id']
             ).values('id', 'start_pos', 'end_pos')
-            print("LEN", len(excerpts))
             for y in excerpts:
                 print("EXC ID",  y['id'])
                 clf = classifiers_map.get(x['classifier'])
@@ -58,12 +57,8 @@ def main(*args):
                 y['confidence'] = classification_confidence(clfn)
 
             # update the excerpts
-            print("ATOMIC LEN", len(excerpts))
-            print("Entering atomic block")
             with transaction.atomic():
-                print("ATOMIC LEN", len(excerpts))
                 for y in excerpts:
-                    print("ATOMIC EXC ID",  y['id'])
                     probs = y['classification_probabilities']
                     ClassifiedExcerpt.objects.filter(id=y['id']).update(
                         classification_label=probs[0][0],
