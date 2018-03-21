@@ -124,6 +124,23 @@ def lemmatize(text, lemmatizer=WordNetLemmatizer()):
     return ' '.join(lemmatized)
 
 
+def preprocess(inp, ignore_numbers=False):
+    """Preprocess the input string"""
+    func = compose(
+        ' '.join,
+        str.split,
+        str.lower,
+        remove_punc_and_nums,
+        lemmatize,
+        rm_stop_words_txt,
+        str
+    )
+    processed = func(inp)
+    if ignore_numbers:
+        return processed.replace('nn', '')
+    return processed
+
+
 def get_confidence_interval_discrete(percent, true, total):
     factor = 2 if percent == 95 else 1.5  # TODO: add other confidence levels
     adjusted_true = true + 2
