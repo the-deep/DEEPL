@@ -8,10 +8,10 @@ from similarity.helpers import (
     get_inverse_frequencies,
     get_number_of_documents
 )
-np.seterr(divide='ignore', invalid='ignore')
+from classifier.models import ClassifiedDocument
 
 
-class DocumentSimilarity:
+class DocumentSimilarityModel:
     """
     Class for calculating similarities between two documents
     """
@@ -50,14 +50,25 @@ class DocumentSimilarity:
             vec1 = np.array(vec1)
         if not isinstance(vec2, np.ndarray):
             vec2 = np.array(vec2)
-        print(vec1)
-        print(vec2)
         n1 = vec1 / np.linalg.norm(vec1)
         n2 = vec2 / np.linalg.norm(vec2)
         dot = np.dot(n1, n2)
+        if np.isnan(dot):
+            return 0.0
         return dot
 
     def documents_similarity(self, doc1, doc2):
         v1 = self.get_text_vector(doc1)
         v2 = self.get_text_vector(doc2)
         return self.cosine_smilarity(v1, v2)
+
+    def get_document_vector(self, docid):
+        """Get vector for the document with given docid.
+        Will get ClassifiedDocument object.
+        """
+        try:
+            doc = ClassifiedDocument.objects.get(id=docid)
+        except ClassifiedDocument.DoesNotExist:
+            return None
+        else:
+            return self.get_text_vector(doc.text)
