@@ -2,7 +2,7 @@ import unittest
 import os
 from django.conf import settings
 
-from similarity.document_similarity import DocumentSimilarity
+from similarity.document_similarity import DocumentSimilarityModel
 from similarity.helpers import (
     get_indexed_terms,
     get_term_frequencies,
@@ -12,7 +12,7 @@ from similarity.helpers import (
 from helpers.common import preprocess
 
 
-class TestDocumentSimilarity(unittest.TestCase):
+class TestDocumentSimilarityModel(unittest.TestCase):
     """
     Testing of various similarity usecases
     """
@@ -22,9 +22,9 @@ class TestDocumentSimilarity(unittest.TestCase):
             os.path.dirname(settings.BASE_DIR), 'test_indices'
         )
         os.environ[settings.INDICES_PATH_ENV_VAR] = test_indices_path
-        self.similarity_model = DocumentSimilarity()
+        self.similarity_model = DocumentSimilarityModel()
 
-    def itest_similarity_two_texts(self, doc1, doc2):
+    def test_similarity_two_texts(self, doc1, doc2):
         # First preprocess  documents
         doc1 = preprocess(doc1)
         doc2 = preprocess(doc2)
