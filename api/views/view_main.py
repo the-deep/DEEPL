@@ -2,8 +2,6 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-import pickle
-
 from api.helpers import (
     classify_text,
     classify_lead_excerpts,
@@ -27,6 +25,7 @@ from classifier.serializers import (
 from topic_modeling.lda import get_topics_and_subtopics
 from topic_modeling.keywords_extraction import get_key_ngrams
 from NER.ner import get_ner_tagging
+from classifier.globals import get_classifiers
 
 from correlation.tasks import get_documents_correlation
 
@@ -41,12 +40,7 @@ class DocumentClassifierView(APIView):
     """
     def __init__(self):
         # load all the classifiers
-        self.classifiers = {'v'+str(x.version): {
-            'classifier': pickle.loads(x.data),
-            'classifier_model': x
-            }
-            for x in ClassifierModel.objects.all()
-        }
+        self.classifiers = get_classifiers()
 
     def post(self, request, version):
         data = dict(request.data.items())
