@@ -2,16 +2,19 @@ from rest_framework.test import APITestCase
 
 from helpers.deep import get_processed_data
 from helpers.create_classifier import create_classifier_model
-from classifier.models import ClassifiedDocument
+from classifier.models import ClassifiedDocument, ClassifierModel
 
 
 class TestClassificationAPI(APITestCase):
     """
     Tests for text classification API
     """
+    fixtures = [
+        'fixtures/classifier.json'
+    ]
+
     def setUp(self):
-        self.classifier_model = self._get_model(version=1)
-        self.classifier_model.save()
+        self.classifier_model = ClassifierModel.objects.get(version=1)
         self.classified_doc = ClassifiedDocument.objects.create(
             text="Sample text",
             classifier=self.classifier_model,
@@ -107,7 +110,6 @@ def assertion_structure_data(structure, data):
     Automatic checks if data matches structure
     """
     # TODO: fix this, currently errors
-    print(structure)
     if type(structure) == dict:
         assert isinstance(data, dict)
         for k, v in structure.items():
