@@ -106,7 +106,6 @@ ENV/
 tags
 .bro*
 *.pyc
-migrations
 db.sqlite3
 node_modules/
 *.rest
