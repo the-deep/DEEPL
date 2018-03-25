@@ -3,6 +3,7 @@ from rest_framework.test import APITestCase
 from helpers.deep import get_processed_data
 from helpers.create_classifier import create_classifier_model
 from classifier.models import ClassifiedDocument, ClassifierModel
+from classifier.globals import init
 
 
 class TestClassificationAPI(APITestCase):
@@ -15,6 +16,7 @@ class TestClassificationAPI(APITestCase):
 
     def setUp(self):
         self.classifier_model = ClassifierModel.objects.get(version=1)
+        init()
         self.classified_doc = ClassifiedDocument.objects.create(
             text="Sample text",
             classifier=self.classifier_model,

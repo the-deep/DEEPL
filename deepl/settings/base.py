@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'topic_modeling',
     'correlation',
     'NER',
+    'similarity',
 ]
 
 MIDDLEWARE = [
@@ -93,28 +94,16 @@ _DATABASES = {
     }
 }
 
-if os.environ.get('PROD_DOCKER'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'postgres',
-            'USER': 'postgres',
-            'PASSWORD': 'postgres',
-            'HOST': 'db',
-            'PORT': '',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ['DB_NAME'],
+        'USER': os.environ['DB_USER'],
+        'PASSWORD': os.environ['DB_PASSWORD'],
+        'HOST': os.environ['DB_HOST'],
+        'PORT': '',
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'deepldb',
-            'USER': 'deepl',
-            'PASSWORD': 'deepinside',
-            'HOST': 'localhost',
-            'PORT': '',
-        }
-    }
+}
 
 
 # Password validation

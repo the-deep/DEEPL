@@ -24,11 +24,13 @@ class TestDocumentSimilarityModel(unittest.TestCase):
         os.environ[settings.INDICES_PATH_ENV_VAR] = test_indices_path
         self.similarity_model = DocumentSimilarityModel()
 
-    def test_similarity_two_texts(self, doc1, doc2):
+    def test_similarity_two_texts(self):
         # First preprocess  documents
+        doc1 = "This is test. Aeroplane flight"
+        doc2 = "This is test"
         doc1 = preprocess(doc1)
         doc2 = preprocess(doc2)
-        similarity = self.similarity_model.get_similarity(doc1, doc2)
+        similarity = self.similarity_model.documents_similarity(doc1, doc2)
         assert isinstance(similarity, float)
 
     def test_get_text_vector(self):

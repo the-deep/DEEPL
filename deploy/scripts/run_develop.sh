@@ -9,6 +9,7 @@ cd $ROOT_DIR
 
 . /venv/bin/activate
 pip3 install -r requirements.txt
+export NLP_INDICES_PATH=/code/nlp_indices/
 yarn install
 webpack
 python manage.py migrate --no-input

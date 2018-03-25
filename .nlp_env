@@ -1,0 +1,5 @@
+NLP_INDICES_PATH=/code/nlp_indices/
+DB_NAME=postgres
+DB_HOST=db
+DB_USER=postgres
+DB_PASSWORD=postgres

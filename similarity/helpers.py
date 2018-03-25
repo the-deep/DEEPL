@@ -60,7 +60,7 @@ def get_number_of_documents():
         return int(data.split()[1])
 
 
-def get_similar_docs(doc, similarity_model, threshold=0.7, limit=None):
+def get_similar_docs(doc, similarity_model, threshold=0.0, limit=None):
     """
     Return all the docs which are similar to given docs
     @doc: The document(text) which is queried
