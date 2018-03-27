@@ -1,4 +1,5 @@
 import os
+import json
 
 from django.conf import settings
 
@@ -9,29 +10,30 @@ from classifier.models import ClassifiedDocument
 def get_indexed_terms():
     indicespath = get_env_path_or_exception(settings.INDICES_PATH_ENV_VAR)
     filepath = os.path.join(indicespath, settings.TERM_INDEX_FILENAME)
-    terms = {}
     with open(filepath, 'r') as f:
-        for i, term in enumerate(f.readlines()):
-            terms[term.strip()] = i
-    return terms
+        return json.loads(f.read())
 
 
-def get_term_frequencies():
+def get_term_frequencies_data():
+    """Return dict:
+    {"num_docs": <>, "docs_tf": { "<doc id>": {<term id>: <freq>}}}
+    """
     indicespath = get_env_path_or_exception(settings.INDICES_PATH_ENV_VAR)
     filepath = os.path.join(
         indicespath,
         settings.TERM_FREQUENCY_INDEX_FILENAME
     )
-    terms_freqs = {}
     with open(filepath, 'r') as f:
-        f.readline()  # first line contains num docs, ignore it now
-        f.readline()  # next line contains labels
-        for data in f.readlines():
-            termid, docid, freq = list(map(int, data.split()))
-            termdata = terms_freqs.get(termid, {})
-            termdata[docid] = freq
-            terms_freqs[termid] = termdata
-    return terms_freqs
+        data = json.loads(f.read())
+        # indices are str, convert to int
+        docs_tf = {}
+        for k in data['docs_tf']:
+            tmp = {}
+            for kk in data['docs_tf'][k]:
+                tmp[int(kk)] = data['docs_tf'][k][kk]
+            docs_tf[int(k)] = tmp
+        data['docs_tf'] = docs_tf
+        return data
 
 
 def get_inverse_frequencies():
@@ -40,15 +42,16 @@ def get_inverse_frequencies():
         indicespath,
         settings.INVERSE_FREQUENCY_INDEX_FILENAME
     )
-    inv_freqs = {}
     with open(filepath, 'r') as f:
-        f.readline()  # first line contains labels
-        for data in f.readlines():
-            tid, docfreq = list(map(int, data.split()))
-            inv_freqs[tid] = docfreq
-    return inv_freqs
+        data = json.loads(f.read())
+        # convert string indices to int
+        temp = {}
+        for k in data:
+            temp[int(k)] = data[k]
+        return temp
 
 
+# NOTE: not used
 def get_number_of_documents():
     indicespath = get_env_path_or_exception(settings.INDICES_PATH_ENV_VAR)
     filepath = os.path.join(
@@ -60,7 +63,7 @@ def get_number_of_documents():
         return int(data.split()[1])
 
 
-def get_similar_docs(doc, similarity_model, threshold=0.0, limit=None):
+def get_similar_docs(doc, similarity_model, threshold=0.3, limit=None):
     """
     Return all the docs which are similar to given docs
     @doc: The document(text) which is queried

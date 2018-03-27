@@ -5,7 +5,7 @@ from django.conf import settings
 from similarity.document_similarity import DocumentSimilarityModel
 from similarity.helpers import (
     get_indexed_terms,
-    get_term_frequencies,
+    get_term_frequencies_data,
     get_inverse_frequencies,
     get_number_of_documents
 )
@@ -34,11 +34,14 @@ class TestDocumentSimilarityModel(unittest.TestCase):
         assert isinstance(similarity, float)
 
     def test_get_text_vector(self):
-        text = "this is some random text. this is runway"
+        text = "exact record runway crash"
         vec = self.similarity_model.get_text_vector(text)
         assert isinstance(vec, list)
+        print(self.similarity_model.terms_len)
+        assert len(vec) == self.similarity_model.terms_len
         for x in vec:
             assert isinstance(x, float)
+        print(vec)
         assert any(vec), "Not all dimensions can be zero"
 
     def test_cosine_similarity(self):
@@ -74,10 +77,13 @@ class TestSimilarityHelpers(unittest.TestCase):
             assert isinstance(t, str)
             assert isinstance(i, int)
 
-    def test_get_germ_frequencies(self):
-        freqs = get_term_frequencies()
-        # data should be {termid: {docid: freq}, ... }
-        for t, f in freqs.items():
+    def test_get_term_frequencies_data(self):
+        data = get_term_frequencies_data()
+        assert isinstance(data, dict)
+        assert 'num_docs' in data
+        assert 'docs_tf' in data
+        assert isinstance(data['num_docs'], int)
+        for t, f in data['docs_tf'].items():
             assert isinstance(f, dict)
             for k, v in f.items():
                 assert isinstance(k, int)
@@ -89,6 +95,7 @@ class TestSimilarityHelpers(unittest.TestCase):
             assert isinstance(t, int)
             assert isinstance(f, int)
 
-    def test_get_number_of_documents(self):
+    # NO need to test this now, get_term_frequencies_data gives it
+    def itest_get_number_of_documents(self):
         num = get_number_of_documents()
         assert isinstance(num, int)

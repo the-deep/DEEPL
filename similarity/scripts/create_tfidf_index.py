@@ -1,4 +1,5 @@
 import os
+import json
 
 from django.conf import settings
 
@@ -24,7 +25,7 @@ def create_terms_index(terms):
 
 def create_tf_index(docs):
     """
-    Create index
+    Create index, store inverted inedices
     @docs: [{'text': <document text>, 'id': <document id>} ... ]
     """
     all_terms = {}
@@ -77,9 +78,55 @@ def create_tf_index(docs):
     print('Writing indices... DONE')
 
 
+def create_compressed_tf_index_file(docs):
+    """
+    Create index, store inverted inedices
+    @docs: [{'text': <document text>, 'id': <document id>} ... ]
+    """
+    all_terms = {}
+    docs_terms_freq = {}
+    idf_counts = {}
+    terms_count = 0
+    docslen = len(docs)
+    for doc in docs:
+        processed = SKNaiveBayesClassifier.preprocess(doc['text'])
+        # remove 'nn' which mean numbers
+        processed = processed.replace('nn', '')
+        terms_freq = {}
+        for term in processed.split():
+            if not all_terms.get(term):
+                all_terms[term] = terms_count
+                terms_count += 1
+            terms_freq[all_terms[term]] = terms_freq.get(term, 0) + 1
+
+        # update idf values
+        for t in terms_freq:
+            idf_counts[t] = idf_counts.get(t, 0) + 1
+
+        docs_terms_freq[doc['id']] = terms_freq
+
+    path = get_env_path_or_exception(settings.INDICES_PATH_ENV_VAR)
+
+    # create terms index
+    termspath = os.path.join(path, settings.TERM_INDEX_FILENAME)
+    with open(termspath, 'w') as f:
+        f.write(json.dumps(all_terms))
+
+    filepath = os.path.join(path, settings.TERM_FREQUENCY_INDEX_FILENAME)
+    data = {'num_docs': docslen, 'docs_tf': docs_terms_freq}
+    # create tf index
+    with open(filepath, 'w') as f:
+        f.write(json.dumps(data))
+    # create idf index
+    idfpath = os.path.join(path, settings.INVERSE_FREQUENCY_INDEX_FILENAME)
+    with open(idfpath, 'w') as f:
+        f.write(json.dumps(idf_counts))
+
+
 def create_tf_index_for_classified_docs():
     docs = ClassifiedDocument.objects.all().values('id', 'text')
-    create_tf_index(docs)
+    # create_tf_index(docs)
+    create_compressed_tf_index_file(docs)
 
 
 def main(*args):

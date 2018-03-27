@@ -4,9 +4,9 @@ import numpy as np
 from helpers.common import preprocess
 from similarity.helpers import (
     get_indexed_terms,
-    get_term_frequencies,
+    get_term_frequencies_data,
     get_inverse_frequencies,
-    get_number_of_documents
+    # get_number_of_documents
 )
 from classifier.models import ClassifiedDocument
 
@@ -18,10 +18,11 @@ class DocumentSimilarityModel:
     def __init__(self):
         # get all the indices
         self.terms_indices = get_indexed_terms()
-        self.term_freqs = get_term_frequencies()
+        self.tf_data = get_term_frequencies_data()
+        self.term_freqs = self.tf_data['docs_tf']
         self.inverse_freqs = get_inverse_frequencies()
         self.terms_len = len(self.terms_indices.keys())
-        self.total_docs = get_number_of_documents()
+        self.total_docs = self.tf_data['num_docs']
 
     def get_text_vector(self, text):
         processed = preprocess(text, ignore_numbers=True)
