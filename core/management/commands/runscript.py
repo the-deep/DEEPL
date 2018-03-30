@@ -18,6 +18,9 @@ class Command(BaseCommand):
         parser.add_argument(
             '--modelname', type=str, default=None,
             help="Name of model(if creating one)")
+        parser.add_argument(
+            '--num_clusters', type=str, default=None,
+            help="Name of model(if creating one)")
         # Add other custom args required by the scripts
 
     def handle(self, *args, **options):
