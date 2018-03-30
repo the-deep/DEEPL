@@ -8,7 +8,7 @@ from helpers.common import classification_confidence
 from django.db import transaction
 
 
-def main(*args):
+def main(*args, **kwargs):
     classifier_models = ClassifierModel.objects.all()
     classifiers_map = {c.id: pickle.loads(c.data) for c in classifier_models}
     # first run for ClassifiedDocuments

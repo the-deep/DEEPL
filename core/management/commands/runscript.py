@@ -10,12 +10,20 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('scriptname', type=str)
-        parser.add_argument('extra', nargs='*', type=str, default=[])
+        # parser.add_argument('extra', nargs='*', type=str, default=[])
+        parser.add_argument(
+            '--modelversion', type=str, default=None,
+            help="Version of model(if creating one)"
+        )
+        parser.add_argument(
+            '--modelname', type=str, default=None,
+            help="Name of model(if creating one)")
+        # Add other custom args required by the scripts
 
     def handle(self, *args, **options):
-        scriptname = options['scriptname']
-        other_args = options['extra']
+        scriptname = options.pop('scriptname')
         basedir = './'
+        other_kwargs = options
         # list dirs and filter only directories
         apps = list(filter(
             lambda x: (x[0] not in '._=' and
@@ -34,10 +42,10 @@ class Command(BaseCommand):
                 except ImportError:
                     pass
                 else:
-                    return script.main(*other_args)
+                    return script.main(**other_kwargs)
             else:
                 print("ERROR!! The script you requesed does not exist.")
                 return
         else:
-            return script.main(*other_args)
-        # the script should have main function accepting *args
+            return script.main(**other_kwargs)
+        # the script should have main function accepting *args and **kwargs

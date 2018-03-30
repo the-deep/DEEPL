@@ -115,7 +115,7 @@ def bar_chart(datas):
     return fig
 
 
-def main(*args):
+def main(*args, **kwargs):
     import pickle
     import datetime
     from classifier.models import ClassifierModel

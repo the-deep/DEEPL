@@ -24,7 +24,7 @@ The Children’s Consultation exercise collected a wealth of information however
 docs = [doc1, doc2, doc3, doc4, doc5]
 
 
-def main(*args):
+def main(*args, **kwargs):
     num_topics = 3
     num_words = 4
     depth = 5
