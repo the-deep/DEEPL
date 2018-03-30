@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'correlation',
     'NER',
     'similarity',
+    'clustering',
 ]
 
 MIDDLEWARE = [
