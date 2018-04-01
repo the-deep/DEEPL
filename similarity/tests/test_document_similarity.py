@@ -19,7 +19,7 @@ class TestDocumentSimilarityModel(unittest.TestCase):
     def setUp(self):
         # change os.environ variable, because loading real indices takes time
         test_indices_path = os.path.join(
-            os.path.dirname(settings.BASE_DIR), 'test_indices'
+            os.path.dirname(settings.BASE_DIR), 'nlp_data/test_indices'
         )
         os.environ[settings.INDICES_PATH_ENV_VAR] = test_indices_path
         self.similarity_model = DocumentSimilarityModel()
