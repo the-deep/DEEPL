@@ -12,7 +12,7 @@ class Command(BaseCommand):
         parser.add_argument('scriptname', type=str)
         # parser.add_argument('extra', nargs='*', type=str, default=[])
         parser.add_argument(
-            '--modelversion', type=str, default=None,
+            '--model_version', type=str, default=None,
             help="Version of model(if creating one)"
         )
         parser.add_argument(
@@ -21,6 +21,9 @@ class Command(BaseCommand):
         parser.add_argument(
             '--num_clusters', type=str, default=None,
             help="Name of model(if creating one)")
+        parser.add_argument(
+            '--class_name', type=str, default=None,
+            help="Name of model class")
         # Add other custom args required by the scripts
 
     def handle(self, *args, **options):
