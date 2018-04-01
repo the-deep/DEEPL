@@ -16,7 +16,7 @@ class Command(BaseCommand):
             help="Version of model(if creating one)"
         )
         parser.add_argument(
-            '--modelname', type=str, default=None,
+            '--model_name', type=str, default=None,
             help="Name of model(if creating one)")
         parser.add_argument(
             '--num_clusters', type=str, default=None,
