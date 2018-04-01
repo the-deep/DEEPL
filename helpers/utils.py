@@ -141,6 +141,22 @@ def timeit(func_to_be_tracked):
     return wrapper
 
 
+def compress_sparse_vector(sparse_vec):
+    """Given a sparse vector [0., 0., ..., 0.213, ... ],
+    return its compressed form [(index, nonzero_value), ...,
+        (last_index, last_value)]. Returning last index and value will store
+    the information about original sparse vector length.
+    """
+    compressed = []
+    size = len(sparse_vec)
+    for i, x in enumerate(sparse_vec[:-1]):
+        if x:
+            compressed.append((i, x))
+    # append the last one
+    compressed.append((size - 1, sparse_vec[-1]))
+    return compressed
+
+
 def get_env_path_or_exception(env_var):
     indicespath = os.environ.get(env_var)
     if not indicespath or not os.path.isdir(indicespath):
