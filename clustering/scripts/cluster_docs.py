@@ -8,7 +8,7 @@ from django.db import transaction
 from classifier.models import ClassifiedDocument
 from clustering.kmeans_docs import KMeansDocs, ClusteringOptions
 from clustering.models import ClusteringModel
-from helpers.utils import timeit, Resource
+from helpers.utils import timeit, Resource, compress_sparse_vector
 
 
 @timeit
@@ -30,7 +30,8 @@ def create_document_clusters(name, version, n_clusters):
     print("Creating clustering model")
     kmeans_model = k_means.perform_cluster(texts)
     docs_labels = zip(docids,  # convert from np.int64 to int
-                      list(map(lambda x: int(x), kmeans_model.labels_)))
+                      list(map(lambda x: int(x), kmeans_model.model.labels_)))
+
     # Save to database
     cluster_model = ClusteringModel()
     cluster_model.model = kmeans_model
@@ -38,17 +39,20 @@ def create_document_clusters(name, version, n_clusters):
     cluster_model.version = version
     cluster_model.n_clusters = n_clusters
     print("Saving model to database")
-    cluster_model_id = cluster_model.save()
+    cluster_model.save()
     # Now write to files
     print("Writing results to files")
     write_clustured_data_to_files(
-        cluster_model_id,
+        cluster_model,
         docs_labels,
-        kmeans_model.cluster_centers_
+        kmeans_model.model.cluster_centers_,
+        docs
     )
 
 
-def write_clustured_data_to_files(model_id, docs_labels, cluster_centers):
+def write_clustured_data_to_files(
+        model, docs_labels, cluster_centers, docs
+        ):
     """Write the doc_clusterlabels and cluster_centers to files"""
     cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
     resource = Resource(
@@ -58,7 +62,7 @@ def write_clustured_data_to_files(model_id, docs_labels, cluster_centers):
     # create another resource(folder to keep files)
     path = os.path.join(
         resource.get_resource_location(),
-        'cluster_model_{}'.format(model_id)
+        'cluster_model_{}'.format(model.id)
     )
     # create the directory
     p = subprocess.Popen(['mkdir', '-p', path], stdout=subprocess.PIPE)
@@ -78,21 +82,27 @@ def write_clustured_data_to_files(model_id, docs_labels, cluster_centers):
     # now create labels file
     labels_path = os.path.join(path, settings.CLUSTERED_DOCS_LABELS_FILENAME)
     labels_resource = Resource(labels_path, Resource.FILE)
+    # create dict
+    dict_data = {x: {'label': y} for x, y in docs_labels}
+    vectorizer = model.model.vectorizer
+    for doc in docs:
+        arr = vectorizer.fit_transform([doc['text']]).toarray()[0]
+        compressed = compress_sparse_vector(arr)
+        dict_data[doc['id']]['features'] = compressed
     # Write docs_clusterlabels
-    dict_data = dict(docs_labels)
     labels_resource.write_data(json.dumps(dict_data))
     print("Done writing data")
 
 
 def main(*args, **kwargs):
     # TODO: get num_clusters from args
-    modelname = kwargs.get('modelname')
-    modelversion = kwargs.get('modelversion')
+    modelname = kwargs.get('model_name')
+    modelversion = kwargs.get('model_version')
     if not modelname:
-        print("Model name not provided. Provide it with: --modelname <name>")
+        print("Model name not provided. Provide it with: --model_name <name>")
         return
     if not modelversion:
-        print("Model version not provided. Provide it with: --modelversion\
+        print("Model version not provided. Provide it with: --model_version\
 <version>")
         return
     try:

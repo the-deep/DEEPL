@@ -112,12 +112,15 @@ class KMeansDocs:
                     # max_features=self.options.n_features,
                     min_df=2, stop_words='english',
                     use_idf=self.options.use_idf)
+        self.vectorizer = vectorizer
         X = vectorizer.fit_transform(documents)
 
+        self.lsa_transformer = None
         if self.options.n_components:
             svd = TruncatedSVD(self.options.n_components)
             normalizer = Normalizer(copy=False)
             lsa = make_pipeline(svd, normalizer)
+            self.lsa_transformer = lsa
             X = lsa.fit_transform(X)
             self.explained_variance = svd.explained_variance_ratio_.sum()
 
@@ -134,7 +137,7 @@ class KMeansDocs:
         km.fit(X)
         self.cluster_centers = km.cluster_centers_
         print("Clustering done...\nreturning model")
-        return km
+        return self
 
 
 def _processed_docs():
