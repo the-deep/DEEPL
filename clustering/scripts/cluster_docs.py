@@ -75,7 +75,7 @@ def write_clustured_data_to_files(
     center_resource = Resource(center_path, Resource.FILE)
     # convert to python float first or it won't be json serializable
     centers_data = {
-        i: [float(y) for y in x]
+        i: compress_sparse_vector([float(y) for y in x])
         for i, x in enumerate(cluster_centers)
     }
     center_resource.write_data(json.dumps(centers_data))
