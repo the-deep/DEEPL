@@ -157,6 +157,19 @@ def compress_sparse_vector(sparse_vec):
     return compressed
 
 
+def uncompress_compressed_vector(compressed_vec):
+    """
+    @compressed_vec: [[index, non_zero_value], ..., [lastindex, value]]
+    Returns list containing elements
+    """
+    # length is the last index of the vector
+    length = compressed_vec[-1][0] + 1
+    v = [0.] * length
+    for i, val in compressed_vec:
+        v[i] = val
+    return v
+
+
 def get_env_path_or_exception(env_var):
     indicespath = os.environ.get(env_var)
     if not indicespath or not os.path.isdir(indicespath):
