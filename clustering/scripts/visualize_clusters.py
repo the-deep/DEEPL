@@ -4,6 +4,7 @@ import json
 import os
 from sklearn.decomposition import TruncatedSVD
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 from django.conf import settings
 
@@ -18,12 +19,15 @@ def get_cmap(n, name='hsv'):
     return plt.cm.get_cmap(name, n)
 
 
-def visualize_clusters(model):
+def visualize_clusters(model, plottype):
     print("Getting features and labels...")
-    reduced_features, labels, n_clusters = get_docs_features_labels(model)
+    nfeatures = 3 if plottype == '3d' else 2
+    reduced_features, labels, n_clusters = get_docs_features_labels(
+        model, nfeatures
+    )
     print("Plotting clusters...")
     # Plot
-    fig = plot2d(reduced_features, labels, n_clusters)
+    fig = plot(reduced_features, labels, n_clusters, plottype)
     # get location of clusters data
     resource = Resource(
         settings.ENVIRON_CLUSTERING_DATA_LOCATION,
@@ -38,7 +42,7 @@ def visualize_clusters(model):
     fig.savefig(filepath)
 
 
-def get_docs_features_labels(model):
+def get_docs_features_labels(model, nfeatures):
     id = model.id
     # get location of clusters data
     resource = Resource(
@@ -61,17 +65,20 @@ def get_docs_features_labels(model):
         # first uncompress and then store
         docs_features.append(uncompress_compressed_vector(data['features']))
         docs_labels.append(data['label'])
-    reduced_features = reduce_dimensions(docs_features, 2)
+    reduced_features = reduce_dimensions(docs_features, nfeatures)
     return reduced_features, docs_labels, n_clusters
 
 
-def plot2d(features2d, labels, num_clusters):
+def plot(features, labels, num_clusters, plottype):
     # plot docs_features and docs_labels
     colormap = get_cmap(num_clusters)
     fig = plt.figure(figsize=(15, 8))
-    for i, f in enumerate(features2d):
+    plotter = plt
+    if plottype == '3d':
+        plotter = Axes3D(fig)
+    for i, f in enumerate(features):
         colind = labels[i]
-        plt.scatter(f[0], f[1], c=colormap(colind))
+        plotter.scatter(*f, c=colormap(colind))
     return fig
 
 
@@ -84,6 +91,9 @@ def reduce_dimensions(data, dimension=3):
 
 def main(*args, **kwargs):
     modelversion = kwargs.get('model_version')
+    plottype = kwargs.get('plot_type')
+    if plottype != '3d':
+        plottype = '2d'
     if not modelversion:
         print("Error: model_version not provided. Usage: --model_version=<version>")
         return
@@ -91,4 +101,4 @@ def main(*args, **kwargs):
         model = ClusteringModel.objects.get(version=modelversion)
     except ClusteringModel.DoesNotExist:
         print("No model with version {} found.".format(modelversion))
-    visualize_clusters(model)
+    visualize_clusters(model, plottype)

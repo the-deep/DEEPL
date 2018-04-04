@@ -24,6 +24,9 @@ class Command(BaseCommand):
         parser.add_argument(
             '--class_name', type=str, default=None,
             help="Name of model class")
+        parser.add_argument(
+            '--plot_type', type=str, default=None,
+            help="2d or 3d plot")
         # Add other custom args required by the scripts
 
     def handle(self, *args, **options):
