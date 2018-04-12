@@ -59,7 +59,6 @@ from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import Normalizer
-from sklearn import metrics
 
 
 from sklearn.cluster import KMeans, MiniBatchKMeans
@@ -71,7 +70,8 @@ class ClusteringOptions:
     """
     def __init__(
             self, n_clusters=8, use_hashing=True, use_idf=False,
-            n_components=None, minibatch=False, n_features=1000
+            n_components=None, minibatch=False, n_features=1000,
+            store_X=False
             ):
         self.n_clusters = n_clusters
         self.n_features = n_features
@@ -79,6 +79,7 @@ class ClusteringOptions:
         self.use_idf = use_idf
         self.n_components = n_components  # for dimensionality reduction
         self.minibatch = minibatch
+        self.store_X = store_X
 
 
 class KMeansDocs:
@@ -90,6 +91,7 @@ class KMeansDocs:
         self.explained_variance = None
         self.cluster_centers = None
         self.model = None
+        self.X = None
 
     def perform_cluster(self, documents):
         if self.options.use_hashing:
@@ -135,6 +137,8 @@ class KMeansDocs:
             )
         self.model = km
         km.fit(X)
+        if self.options.store_X:
+            self.X = X
         self.cluster_centers = km.cluster_centers_
         print("Clustering done...\nreturning model")
         return self
