@@ -10,17 +10,20 @@ def find_optimal_clusters(min_clusters=2, max_clusters=20):
     # fetch texts first
     docs = ClassifiedDocument.objects.all().values('id', 'text')
     texts = list(map(lambda x: x['text'], docs))
-    last_silhouette = -1.0  # to compare with
+    max_silhouette = -1.0  # to compare with
+    clusters = 1
     for n in range(min_clusters, max_clusters + 1):
+        if n > len(texts) - 1:
+            break
         options = ClusteringOptions(n_clusters=n, store_X=True)
         k_means = KMeansDocs(options)
         kmeans_model = k_means.perform_cluster(texts)
         labels = kmeans_model.model.labels_
         silhouette = silhouette_score(k_means.X, labels, metric='euclidean')
-        if silhouette < last_silhouette:
-            return n - 1, last_silhouette
-        last_silhouette = silhouette
-    return max_clusters, last_silhouette
+        if silhouette >= max_silhouette:
+            max_silhouette = silhouette
+            clusters = n
+    return clusters, max_silhouette
 
 
 def main(*args, **kwargs):
