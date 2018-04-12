@@ -19,7 +19,8 @@ RUN apt-get update -y && \
         # Required by cloudwatch scripts
         unzip \
         libwww-perl \
-        libdatetime-perl
+        libdatetime-perl \
+        python3-tk
 
 # Support utf-8
 RUN locale-gen en_US.UTF-8
@@ -52,5 +53,6 @@ RUN . /venv/bin/activate && \
     python -c "import nltk; nltk.download('averaged_perceptron_tagger')"
 
 COPY . /code/
+
 
 #CMD ./deploy/scripts/run_prod.sh
