@@ -134,10 +134,11 @@ def timeit(func_to_be_tracked):
     """Decorator to calculate elapsed time for a function"""
     def wrapper(*args, **kwargs):
         start = time.time()
-        func_to_be_tracked(*args, **kwargs)
+        ret = func_to_be_tracked(*args, **kwargs)
         end = time.time()
         fname = func_to_be_tracked.__name__
         print("The function '{}' took {}ms.".format(fname, end - start))
+        return ret
     return wrapper
 
 
