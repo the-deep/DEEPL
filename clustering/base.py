@@ -24,3 +24,6 @@ class GenericClustering:
 
     def perform_cluster(self, documents):
         raise NotImplementedError
+
+    def get_silhouette_score(self):
+        raise NotImplementedError

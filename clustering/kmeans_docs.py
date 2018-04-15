@@ -58,6 +58,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.pipeline import make_pipeline
+from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import Normalizer
 
 
@@ -75,6 +76,7 @@ class KMeansDocs(GenericClustering):
         self.explained_variance = None
         self.cluster_centers = None
         self.model = None
+        self.silhouette_score = None
         self.X = None
 
     def perform_cluster(self, documents):
@@ -121,12 +123,17 @@ class KMeansDocs(GenericClustering):
             )
         self.model = km
         km.fit(X)
-        if self.options.store_X:
-            self.X = X
+        self.X = X
         self.cluster_centers = km.cluster_centers_
         print("Clustering done...\nreturning model")
         return self
 
+    def get_silhouette_score(self):
+        if self.silhouette_score is None:
+            self.silhouette_score = silhouette_score(
+                self.x, self.model.labels_, metric='euclidian'
+            )
+        return self.silhouette_score
 
 def _processed_docs():
     import csv
