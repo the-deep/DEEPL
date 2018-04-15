@@ -146,3 +146,41 @@ USE_TZ = True
 STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, "assets")
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "assets"), )
+
+
+if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'simple': {
+                'format': '%(asctime)s ' + os.environ.get('EBS_HOSTNAME', '') +
+                          ' DJANGO-' + os.environ.get('EBS_ENV_TYPE', '') +
+                          ': %(message)s',
+                'datefmt': '%Y-%m-%dT%H:%M:%S',
+            },
+        },
+        'handlers': {
+            'SysLog': {
+                'level': 'DEBUG',
+                'class': 'logging.handlers.SysLogHandler',
+                'formatter': 'simple',
+                'address': (os.environ.get('PAPERTRAIL_HOST'),
+                            int(os.environ.get('PAPERTRAIL_PORT')))
+            },
+        },
+        'loggers': {
+            'celery': {
+                'handlers': ['SysLog'],
+                'propagate': True,
+            },
+            'channels': {
+                'handlers': ['SysLog'],
+                'propagate': True,
+            },
+            'django': {
+                'handlers': ['SysLog'],
+                'propagate': True,
+            },
+        },
+    }
