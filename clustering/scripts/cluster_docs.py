@@ -39,6 +39,7 @@ def create_document_clusters(name, version, n_clusters):
     cluster_model.version = version
     cluster_model.n_clusters = n_clusters
     print("Saving model to database")
+    cluster_model.silhouette_score = kmeans_model.get_silhouette_score()
     cluster_model.save()
     # Now write to files
     print("Writing results to files")
