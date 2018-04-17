@@ -27,6 +27,13 @@ class Command(BaseCommand):
         parser.add_argument(
             '--plot_type', type=str, default=None,
             help="2d or 3d plot")
+        parser.add_argument(
+            '--cluster_method', type=str, default=None,
+            help="Clustering method: doc2vec or bow(normal)")
+        parser.add_argument(
+            '--doc2vec_version', type=str, default=None,
+            help="Version of Doc2VecModel. Used with clustering method doc2vec"
+        )
         # Add other custom args required by the scripts
 
     def handle(self, *args, **options):
