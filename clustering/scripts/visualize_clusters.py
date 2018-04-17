@@ -9,6 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from django.conf import settings
 
 from clustering.models import ClusteringModel
+from clustering.kmeans_doc2vec import KMeansDoc2Vec
 from helpers.utils import Resource, uncompress_compressed_vector
 
 
@@ -43,7 +44,7 @@ def visualize_clusters(model, plottype):
 
 
 def get_docs_features_labels(model, nfeatures):
-    id = model.id
+    modelid = model.id
     # get location of clusters data
     resource = Resource(
         settings.ENVIRON_CLUSTERING_DATA_LOCATION,
@@ -51,7 +52,7 @@ def get_docs_features_labels(model, nfeatures):
     )
     path = os.path.join(
         resource.get_resource_location(),
-        'cluster_model_{}'.format(id)
+        'cluster_model_{}'.format(modelid)
     )
     labels_path = os.path.join(path, settings.CLUSTERED_DOCS_LABELS_FILENAME)
     labels_resource = Resource(labels_path, Resource.FILE)
@@ -61,11 +62,17 @@ def get_docs_features_labels(model, nfeatures):
     n_clusters = model.n_clusters
     # Now get documents dimensions
     docs_features, docs_labels = [], []
+    if isinstance(model.model, KMeansDoc2Vec):
+        def identity(x): return x
+        features_uncompress_function = identity
+    else:
+        features_uncompress_function = uncompress_compressed_vector
     for did, data in zipped:
         # first uncompress and then store
-        docs_features.append(uncompress_compressed_vector(data['features']))
+        docs_features.append(features_uncompress_function(data['features']))
         docs_labels.append(data['label'])
     reduced_features = reduce_dimensions(docs_features, nfeatures)
+    print(reduced_features)
     return reduced_features, docs_labels, n_clusters
 
 
