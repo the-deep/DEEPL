@@ -4,7 +4,6 @@ from nltk.corpus import stopwords
 
 from classifier.models import ClassifiedDocument
 from helpers.utils import timeit
-from django.conf import settings
 
 
 tokenizer = RegexpTokenizer(r"\w+")
@@ -34,7 +33,7 @@ class LabeledLineSentence:
 
 
 @timeit
-def create_document_vectors():
+def create_doc2vec_model():
     docs = ClassifiedDocument.objects.all().values('id', 'text')
     texts = list(map(lambda x: x['text'], docs))
     docids = list(map(lambda x: str(x['id']), docs))
@@ -52,12 +51,10 @@ def create_document_vectors():
         model.train(it, total_examples=model.corpus_count, epochs=model.iter)
         model.alpha -= 0.002
         model.min_alpha = model.alpha
-    # saving the created model
-    model.save("doc2vec.model")
-    print("Document vector for index 1", model.docvecs[1])
-    similar_doc = model.docvecs.most_similar(14)
-    print(similar_doc)
+    return model
 
 
 if __name__ == '__main__':
-    create_document_vectors()
+    model = create_doc2vec_model()
+    for x in model.docvecs:
+        print(x)

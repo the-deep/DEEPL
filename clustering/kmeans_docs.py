@@ -131,7 +131,7 @@ class KMeansDocs(GenericClustering):
     def get_silhouette_score(self):
         if self.silhouette_score is None:
             self.silhouette_score = silhouette_score(
-                self.x, self.model.labels_, metric='euclidian'
+                self.X, self.model.labels_, metric='euclidean'
             )
         return self.silhouette_score
 

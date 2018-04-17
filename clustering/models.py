@@ -1,5 +1,7 @@
 import pickle
 import os
+from gensim.models.doc2vec import Doc2Vec
+
 
 from django.db import models
 from django.contrib.postgres.fields import JSONField
@@ -55,9 +57,9 @@ class Doc2VecModel(BaseModel):
     )
 
     @classmethod
-    def new(cls, doc2vecmodel, name, version):
+    def new(cls, doc2vecmodel, version, name):
         resource = Resource(
-            settings.DOC2VEC_MODELS_LOCATION,
+            settings.ENVIRON_DOC2VEC_MODELS_LOCATION,
             Resource.DIRECTORY_AND_ENVIRONMENT
         )
         path = resource.get_resource_location()
@@ -73,3 +75,7 @@ class Doc2VecModel(BaseModel):
         # finally save the doc2vec model in a file
         doc2vecmodel.save(doc2vec.modelpath)
         return doc2vec
+
+    @property
+    def model(self):
+        return Doc2Vec.load(self.modelpath)

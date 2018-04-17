@@ -4,7 +4,7 @@ from sklearn.metrics import silhouette_score
 from clustering.base import GenericClustering, ClusteringOptions
 
 
-class KMeansWord2Vec(GenericClustering):
+class KMeansDoc2Vec(GenericClustering):
     """
     Perform kmeans clustering with word2vec
     """
@@ -33,7 +33,7 @@ class KMeansWord2Vec(GenericClustering):
     def get_silhouette_score(self):
         if self.silhouette_score is None:
             self.silhouette_score = silhouette_score(
-                self.x, self.model.labels_, metric='euclidian'
+                self.X, self.model.labels_, metric='euclidean'
             )
         return self.silhouette_score
 
