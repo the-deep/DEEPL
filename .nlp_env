@@ -1,10 +1,14 @@
 NLP_INDICES_PATH=/code/nlp_data/nlp_indices/
 DEEPL_CLSUTERED_DOCS_LABEL_LOCATION=/code/nlp_data/clustered_docs_label.data
 DEEPL_CLUSTERING_DATA_LOCATION=/code/nlp_data/clustering/
+
+DOC2VEC_MODELS_LOCATION=/code/nlp_data/doc2vec_data/
+
 DB_NAME=postgres
 DB_HOST=db
 DB_USER=postgres
 DB_PASSWORD=postgres
+
 USE_PAPERTRAIL=
 EBS_HOSTNAME=deepl
 EBS_ENV_TYPE=
