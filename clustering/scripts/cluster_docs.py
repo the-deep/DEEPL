@@ -15,22 +15,22 @@ from helpers.utils import timeit, Resource, compress_sparse_vector
 
 @timeit
 def create_document_clusters(
-        name, version, n_clusters,
-        CLUSTER_CLASS=KMeansDocs, doc2vec_version=None
+        name, group_id, n_clusters,
+        CLUSTER_CLASS=KMeansDocs, doc2vec_group_id=None
         ):
     """
     Create document clusters(ClusteringModel object) based on input params
     @name: name of the model
-    @version: version of the model
+    @group_id: group_id of the model
     @CLUSTER_CLASS: class on which the clustring(KMeans) is based
-    @doc2vec_version: relevant if clusterclass is KMeansDoc2Vec, get doc2vec
+    @doc2vec_group_id: relevant if clusterclass is KMeansDoc2Vec, get doc2vec
         model and load vectors from it
     """
-    # first check if version already exists or not
+    # first check if group_id already exists or not
     try:
-        ClusteringModel.objects.get(version=version)
-        raise Exception("Cluster model with version {} already exists".format(
-            version))
+        ClusteringModel.objects.get(group_id=group_id)
+        raise Exception("Cluster model with group_id {} already exists".format(
+            group_id))
     except ClusteringModel.DoesNotExist:
         pass
     print("Getting documents")
@@ -44,7 +44,7 @@ def create_document_clusters(
         cluster_params = texts
     elif CLUSTER_CLASS == KMeansDoc2Vec:
         # get Doc2VecModel
-        doc2vecmodel = Doc2VecModel.objects.get(version=doc2vec_version)
+        doc2vecmodel = Doc2VecModel.objects.get(group_id=doc2vec_group_id)
         cluster_params = [x for x in doc2vecmodel.model.docvecs]
         docids = doc2vecmodel.model.docvecs.doctags.keys()
         features = cluster_params
@@ -61,7 +61,7 @@ def create_document_clusters(
     cluster_model = ClusteringModel()
     cluster_model.model = kmeans_model
     cluster_model.name = name
-    cluster_model.version = version
+    cluster_model.group_id = group_id
     cluster_model.n_clusters = n_clusters
     print("Saving model to database")
     cluster_model.silhouette_score = kmeans_model.get_silhouette_score()
@@ -136,25 +136,25 @@ def write_clustured_data_to_files(
 def main(*args, **kwargs):
     # TODO: get num_clusters from args
     modelname = kwargs.get('model_name')
-    modelversion = kwargs.get('model_version')
+    modelgroup_id = kwargs.get('group_id')
     cluster_method = kwargs.get('cluster_method')
     if not modelname:
         print("Model name not provided. Provide it with: --model_name <name>")
         return
-    if not modelversion:
-        print("Model version not provided. Provide it with: --model_version\
-<version>")
+    if not modelgroup_id:
+        print("Model group_id not provided. Provide it with: --group_id\
+<group_id>")
         return
 
-    doc2vec_version = None  # only relevant if cluster_method is doc2vec
+    doc2vec_group_id = None  # only relevant if cluster_method is doc2vec
     # clustering method
     if not cluster_method or cluster_method == 'bow':
         cluster_class = KMeansDocs
     elif cluster_method == 'doc2vec':
         cluster_class = KMeansDoc2Vec
-        doc2vec_version = kwargs.get('doc2vec_version')
-        if not doc2vec_version:
-            print('Provide --doc2vec_version for clustring with doc2vec')
+        doc2vec_group_id = kwargs.get('doc2vec_group_id')
+        if not doc2vec_group_id:
+            print('Provide --doc2vec_group_id for clustring with doc2vec')
             return
     else:
         print("Invalid cluster method. Valid methods: --cluster_method=[doc2vec|bow]")
@@ -168,8 +168,8 @@ def main(*args, **kwargs):
     try:
         with transaction.atomic():
             create_document_clusters(
-                modelname, modelversion, num_clusters,
-                cluster_class, doc2vec_version
+                modelname, modelgroup_id, num_clusters,
+                cluster_class, doc2vec_group_id
             )
     except Exception as e:
         raise e

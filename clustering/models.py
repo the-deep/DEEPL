@@ -16,7 +16,7 @@ class ClusteringModel(BaseModel):
     Model to store clustering data
     """
     name = models.CharField(max_length=100)
-    version = models.CharField(max_length=20, unique=True, editable=False)
+    group_id = models.CharField(max_length=20, unique=True, editable=False)
     _data = models.BinaryField()
     n_clusters = models.IntegerField()
     extra_info = JSONField(default={})
@@ -31,7 +31,7 @@ class ClusteringModel(BaseModel):
     model = property(get_model, set_model)
 
     def __str__(self):
-        return "{} - {}".format(self.name, self.version)
+        return "{} - Group {}".format(self.name, self.group_id)
 
 
 class Doc2VecModel(BaseModel):
@@ -39,7 +39,7 @@ class Doc2VecModel(BaseModel):
     Model to store data about gensim doc2vec model created
     """
     name = models.CharField(max_length=100)
-    version = models.CharField(max_length=20, unique=True, editable=False)
+    group_id = models.CharField(max_length=20, unique=True, editable=False)
     modelpath = models.CharField(max_length=500)
 
     PATHTYPE_FILE = 'FILE'
@@ -57,7 +57,7 @@ class Doc2VecModel(BaseModel):
     )
 
     @classmethod
-    def new(cls, doc2vecmodel, version, name):
+    def new(cls, doc2vecmodel, group_id, name):
         resource = Resource(
             settings.ENVIRON_DOC2VEC_MODELS_LOCATION,
             Resource.DIRECTORY_AND_ENVIRONMENT
@@ -65,7 +65,7 @@ class Doc2VecModel(BaseModel):
         path = resource.get_resource_location()
         doc2vec = cls(
             name=name,
-            version=version,
+            group_id=group_id,
             modelpath=path
         )
         doc2vec.save()

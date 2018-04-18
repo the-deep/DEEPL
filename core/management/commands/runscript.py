@@ -34,6 +34,10 @@ class Command(BaseCommand):
             '--doc2vec_version', type=str, default=None,
             help="Version of Doc2VecModel. Used with clustering method doc2vec"
         )
+        parser.add_argument(
+            '--group_id', type=str, default=None,
+            help="Group id of Model."
+        )
         # Add other custom args required by the scripts
 
     def handle(self, *args, **options):
