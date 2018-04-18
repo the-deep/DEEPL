@@ -33,7 +33,7 @@ class LabeledLineSentence:
 
 
 @timeit
-def create_doc2vec_model():
+def create_doc2vec_model(iterations=70):
     docs = ClassifiedDocument.objects.all().values('id', 'text')
     texts = list(map(lambda x: x['text'], docs))
     docids = list(map(lambda x: str(x['id']), docs))
@@ -46,7 +46,7 @@ def create_doc2vec_model():
     model.build_vocab(it)
 
     # training of model
-    for epoch in range(100):
+    for epoch in range(iterations):
         print("iteration {}".format(epoch+1))
         model.train(it, total_examples=model.corpus_count, epochs=model.iter)
         model.alpha -= 0.002
