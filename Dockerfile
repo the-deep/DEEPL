@@ -24,7 +24,8 @@ RUN apt-get update -y && \
         libdatetime-perl \
         python3-tk \
         # java8
-        oracle-java8-installer \
+        openjdk-8-jdk \
+        openjdk-8-jre \
         # to automatically set java environment variables
         oracle-java8-set-default \
         unzip \
