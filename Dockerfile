@@ -4,9 +4,6 @@ MAINTAINER bewakes bewakepandey@gmail.com
 
 # Update and install common packages with apt
 RUN apt-get update -y && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:webupd8team/java && \
-    apt-get update -y && \ 
     apt-get install -y \
         git \
         locales \
@@ -27,7 +24,6 @@ RUN apt-get update -y && \
         openjdk-8-jdk \
         openjdk-8-jre \
         # to automatically set java environment variables
-        oracle-java8-set-default \
         unzip \
         wget
 
