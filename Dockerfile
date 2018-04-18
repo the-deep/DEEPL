@@ -2,9 +2,11 @@ FROM ubuntu:16.04
 
 MAINTAINER bewakes bewakepandey@gmail.com
 
-RUN add-apt-repository ppa:webupd8team/java
 # Update and install common packages with apt
 RUN apt-get update -y && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:webupd8team/java && \
+    apt-get update -y && \ 
     apt-get install -y \
         git \
         locales \
@@ -16,13 +18,11 @@ RUN apt-get update -y && \
         python3-dev \
         python3-setuptools \
         python3-pip \
-
         # Required by cloudwatch scripts
         unzip \
         libwww-perl \
         libdatetime-perl \
         python3-tk \
-
         # java8
         oracle-java8-installer \
         # to automatically set java environment variables
