@@ -1,8 +1,8 @@
-NLP_INDICES_PATH=/code/nlp_data/nlp_indices/
-DEEPL_CLSUTERED_DOCS_LABEL_LOCATION=/code/nlp_data/clustered_docs_label.data
-DEEPL_CLUSTERING_DATA_LOCATION=/code/nlp_data/clustering/
+NLP_INDICES_PATH=/nlp_data/nlp_indices/
+DEEPL_CLSUTERED_DOCS_LABEL_LOCATION=/nlp_data/clustered_docs_label.data
+DEEPL_CLUSTERING_DATA_LOCATION=/nlp_data/clustering/
 
-DOC2VEC_MODELS_LOCATION=/code/nlp_data/doc2vec_data/
+DOC2VEC_MODELS_LOCATION=/nlp_data/doc2vec_data/
 
 DB_NAME=postgres
 DB_HOST=db

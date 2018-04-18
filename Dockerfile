@@ -27,8 +27,11 @@ RUN apt-get update -y && \
         unzip \
         wget
 
+# nlp specific directories/resources
 RUN wget -P /nlp_resources/ https://nlp.stanford.edu/software/stanford-ner-2018-02-27.zip && \
-    unzip -d /nlp_resources/ /nlp_resources/stanford-ner-2018-02-27.zip
+    unzip -d /nlp_resources/ /nlp_resources/stanford-ner-2018-02-27.zip && \
+    mkdir -p /nlp_data/clustering /nlp_data/doc2vec_data/ /nlp_data/nlp_indices \
+        /nlp_data/test_indices/ /nlp_data/model_test_datas/
 
 # Support utf-8
 RUN locale-gen en_US.UTF-8
