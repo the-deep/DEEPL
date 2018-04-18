@@ -16,3 +16,4 @@ PAPERTRAIL_HOST=
 PAPERTRAIL_PORT=
 
 CLASSPATH=/nlp_resources/stanford-ner-2018-02-27/
+STANFORD_MODELS=/nlp_resources/stanford-ner-2018-02-27/classifiers/
