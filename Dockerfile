@@ -2,6 +2,7 @@ FROM ubuntu:16.04
 
 MAINTAINER bewakes bewakepandey@gmail.com
 
+RUN add-apt-repository ppa:webupd8team/java
 # Update and install common packages with apt
 RUN apt-get update -y && \
     apt-get install -y \
@@ -20,7 +21,17 @@ RUN apt-get update -y && \
         unzip \
         libwww-perl \
         libdatetime-perl \
-        python3-tk
+        python3-tk \
+
+        # java8
+        oracle-java8-installer \
+        # to automatically set java environment variables
+        oracle-java8-set-default \
+        unzip \
+        wget
+
+RUN wget -P /nlp_resources/ https://nlp.stanford.edu/software/stanford-ner-2018-02-27.zip && \
+    unzip -d /nlp_resources/ stanford-ner-2018-02-27.zip
 
 # Support utf-8
 RUN locale-gen en_US.UTF-8
