@@ -22,4 +22,7 @@ def main(*args, **kwargs):
                 dbmodel.name, dbmodel.version
             ))
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        print("Exception: {}".format(e))
         raise e
