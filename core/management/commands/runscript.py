@@ -31,8 +31,8 @@ class Command(BaseCommand):
             '--cluster_method', type=str, default=None,
             help="Clustering method: doc2vec or bow(normal)")
         parser.add_argument(
-            '--doc2vec_version', type=str, default=None,
-            help="Version of Doc2VecModel. Used with clustering method doc2vec"
+            '--doc2vec_group_id', type=str, default=None,
+            help="Group Id of Doc2VecModel. Used with clustering method doc2vec"
         )
         parser.add_argument(
             '--group_id', type=str, default=None,
