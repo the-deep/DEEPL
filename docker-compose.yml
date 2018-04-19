@@ -13,6 +13,8 @@ services:
         volumes:
             - .:/code
             - ./media:/media
+            - ./nlp_data/model_test_datas:/nlp_data/model_test_datas
+            - ./nlp_data/test_indices:/nlp_data/test_indices
         ports:
             - '8000:8000'
         depends_on:
