@@ -113,3 +113,4 @@ node_modules/
 .pytest_cache/
 model_test_datas/
 static/
+nlp_data
