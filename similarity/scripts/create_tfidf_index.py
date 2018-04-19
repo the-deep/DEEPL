@@ -129,5 +129,5 @@ def create_tf_index_for_classified_docs():
     create_compressed_tf_index_file(docs)
 
 
-def main(*args):
+def main(*args, **kwargs):
     create_tf_index_for_classified_docs()
