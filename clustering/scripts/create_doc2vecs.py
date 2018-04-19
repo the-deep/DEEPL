@@ -19,7 +19,7 @@ def main(*args, **kwargs):
         with transaction.atomic():
             dbmodel = Doc2VecModel.new(model, modelname, group_id)
             print("Doc2VecModel with group id {} and name {} has been successfully created".format(
-                dbmodel.name, dbmodel.version
+                dbmodel.name, dbmodel.group_id
             ))
     except Exception as e:
         import traceback
