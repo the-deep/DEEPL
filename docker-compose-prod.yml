@@ -11,7 +11,6 @@ services:
             - .nlp_env
         command: ['/code/deploy/scripts/wait-for-it.sh', 'db:5432', '--', '/code/deploy/scripts/run_develop.sh']
         volumes:
-            - .:/code:z
             - ./media:/media:z
         ports:
             - '8000:8000'
