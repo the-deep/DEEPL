@@ -65,4 +65,6 @@ RUN mkdir -p /code/nlp_data/nlp_indices/ /code/nlp_data/doc2vec_data \
     /code/nlp_data/clustering
 
 COPY . /code/
+
+RUN echo "source /venv/bin/activate" >> ~/.bashrc
 #CMD ./deploy/scripts/run_prod.sh
