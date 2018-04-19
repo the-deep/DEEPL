@@ -33,7 +33,7 @@ class LabeledLineSentence:
 
 
 @timeit
-def create_doc2vec_model(iterations=70):
+def create_doc2vec_model(iterations=50):
     docs = ClassifiedDocument.objects.all().values('id', 'text')
     texts = list(map(lambda x: x['text'], docs))
     docids = list(map(lambda x: str(x['id']), docs))
