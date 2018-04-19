@@ -12,7 +12,11 @@ services:
         command: ['/code/deploy/scripts/wait-for-it.sh', 'db:5432', '--', '/code/deploy/scripts/run_develop.sh']
         volumes:
             - ./media:/media:z
+            - nlp_data:/code/nlp_data
         ports:
             - '8000:8000'
         depends_on:
             - db
+
+volumes:
+    nlp_data:
