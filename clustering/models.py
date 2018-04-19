@@ -57,7 +57,7 @@ class Doc2VecModel(BaseModel):
     )
 
     @classmethod
-    def new(cls, doc2vecmodel, group_id, name):
+    def new(cls, doc2vecmodel, name, group_id):
         resource = Resource(
             settings.ENVIRON_DOC2VEC_MODELS_LOCATION,
             Resource.DIRECTORY_AND_ENVIRONMENT
