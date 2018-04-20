@@ -30,7 +30,7 @@ def find_optimal_clusters(
         if n > len(cluster_params) - 1:
             break
         options = ClusteringOptions(n_clusters=n, store_X=True)
-        k_means = KMeansDocs(options)
+        k_means = CLUSTER_CLASS(options)
         kmeans_model = k_means.perform_cluster(cluster_params)
         labels = kmeans_model.model.labels_
         silhouette = silhouette_score(k_means.X, labels, metric='euclidean')
