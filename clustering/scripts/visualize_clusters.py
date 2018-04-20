@@ -97,15 +97,15 @@ def reduce_dimensions(data, dimension=3):
 
 
 def main(*args, **kwargs):
-    modelversion = kwargs.get('model_version')
+    group_id = kwargs.get('group_id')
     plottype = kwargs.get('plot_type')
     if plottype != '3d':
         plottype = '2d'
-    if not modelversion:
-        print("Error: model_version not provided. Usage: --model_version=<version>")
+    if not group_id:
+        print("Error: model_version not provided. Usage: --group_id=<group_id>")
         return
     try:
-        model = ClusteringModel.objects.get(version=modelversion)
+        model = ClusteringModel.objects.get(group_id=group_id)
     except ClusteringModel.DoesNotExist:
-        print("No model with version {} found.".format(modelversion))
+        print("No model with group_id {} found.".format(group_id))
     visualize_clusters(model, plottype)
