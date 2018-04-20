@@ -34,6 +34,7 @@ def find_optimal_clusters(
         kmeans_model = k_means.perform_cluster(cluster_params)
         labels = kmeans_model.model.labels_
         silhouette = silhouette_score(k_means.X, labels, metric='euclidean')
+        print("n_clusters {}, silhouette_score {}".format(n, silhouette))
         if silhouette >= max_silhouette:
             max_silhouette = silhouette
             clusters = n
