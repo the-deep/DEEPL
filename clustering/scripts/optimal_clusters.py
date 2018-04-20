@@ -27,7 +27,7 @@ def find_optimal_clusters(
     else:
         raise Exception("Invalid class")
     for n in range(min_clusters, max_clusters + 1):
-        if n > len(texts) - 1:
+        if n > len(cluster_params) - 1:
             break
         options = ClusteringOptions(n_clusters=n, store_X=True)
         k_means = KMeansDocs(options)
