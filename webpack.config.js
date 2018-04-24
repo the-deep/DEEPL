@@ -18,14 +18,20 @@ module.exports = {
 
   // Tell webpack to run our source code through Babel
   module: {
-    loaders: [
+    rules: [
         {
             test: /\.js$/,
             exclude: /node_modules/,
-            loader: 'babel-loader'
+            use: [{
+              loader: 'babel-loader'
+            }]
         },{
             test: /\.css$/,
-            loaders: ['style-loader', 'css-loader']
+            use: [{
+              loader: 'style-loader'
+            }, {
+              loader: 'css-loader'
+            }]
         },
     ]
   },

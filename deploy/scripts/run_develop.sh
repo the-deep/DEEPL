@@ -11,6 +11,6 @@ cd $ROOT_DIR
 pip3 install -r requirements.txt
 export NLP_INDICES_PATH=/code/nlp_indices/
 yarn install
-webpack
+/code/node_modules/webpack-cli/bin/webpack.js 
 python manage.py migrate --no-input
 python manage.py runserver 0.0.0.0:8000
