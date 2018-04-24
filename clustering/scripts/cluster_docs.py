@@ -127,7 +127,6 @@ def write_clustured_data_to_files(
             float(x) if isinstance(model.model, KMeansDoc2Vec) else x
             for x in features
         ]
-        print(dict_data)
     # Write docs_clusterlabels
     labels_resource.write_data(json.dumps(dict_data))
     print("Done writing data")

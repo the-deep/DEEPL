@@ -4,6 +4,7 @@ from nltk.corpus import stopwords
 
 from classifier.models import ClassifiedDocument
 from helpers.utils import timeit
+from helpers.common import remove_punc_and_nums
 
 
 tokenizer = RegexpTokenizer(r"\w+")
@@ -11,7 +12,8 @@ stopword_set = set(stopwords.words("english"))
 
 
 def clean_doc(doc):
-    lower = doc.lower()
+    puncs_removed = remove_punc_and_nums(doc)
+    lower = puncs_removed.lower()
     tokenized = tokenizer.tokenize(lower)
     stopped = [x for x in tokenized if x not in stopword_set]
     return stopped
@@ -33,7 +35,7 @@ class LabeledLineSentence:
 
 
 @timeit
-def create_doc2vec_model(iterations=70):
+def create_doc2vec_model(size=100, iterations=20):
     docs = ClassifiedDocument.objects.all().values('id', 'text')
     texts = list(map(lambda x: x['text'], docs))
     docids = list(map(lambda x: str(x['id']), docs))
@@ -41,7 +43,7 @@ def create_doc2vec_model(iterations=70):
     # create iterator
     it = LabeledLineSentence(cleaned_docs, docids)
     model = gensim.models.Doc2Vec(
-        size=100, min_count=0, alpha=0.025, min_alpha=0.025
+        size=size, min_count=0, alpha=0.025, min_alpha=0.025, workers=4
     )
     model.build_vocab(it)
 
@@ -55,6 +57,6 @@ def create_doc2vec_model(iterations=70):
 
 
 if __name__ == '__main__':
-    model = create_doc2vec_model()
+    model = create_doc2vec_model(size=100)
     for x in model.docvecs:
         print(x)

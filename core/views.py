@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 
-# Create your views here.
+import logging
+logger = logging.getLogger(__name__)
+
 
 class HomePageView(APIView):
     def get(self, request):

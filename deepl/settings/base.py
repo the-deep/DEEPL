@@ -102,7 +102,7 @@ DATABASES = {
         'USER': os.environ['DB_USER'],
         'PASSWORD': os.environ['DB_PASSWORD'],
         'HOST': os.environ['DB_HOST'],
-        'PORT': '',
+        'PORT': os.environ['DB_PORT'],
     }
 }
 
@@ -155,14 +155,14 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
         'formatters': {
             'simple': {
                 'format': '%(asctime)s ' + os.environ.get('EBS_HOSTNAME', '') +
-                          ' DJANGO-' + os.environ.get('EBS_ENV_TYPE', '') +
+                          ' %(levelname)s' +
                           ': %(message)s',
                 'datefmt': '%Y-%m-%dT%H:%M:%S',
             },
         },
         'handlers': {
             'SysLog': {
-                'level': 'DEBUG',
+                'level': 'INFO',
                 'class': 'logging.handlers.SysLogHandler',
                 'formatter': 'simple',
                 'address': (os.environ.get('PAPERTRAIL_HOST'),
@@ -179,6 +179,10 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
                 'propagate': True,
             },
             'django': {
+                'handlers': ['SysLog'],
+                'propagate': True,
+            },
+            '': {
                 'handlers': ['SysLog'],
                 'propagate': True,
             },

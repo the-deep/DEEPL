@@ -59,7 +59,7 @@ class Command(BaseCommand):
                         app, scriptname
                     )
                     script = import_module(toimport)
-                except ImportError:
+                except ImportError as e:
                     pass
                 else:
                     return script.main(**other_kwargs)

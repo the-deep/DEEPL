@@ -56,8 +56,10 @@ class Doc2VecModel(BaseModel):
         default=PATHTYPE_FILE
     )
 
+    extra_info = JSONField(default={})
+
     @classmethod
-    def new(cls, doc2vecmodel, group_id, name):
+    def new(cls, doc2vecmodel, name, group_id, extra_info={}):
         resource = Resource(
             settings.ENVIRON_DOC2VEC_MODELS_LOCATION,
             Resource.DIRECTORY_AND_ENVIRONMENT
@@ -66,7 +68,8 @@ class Doc2VecModel(BaseModel):
         doc2vec = cls(
             name=name,
             group_id=group_id,
-            modelpath=path
+            modelpath=path,
+            extra_info=extra_info
         )
         doc2vec.save()
         filename = 'doc2vec_id_{}'.format(doc2vec.id)

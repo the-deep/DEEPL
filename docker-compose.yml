@@ -5,6 +5,10 @@ services:
         image: postgres:9.6
         volumes:
             - ./postgres-data:/var/lib/postgresql/data
+    redis:
+        image: redis:latest
+        volumes:
+            - ./redis-data:/data
     web:
         build: .
         env_file:
@@ -15,9 +19,23 @@ services:
             - ./media:/media:z
             - nlp_data:/code/nlp_data
         ports:
-            - '8000:8000'
+            - '80:8000'
         depends_on:
             - db
+            - redis
+    celery:
+        build: .
+        env_file:
+            - .nlp_env
+        command: ['/code/deploy/scripts/wait-for-it.sh', 'db:5432', '--', '/code/deploy/scripts/run_develop.sh', '/code/deploy/scripts/celery.sh']
+        volumes:
+            - .:/code:z
+            - ./media:/media:z
+            - nlp_data:/code/nlp_data
+        depends_on:
+            - db
+            - redis
+
 
 volumes:
     nlp_data:
