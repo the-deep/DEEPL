@@ -10,8 +10,13 @@ cd $ROOT_DIR
 . /venv/bin/activate
 pip3 install -r requirements.txt
 export NLP_INDICES_PATH=/code/nlp_indices/
-yarn install
-/code/node_modules/webpack-cli/bin/webpack.js 
-python manage.py collectstatic
-python manage.py migrate --no-input
-python manage.py runserver 0.0.0.0:8000
+if [[ $INSTANCE_TYPE != 'CELERY' ]]; then
+    yarn install
+    /code/node_modules/webpack-cli/bin/webpack.js 
+    python manage.py collectstatic
+    python manage.py migrate --no-input
+    python manage.py runserver 0.0.0.0:8000
+else
+    celery -A deepl worker -l info
+fi
+

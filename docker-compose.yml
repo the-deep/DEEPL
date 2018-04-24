@@ -19,7 +19,7 @@ services:
             - ./media:/media:z
             - nlp_data:/code/nlp_data
         ports:
-            - '80:8000'
+            - '8000:8000'
         depends_on:
             - db
             - celery
@@ -27,10 +27,14 @@ services:
         build: .
         env_file:
             - .nlp_env
+        environment:
+            - INSTANCE_TYPE=CELERY
+        command: ['/code/deploy/scripts/run_develop.sh', '/code/deploy/scripts/celery.sh']
         volumes:
             - .:/code:z
             - ./media:/media:z
             - nlp_data:/code/nlp_data
+        tty: true
         depends_on:
             - db
             - redis
