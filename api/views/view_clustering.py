@@ -19,7 +19,7 @@ class ClusteringView(APIView):
         validation_details = self._validate_data(data)
         if not validation_details['status']:
             return Response(
-                validation_details,
+                validation_details['errors'],
                 status=status.HTTP_400_BAD_REQUEST
             )
         grp_id = data['group_id']

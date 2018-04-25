@@ -1,5 +1,6 @@
 import pickle
 import os
+import json
 from gensim.models.doc2vec import Doc2Vec
 
 
@@ -33,6 +34,47 @@ class ClusteringModel(BaseModel):
 
     def __str__(self):
         return "{} - Group {}".format(self.name, self.group_id)
+
+    def get_labels_data(self):
+        cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
+        resource = Resource(
+            cluster_data_location,
+            Resource.FILE_AND_ENVIRONMENT
+        )
+        # create another resource(folder to keep files)
+        path = os.path.join(
+            resource.get_resource_location(),
+            'cluster_model_{}'.format(self.id)
+        )
+        labels_path = os.path.join(
+            path, settings.CLUSTERED_DOCS_LABELS_FILENAME
+        )
+        labels_resource = Resource(labels_path, Resource.FILE)
+        data = json.loads(labels_resource.get_data())
+        return data
+
+    def get_doc_label(self, docid, labeldata=None):
+        if labeldata is None:
+            labeldata = self.get_labels_data()
+        if not labeldata.get(docid):
+            return None
+        return labeldata[docid]['label']
+
+    def get_similar_docs_for_label(self, label):
+        data = self.get_labels_data()
+        similar_docs = []
+        for k, v in data.items():
+            if v['label'] == label:
+                similar_docs.append(k)
+        return similar_docs
+
+    def get_similar_docs(self, doc_id):
+        data = self.get_labels_data()
+        doc_label = self.get_doc_label(doc_id, data)
+        if doc_label is None:
+            # TODO: more informative
+            return []
+        return self.get_similar_docs_for_label(doc_label)
 
 
 class Doc2VecModel(BaseModel):

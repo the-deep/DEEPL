@@ -48,7 +48,7 @@ class Resource:
     def __validate_directory(self):
         to_check = self.get_resource_location()
         if not os.path.isdir(to_check):
-            raise Exception ('No such location: {}'.format(to_check))
+            raise Exception('No such location: {}'.format(to_check))
 
     def get_data(self):
         """Return plain data after reading from the resource"""

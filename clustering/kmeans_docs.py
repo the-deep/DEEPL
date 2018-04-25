@@ -135,6 +135,11 @@ class KMeansDocs(GenericClustering):
             )
         return self.silhouette_score
 
+    def get_doc_features(self, document):
+        if self.vectorizer is None:
+            raise Exception("Clustering has not been done. Run perform_cluster() first.")
+        return self.vectorizer.fit_transform([document])[0]
+
 
 def _processed_docs():
     import csv

@@ -37,8 +37,7 @@ class TestClusteringAPI(APITestCase):
         response = self.client.post(self.api_url, params)
         assert response.status_code == 400, "No group_id is a bad request."
         data = response.json()
-        assert 'errors' in data
-        assert 'group_id' in data['errors']
+        assert 'group_id' in data
 
     def test_invalid_num_clusters(self):
         params = {'group_id': '1'}
@@ -50,8 +49,7 @@ class TestClusteringAPI(APITestCase):
             assert response.status_code == 400,\
                 "No num_clusters is a bad request."
             data = response.json()
-            assert 'errors' in data
-            assert 'num_clusters' in data['errors']
+            assert 'num_clusters' in data
 
     def test_create_cluster_first_request_api(self):
         """Test when cluster_create request is sent"""

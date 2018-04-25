@@ -27,3 +27,6 @@ class GenericClustering:
 
     def get_silhouette_score(self):
         raise NotImplementedError
+
+    def get_doc_features(self, docid):
+        raise NotImplementedError

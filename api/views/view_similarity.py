@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from similarity.globals import get_similarity_model
 from similarity.helpers import get_similar_docs
 from classifier.models import ClassifiedDocument
+from clustering.models import ClusteringModel
 
 
 class DocsSimilarityView(APIView):
@@ -60,21 +61,48 @@ class SimilarDocsView(APIView):
         if docid:
             # get classified doc and extract text
             try:
-                doc = ClassifiedDocument.objects.get(id=docid).text
+                document = ClassifiedDocument.objects.get(id=docid)
             except ClassifiedDocument.DoesNotExist:
                 return Response({'error': 'Document not found for given id'},
                                 status=status.HTTP_404_NOT_FOUND)
-        similarity_model = get_similarity_model()
-        similar_docs = get_similar_docs(doc, similarity_model)
+            group_id = document.group_id
+        elif doc:
+            group_id = data['group_id']
+        else:
+            return Response(
+                {'error': 'something went wrong. try later'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # try to get clsutering model
+        try:
+            clustering_model = ClusteringModel.objects.get(
+                group_id=group_id
+            )
+        except ClusteringModel.DoesNotExist:
+            return Response(
+                {'error': 'Cannot find clustering model for the group id'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        if docid:
+            similar_docs = clustering_model.get_similar_docs(docid)
+        elif doc:
+            model = clustering_model.model
+            features = model.vectorizer.fit_transform([doc])[0]
+            label = model.predict([features])[0]
+            similar_docs = clustering_model.get_similar_docs_for_label(label)
         return Response({'similar_docs': similar_docs})
 
     def _validation(self, data):
         errors = {}
         doc = data.get('doc')
         docid = data.get('doc_id')
+        group_id = data.get('group_id')
         if (not doc or not doc.strip()) and (not docid or not docid.strip()):
             errors['doc_id'] = "Either doc_id or doc should be present"
             errors['doc'] = "Either doc_id or doc should be present"
+        elif doc and doc.strip():
+            if not group_id:
+                errors['group_id'] = "group_id should be present if doc only is provided"
         elif docid:
             try:
                 docid = int(docid)

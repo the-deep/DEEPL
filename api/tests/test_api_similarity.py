@@ -4,7 +4,7 @@ from similarity.globals import set_similarity_model
 from classifier.models import ClassifiedDocument, ClassifierModel
 
 
-class TestDocsSimilarityAPI(APITestCase):
+class iTestDocsSimilarityAPI(APITestCase):
     """
     API tests for documents similarity
     """
@@ -116,6 +116,13 @@ class TestSimilarDocsAPI(APITestCase):
         assert response.status_code == 400, "Empty doc should be a bad request"
         data = response.json()
         assert 'doc' in data
+
+    def test_doc_and_no_group_id(self):
+        params = {'doc': 'This is a test doc.'}
+        response = self.client.post(self.url, params)
+        assert response.status_code == 400, "No group_id should be 400 error"
+        data = response.json()
+        assert 'group_id' in data
 
     def test_with_valid_doc(self):
         params = {'doc': 'aeroplane, pilot  prime minister'}
