@@ -61,6 +61,7 @@ class TestSimilarDocsAPI(APITestCase):
     API tests for similar docs
     """
     fixtures = [
+        'fixtures/test_base_models.json',
         'fixtures/classifier.json'
     ]
 

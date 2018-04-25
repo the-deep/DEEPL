@@ -10,6 +10,7 @@ from api.views import (
     CorrelationView,
     DocsSimilarityView,
     SimilarDocsView,
+    ClusteringView,
 )
 
 urlpatterns = [
@@ -29,4 +30,5 @@ urlpatterns = [
     url(r'^(?P<entity>[a-zA-Z\.]+)/correlation/$', CorrelationView.as_view()),
     url(r'^similarity/$', DocsSimilarityView.as_view()),
     url(r'^similardocs/$', SimilarDocsView.as_view()),
+    url(r'^clustering/$', ClusteringView.as_view())
 ]

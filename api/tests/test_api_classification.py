@@ -11,6 +11,7 @@ class TestClassificationAPI(APITestCase):
     Tests for text classification API
     """
     fixtures = [
+        'fixtures/test_base_models.json',
         'fixtures/classifier.json'
     ]
 
