@@ -148,7 +148,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = '/static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "assets"), )
-print(STATICFILES_DIRS)
 
 
 if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
