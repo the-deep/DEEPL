@@ -135,6 +135,7 @@ class KMeansDocs(GenericClustering):
             )
         return self.silhouette_score
 
+
 def _processed_docs():
     import csv
     docs = []
