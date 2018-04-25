@@ -21,6 +21,7 @@ class ClusteringModel(BaseModel):
     n_clusters = models.IntegerField()
     extra_info = JSONField(default={})
     silhouette_score = models.FloatField(default=-1.0)
+    ready = models.BooleanField(default=False)
 
     def set_model(self, modelobj):
         self._data = pickle.dumps(modelobj)
