@@ -30,7 +30,10 @@ def create_new_clusters(
     options = ClusteringOptions(n_clusters=n_clusters)
 
     if CLUSTER_CLASS == KMeansDocs:
-        docs = ClassifiedDocument.objects.all().values('id', 'text')
+        docs = ClassifiedDocument.objects.filter(group_id=group_id).\
+                values('id', 'text')
+        if not docs or docs.count() < n_clusters:
+            raise Exception("Too less documents for given number of clusters")
         texts = list(map(lambda x: x['text'], docs))
         docids = list(map(lambda x: x['id'], docs))
         cluster_params = texts
