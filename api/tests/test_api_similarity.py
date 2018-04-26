@@ -1,7 +1,11 @@
+import os
+
 from rest_framework.test import APITestCase
+from django.conf import settings
 
 from similarity.globals import set_similarity_model
 from classifier.models import ClassifiedDocument, ClassifierModel
+from clustering.tasks import create_new_clusters
 
 
 class iTestDocsSimilarityAPI(APITestCase):
@@ -62,27 +66,20 @@ class TestSimilarDocsAPI(APITestCase):
     """
     fixtures = [
         'fixtures/test_base_models.json',
-        'fixtures/classifier.json'
+        'fixtures/classifier.json',
+        'fixtures/test_classified_docs.json'
     ]
 
     def setUp(self):
+        self.cluster_data_path = 'test_clusters/'
+        # create path if not exist
+        os.system('mkdir -p {}'.format(self.cluster_data_path))
+        os.environ[settings.ENVIRON_CLUSTERING_DATA_LOCATION] = \
+            self.cluster_data_path
         self.classifier_model = ClassifierModel.objects.get(version=1)
-        texts = [
-            "Foreign prime minister flies aeroplane with a pilot",
-            "There is no pilot in the flight"
-        ]
-        # create classified docs
-        self.doc_id = None
-        for t in texts:
-            obj = ClassifiedDocument.objects.create(
-                text=t,
-                classifier=self.classifier_model,
-                confidence=0.2,  # this is just a value, not relevant here
-                classification_label="ABC",
-                classification_probabilities=self.classifier_model.classifier.
-                    classify_as_label_probs(t)
-            )
-            self.doc_id = obj.id
+        doc = ClassifiedDocument.objects.last()
+        self.group_id = doc.group_id
+        self.doc_id = doc.id
         self.url = '/api/similardocs/'
 
     def test_no_params(self):
@@ -124,24 +121,45 @@ class TestSimilarDocsAPI(APITestCase):
         data = response.json()
         assert 'group_id' in data
 
-    def test_with_valid_doc(self):
-        params = {'doc': 'aeroplane, pilot  prime minister'}
+    def test_with_valid_doc_non_existent_group_id(self):
+        params = {
+            'doc': 'aeroplane, pilot  prime minister',
+            'group_id': 'rendom'
+        }
+        response = self.client.post(self.url, params)
+        assert response.status_code == 404
+        data = response.json()
+        assert 'error' in data
+
+    def test_valid_doc_and_doc_id(self):
+        # first create clusters
+        create_new_clusters(
+            "test_cluster", self.group_id, 2
+        )
+        params = {
+            'doc': 'aeroplane, pilot prime minister',
+            'group_id': self.group_id
+        }
         response = self.client.post(self.url, params)
         assert response.status_code == 200
         data = response.json()
         assert 'similar_docs' in data
-        for x in data['similar_docs']:
-            assert isinstance(x, list) or isinstance(x, tuple)
-            assert len(x) == 2
-            assert x[1] <= 1.0 and x[1] >= 0.0
+        for docid in data['similar_docs']:
+            assert isinstance(docid, int)
 
     def test_with_valid_doc_id(self):
+        # first create clusters
+        create_new_clusters(
+            "test_cluster", self.group_id, 2
+        )
         params = {'doc_id': self.doc_id}  # we created two docs
         response = self.client.post(self.url, params)
         assert response.status_code == 200
         data = response.json()
         assert 'similar_docs' in data
-        for x in data['similar_docs']:
-            assert isinstance(x, list) or isinstance(x, tuple)
-            assert len(x) == 2
-            assert x[1] <= 1.0 and x[1] >= 0.0
+        for docid in data['similar_docs']:
+            assert isinstance(docid, int)
+
+    def tearDown(self):
+        # remove test cluster folder
+        os.system('rm -r {}'.format(self.cluster_data_path))

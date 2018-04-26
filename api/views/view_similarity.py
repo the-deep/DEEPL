@@ -88,9 +88,9 @@ class SimilarDocsView(APIView):
         elif doc:
             model = clustering_model.model
             features = model.vectorizer.fit_transform([doc])[0]
-            label = model.predict([features])[0]
+            label = model.model.predict(features)
             similar_docs = clustering_model.get_similar_docs_for_label(label)
-        return Response({'similar_docs': similar_docs})
+        return Response({'similar_docs': [int(x) for x in similar_docs]})
 
     def _validation(self, data):
         errors = {}
