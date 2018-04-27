@@ -12,7 +12,7 @@ from clustering.kmeans_docs import KMeansDocs
 from classifier.models import ClassifiedDocument
 from classifier.tf_idf import get_relevant_terms
 from helpers.utils import compress_sparse_vector, Resource
-from helpers.common import preprocess
+from helpers.common import preprocess, tokenize
 
 
 @task
@@ -76,7 +76,7 @@ def create_new_clusters(
             arr = vectorizer.fit_transform([txt]).toarray()[0]
             compressed = compress_sparse_vector(arr)
             features.append(compressed)
-        relevant_terms = get_relevant_terms(texts)
+        relevant_terms = get_relevant_terms(list(map(tokenize, texts)))
 
     docids_features = dict(zip(docids, features))
     # Now write to files

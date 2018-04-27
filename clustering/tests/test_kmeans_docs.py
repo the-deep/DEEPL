@@ -80,6 +80,7 @@ class TestClusterCreationDocs(APITestCase):
         else:
             data = json.loads(relevant_resource.get_data())
             assert isinstance(data, list)
+            assert not all(map(lambda x: len(x) < 2, data))
 
     def get_model_path(self, model):
         cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION

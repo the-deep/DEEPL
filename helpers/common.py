@@ -9,6 +9,10 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from functools import reduce
 
 
+def tokenize(doc):
+    return doc.split()
+
+
 def compose(*functions):
     def compose2(f1, f2):
         """Compose two functions"""

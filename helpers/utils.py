@@ -181,7 +181,7 @@ directory where the index files are stored.".format(env_var)
     return indicespath
 
 
-if __name__ == '__main__':
+def _test_merge():
     import random
     # do test if merge works fine or not
     for x in range(50000):
@@ -192,3 +192,14 @@ if __name__ == '__main__':
         merged = randlist1 + randlist2
         assert merge_lists(sorted(randlist1), sorted(randlist2)) ==\
             sorted(merged), "Merging sorted and whole sorted should be same"
+
+
+def _test_trie():
+    from helpers.data_structures import Trie
+    t = Trie()
+    t.insert('bibek')
+    print(t.preorder(t.root))
+
+
+if __name__ == '__main__':
+    _test_trie()
