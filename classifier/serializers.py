@@ -50,9 +50,9 @@ class ClassifiedExcerptSerializer(serializers.ModelSerializer):
         txt = obj.classified_document.text
         pos = obj.start_pos
         while txt[pos] in ' \n"?\'”' and pos < obj.end_pos:
-            pos+=1
+            pos += 1
         return pos
-        
+
     def get_end_pos(self, obj):
         txt = obj.classified_document.text
         pos = obj.end_pos

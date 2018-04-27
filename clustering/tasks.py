@@ -10,7 +10,9 @@ from clustering.base import ClusteringOptions
 from clustering.kmeans_doc2vec import KMeansDoc2Vec
 from clustering.kmeans_docs import KMeansDocs
 from classifier.models import ClassifiedDocument
+from classifier.tf_idf import get_relevant_terms
 from helpers.utils import compress_sparse_vector, Resource
+from helpers.common import preprocess
 
 
 @task
@@ -34,7 +36,12 @@ def create_new_clusters(
                 values('id', 'text')
         if not docs or docs.count() < n_clusters:
             raise Exception("Too less documents for given number of clusters")
-        texts = list(map(lambda x: x['text'], docs))
+        texts = list(
+            map(
+                lambda x: preprocess(x['text'], ignore_numbers=True),
+                docs
+            )
+        )
         docids = list(map(lambda x: x['id'], docs))
         cluster_params = texts
     elif CLUSTER_CLASS == KMeansDoc2Vec:
@@ -69,6 +76,7 @@ def create_new_clusters(
             arr = vectorizer.fit_transform([txt]).toarray()[0]
             compressed = compress_sparse_vector(arr)
             features.append(compressed)
+        relevant_terms = get_relevant_terms(texts)
 
     docids_features = dict(zip(docids, features))
     # Now write to files
@@ -77,7 +85,8 @@ def create_new_clusters(
         cluster_model,
         docs_labels,
         kmeans_model.model.cluster_centers_,
-        docids_features
+        docids_features,
+        relevant_terms
     )
     # mark clustering complete as true
     cluster_model.ready = True
@@ -86,7 +95,8 @@ def create_new_clusters(
 
 
 def write_clustured_data_to_files(
-        model, docs_labels, cluster_centers, docids_features
+        model, docs_labels, cluster_centers,
+        docids_features, relevant_terms=None
         ):
     """Write the doc_clusterlabels and cluster_centers to files"""
     cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
@@ -127,4 +137,9 @@ def write_clustured_data_to_files(
         ]
     # Write docs_clusterlabels
     labels_resource.write_data(json.dumps(dict_data))
+    # Write relevant terms if present
+    if relevant_terms is not None:
+        relevant_path = os.path.join(path, settings.RELEVANT_TERMS_FILENAME)
+        relevant_resource = Resource(relevant_path, Resource.FILE)
+        relevant_resource.write_data(json.dumps(list(relevant_terms)))
     print("Done writing data")

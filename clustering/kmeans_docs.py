@@ -80,6 +80,7 @@ class KMeansDocs(GenericClustering):
         self.X = None
 
     def perform_cluster(self, documents):
+        # documents should be cleaned docs
         if self.options.use_hashing:
             if self.options.use_idf:
                 # Perform an IDF normalization on output of HashingVectorizer

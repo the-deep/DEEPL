@@ -80,7 +80,7 @@ class SimilarDocsView(APIView):
             )
         except ClusteringModel.DoesNotExist:
             return Response(
-                {'error': 'Cannot find clustering model for the group id'},
+                {'error': 'Cannot find clustering model for the group id. Call /api/clustering/ for the group_id first'},
                 status=status.HTTP_404_NOT_FOUND
             )
         if docid:

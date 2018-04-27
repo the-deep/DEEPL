@@ -63,17 +63,56 @@ class TestClusteringAPI(APITestCase):
 
     def test_clustered_prepared_resposne(self):
         # create a clustered model
-        self.cluster_model = create_new_clusters(
+        cluster_model = create_new_clusters(
             "test_cluster", self.group_id, 2
         )
         params = self.valid_params
         response = self.client.post(self.api_url, params)
         assert response.status_code == 201
         data = response.json()
-        print(data)
         data = response.json()
         assert 'cluster_id' in data
         assert isinstance(data['cluster_id'], int)
+        assert data['cluster_id'] == cluster_model.id
+
+    def test_get_cluster_invalid_model_id(self):
+        params = {}
+        invalids = [None, "abcd", "1.1", "-1"]
+        for invalid in invalids:
+            if invalid is not None:
+                params['model_id'] = invalid
+            response = self.client.get(self.api_url, params)
+            assert response.status_code == 400, "no model_id should be 400"
+            data = response.json()
+            assert 'model_id' in data
+
+    def test_get_cluster_non_existent_model_id(self):
+        params = {'model_id': 9876543}
+        response = self.client.get(self.api_url, params)
+        print(response.json())
+        assert response.status_code == 404, "non existent model_id is 404"
+        data = response.json()
+        assert 'message' in data
+
+    def test_get_cluster(self):
+        cluster_model = create_new_clusters(
+            "test_cluster", self.group_id, 2
+        )
+        params = {'model_id': cluster_model.id}
+        response = self.client.get(self.api_url, params)
+        assert response.status_code == 200
+        data = response.json()
+        assert 'score' in data
+        assert data['score'] >= -1 and data['score'] <= 1
+        assert 'doc_ids' in data
+        assert isinstance(data['doc_ids'], list)
+        for did in data['doc_ids']:
+            isinstance(did, int)
+        assert 'relevant_terms' in data
+        for term in data['relevant_terms']:
+            assert isinstance(term, str)
+        assert 'group_id' in data
+        assert isinstance(data['group_id'], str)
 
     def tearDown(self):
         # remove test cluster folder
