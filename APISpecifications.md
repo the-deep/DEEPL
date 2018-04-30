@@ -112,3 +112,21 @@
 #### Purpose: to get correlation among subtopics
 #### Content-Type: application/x-www-form-urlencoded
 #### Params: None
+
+
+## [PUT] /api/doc/
+#### Purpose: to update a document(in fact, updateing group_id of the doc)
+#### Content-Type: application/json
+#### Params:
+- items: contains list of objects, each object containing:
+    - doc_id: document id whose group_id is to be updated
+    - group_id: updated group_id
+#### Sample Request:
+<pre>
+{
+    "items": [
+        {"doc_id": 1, "group_id": "121"},
+        {"doc_id": 2, "group_id": "122"},
+    ]
+}
+</pre>

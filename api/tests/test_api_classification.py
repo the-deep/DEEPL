@@ -108,6 +108,69 @@ class TestClassificationAPI(APITestCase):
         texts = []
 
 
+class TestUpdateGroupId(APITestCase):
+    fixtures = [
+        'fixtures/test_base_models.json',
+        'fixtures/classifier.json'
+    ]
+
+    def setUp(self):
+        self.classifier_model = ClassifierModel.objects.last()
+        init()
+        self.classified_doc1 = ClassifiedDocument.objects.create(
+            text="Sample text",
+            classifier=self.classifier_model,
+            confidence=0.2,
+            classification_label="ABC",
+            classification_probabilities=self.classifier_model.classifier.
+                classify_as_label_probs("Sample text")
+        )
+        self.classified_doc2 = ClassifiedDocument.objects.create(
+            text="Sample text2",
+            classifier=self.classifier_model,
+            confidence=0.2,
+            classification_label="ABC",
+            classification_probabilities=self.classifier_model.classifier.
+                classify_as_label_probs("Sample text")
+        )
+        self.url = '/api/doc/'  # TODO; fix endpoint
+
+    def test_without_data(self):
+        params = {}
+        resp = self.client.put(self.url, params)
+        assert resp.status_code == 400
+        data = resp.json()
+        assert 'items' in data
+
+    def test_invalid_data(self):
+        params = {}
+        invalids = [None, "", 1, "1", "abc", 1.2334]
+        for invalid in invalids:
+            params['items'] = invalid
+            resp = self.client.put(self.url, params)
+            assert resp.status_code == 400
+            data = resp.json()
+            assert 'items' in data
+
+    def test_update(self):
+        params = {
+            "items": [
+                {"doc_id": self.classified_doc1.id, "group_id": "gid1"},
+                {"doc_id": self.classified_doc2.id, "group_id": "gid2"},
+            ]
+        }
+        resp = self.client.put(self.url, params, format='json')
+        print(resp.json())
+        assert resp.status_code == 200
+        # now check if group_id has been updated
+        assert ClassifiedDocument.objects.get(
+            id=self.classified_doc1.id
+        ).group_id == 'gid1'
+        assert ClassifiedDocument.objects.get(
+            id=self.classified_doc2.id
+        ).group_id == 'gid2'
+
+
 def assertion_structure_data(structure, data):
     """
     Automatic checks if data matches structure

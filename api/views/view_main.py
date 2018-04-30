@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.db.transaction import atomic
 
 from api.helpers import (
     classify_text,
@@ -144,6 +145,57 @@ class DocumentClassifierView(APIView):
             }
         return {
             'status': True,
+        }
+
+
+class ClassifiedDocumentView(APIView):
+    def put(self, request):
+        print(request.data.items())
+        data = dict(request.data.items())
+        validation_details = self._validate_post_data(data)
+        if not validation_details['status']:
+            return Response(
+                validation_details['errors'],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        data = validation_details['data']  # validated data
+        with atomic():
+            for x in data['items']:
+                did = x['doc_id']
+                gid = x['group_id']
+                try:
+                    obj = ClassifiedDocument.objects.get(id=did)
+                    obj.group_id = gid
+                    obj.save()
+                except ClassifiedDocument.DoesNotExist:
+                    logger.info(
+                        "UpdateDocIdView: non existent doc id {}".
+                        format(did)
+                    )
+            return Response({"message": "Successful update"})
+
+    def _validate_post_data(self, data):
+        errors = {}
+        items = data.get('items')
+        print('items', items)
+        if not items:
+            errors['items'] = 'items should be present'
+        elif not isinstance(items, list):
+            errors['items'] = 'items should be list of {group_id: <>, doc_id: <>}'
+        else:
+            for x in items:
+                if 'group_id' not in x:
+                    errors['group_id'] = 'group_id should be present in all data'
+                if 'doc_id' not in x:
+                    errors['doc_id'] = 'doc_id should be present in all data'
+        if errors:
+            return {
+                'status': False,
+                'errors': errors
+            }
+        return {
+            'status': True,
+            'data': data
         }
 
 
