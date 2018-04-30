@@ -1,6 +1,7 @@
 import os
 import json
 import subprocess
+import logging
 
 from celery import task
 from django.conf import settings
@@ -13,6 +14,8 @@ from classifier.models import ClassifiedDocument
 from classifier.tf_idf import get_relevant_terms
 from helpers.utils import compress_sparse_vector, Resource
 from helpers.common import preprocess, tokenize
+
+logger = logging.getLogger(__name__)
 
 
 @task
@@ -35,6 +38,10 @@ def create_new_clusters(
         docs = ClassifiedDocument.objects.filter(group_id=group_id).\
                 values('id', 'text')
         if not docs or docs.count() < n_clusters:
+            logger.warn(
+                "Too less documents for clustering for group_id {}".
+                format(group_id)
+            )
             raise Exception("Too less documents for given number of clusters")
         texts = list(
             map(
@@ -54,7 +61,7 @@ def create_new_clusters(
         raise Exception("Invalid class")
 
     k_means = CLUSTER_CLASS(options)
-    print("Creating clustering model")
+    logger.info("Creating clustering model for group_id {}".format(group_id))
     kmeans_model = k_means.perform_cluster(cluster_params)
     docs_labels = zip(docids,  # convert from np.int64 to int
                       list(map(lambda x: int(x), kmeans_model.model.labels_)))
@@ -64,7 +71,7 @@ def create_new_clusters(
     cluster_model.name = name
     cluster_model.group_id = group_id
     cluster_model.n_clusters = n_clusters
-    print("Saving model to database")
+    logger.info("Saving model to database. Group_id".format(group_id))
     cluster_model.silhouette_score = kmeans_model.get_silhouette_score()
     cluster_model.save()
 
@@ -80,7 +87,10 @@ def create_new_clusters(
 
     docids_features = dict(zip(docids, features))
     # Now write to files
-    print("Writing results to files")
+    logger.info(
+        "Writing clustering results to files. Group id: {}".
+        format(group_id)
+    )
     write_clustured_data_to_files(
         cluster_model,
         docs_labels,
