@@ -51,12 +51,19 @@ class TestClusteringAPI(APITestCase):
             data = response.json()
             assert 'num_clusters' in data
 
+    def test_no_docs_with_group_id(self):
+        params = {'group_id': 'not existing', 'num_clusters': 5}
+        response = self.client.post(self.api_url, params)
+        data = response.json()
+        assert response.status_code == 400, "If no docs, it is a bad request"
+        data = response.json()
+        assert 'message' in data
+
     def test_create_cluster_first_request_api(self):
         """Test when cluster_create request is sent"""
         params = self.valid_params
         response = self.client.post(self.api_url, params)
         data = response.json()
-        print(data)
         assert response.status_code == 202, "No data returned but accepted"
         data = response.json()
         assert 'message' in data

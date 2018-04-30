@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from clustering.models import ClusteringModel
 from clustering.serializers import ClusteringModelSerializer
 from clustering.tasks import create_new_clusters
+from classifier.models import ClassifiedDocument
 
 
 import logging
@@ -43,6 +44,15 @@ class ClusteringView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         grp_id = data['group_id']
+        num_clusters = int(data['num_clusters'])
+        # first try get if any docs available with given group_id
+
+        docs = ClassifiedDocument.objects.filter(group_id=grp_id)
+        if not docs or docs.count() <= num_clusters:
+            return Response(
+                {'message': 'Too few/zero documents to cluster'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         try:
             cluster_model = ClusteringModel.objects.get(
                 group_id=grp_id
@@ -52,7 +62,7 @@ class ClusteringView(APIView):
             cluster_model = create_new_clusters.delay(
                 data.get('name', grp_id),  # name is not mandatory
                 grp_id,
-                n_clusters=int(data['num_clusters']),
+                n_clusters=num_clusters,
             )
             return Response(
                 {"message": "Clustering is in progress. Try later for data."},
