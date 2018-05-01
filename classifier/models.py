@@ -69,7 +69,7 @@ class ClassifiedDocument(BaseModel):
     classification_probabilities = JSONField(default={})
     text = models.TextField()
     extra_info = JSONField(default={})
-    migrated = models.BooleanField(default=True)
+    migrated = models.BooleanField(default=False)
 
     @property
     def classification_confidence(self):
