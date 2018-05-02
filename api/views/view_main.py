@@ -1,3 +1,5 @@
+import langdetect
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -96,13 +98,17 @@ class DocumentClassifierView(APIView):
         # Create classified Document
         grp_id = data.get('group_id')
 
+        # get language
+        language = langdetect.detect(text)
+
         doc = ClassifiedDocument.objects.create(
             text=text,
             classifier=classifier['classifier_model'],
             confidence=classified[0][1],
             classification_label=classified[0][0],
             classification_probabilities=classified,
-            group_id=grp_id
+            group_id=grp_id,
+            extra_info={"language": language}
         )
         classified_excerpts = classify_lead_excerpts(
             classifier['classifier'],

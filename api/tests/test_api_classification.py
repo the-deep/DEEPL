@@ -65,6 +65,11 @@ class TestClassificationAPI(APITestCase):
         assert "classification" in data
         assert "classification_confidence" in data
         assert type(data['classification']) == list
+        # check if language feature added
+        lastdoc = ClassifiedDocument.objects.last()
+        info = lastdoc.extra_info
+        assert 'language' in info
+        assert 'en' == info['language']
         # Just to check if list contains tuples, if not exception raised
         for label, prob in data['classification']:
             pass
