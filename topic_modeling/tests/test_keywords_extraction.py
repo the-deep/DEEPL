@@ -1,5 +1,3 @@
-import unittest
-
 from topic_modeling.keywords_extraction import get_key_ngrams
 
 
