@@ -86,6 +86,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'deepl.wsgi.application'
 
+REST_FRAMEWORK = {
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning'
+}
+
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases

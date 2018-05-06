@@ -115,3 +115,4 @@ model_test_datas/
 static/
 nlp_data
 .nlp_env_prod
+postgres-data/
