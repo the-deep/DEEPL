@@ -1,8 +1,7 @@
 from rest_framework.test import APITestCase
 
-from helpers.deep import get_processed_data
-from helpers.create_classifier import create_classifier_model
 from classifier.models import ClassifiedDocument
+from topic_modeling.models import TopicModelingModel
 
 
 class TestTopicModelingAPI(APITestCase):
@@ -17,7 +16,6 @@ class TestTopicModelingAPI(APITestCase):
         response = self.client.post(self.url, params)
         assert response.status_code == 400, "No params should be a bad request"
         data = response.json()
-        assert 'documents' in data
         assert 'number_of_topics' in data
         assert 'keywords_per_topic' in data
         assert 'depth' in data
@@ -159,3 +157,119 @@ class TestTopicModelingAPI(APITestCase):
                             isinstance(kw[1], float)
                     assert 'subtopics' in topic
         assert depth2, "At least one topic should have depth 2"
+
+
+class TestTopicModelingAPIV2(APITestCase):
+    """Test cases for v2 topic modeling api"""
+    fixtures = [
+        'fixtures/test_base_models.json',
+        'fixtures/classifier.json',
+        'fixtures/test_classified_docs.json',
+    ]
+
+    def setUp(self):
+        self.url = '/api/v2/topic-modeling/'
+        self.group_id = ClassifiedDocument.objects.last().group_id
+
+    def test_invalid_version(self):
+        url = self.url.replace('2', '3')
+        params = {}  # does not matter as params validation does not take place
+        response = self.client.post(url, params)
+        assert response.status_code == 400
+        data = response.json()
+        assert 'error' in data
+        assert 'version' in data['error']
+
+    def test_no_group_id(self):
+        params = {
+            'depth': 1,
+            'number_of_topics': 3,
+            'keywords_per_topic': 2
+        }
+        response = self.client.post(self.url, params)
+        assert response.status_code == 400
+        data = response.json()
+        assert 'group_id' in data
+
+    def test_non_existent_group_id(self):
+        params = {
+            'group_id': 'This does not exist',
+            'depth': 1,
+            'number_of_topics': 3,
+            'keywords_per_topic': 2
+        }
+        response = self.client.post(self.url, params)
+        assert response.status_code == 404
+        data = response.json()
+        assert 'message' in data
+
+    def test_no_depth(self):
+        params = {
+            'group_id': self.group_id,
+            'number_of_topics': 3,
+            'keywords_per_topic': 2
+        }
+        response = self.client.post(self.url, params)
+        assert response.status_code == 400, "Should be a bad request"
+        data = response.json()
+        assert 'depth' in data
+        assert 'keywords_per_topic' not in data
+        assert 'number_of_topics' not in data
+
+    def test_no_number_of_topics(self):
+        params = {
+            'depth': 1,
+            'group_id': self.group_id,
+            'keywords_per_topic': 2
+        }
+        response = self.client.post(self.url, params)
+        assert response.status_code == 400, "Should be a bad request"
+        data = response.json()
+        assert 'number_of_topics' in data
+        assert 'keywords_per_topic' not in data
+        assert 'depth' not in data
+
+    def test_no_keywords_per_topic(self):
+        params = {
+            'depth': 1,
+            'number_of_topics': 3,
+            'group_id': self.group_id
+        }
+        response = self.client.post(self.url, params)
+        assert response.status_code == 400, "Should be a bad request"
+        data = response.json()
+        assert 'keywords_per_topic' in data
+        assert 'number_of_topics' not in data
+        assert 'depth' not in data
+
+    def test_topic_modeling_post_new(self):
+        params = {
+            'group_id': self.group_id,
+            'depth': 1,
+            'number_of_topics': 3,
+            'keywords_per_topic': 2
+        }
+        response = self.client.post(self.url, params)
+        assert response.status_code == 202, "Model will be created in bg"
+        # get topic model and check status is not ready
+        model = TopicModelingModel.objects.get(group_id=self.group_id)
+        assert not model.ready
+
+    def test_topic_modeling_get_no_model_exists(self):
+        params = {
+            'group_id': self.group_id,
+        }
+        response = self.client.get(self.url, params)
+        assert response.status_code == 404, "Model is not yet created"
+        data = response.json()
+        assert 'message' in data  # Message is about initiating model creation
+
+    def test_topic_modeling_get_not_ready(self):
+        params = {
+            'group_id': self.group_id,
+            'depth': 1,
+            'number_of_topics': 3,
+            'keywords_per_topic': 2
+        }
+        response = self.client.get(self.url, params)
+        assert response.status_code == 202, "Model is still not ready"
