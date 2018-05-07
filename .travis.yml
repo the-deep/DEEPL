@@ -7,13 +7,20 @@ services:
     - docker
 
 before_install:
-    - docker-compose build
+    - docker-compose pull
+    - docker build --cache-from thedeep/deepl:latest --tag thedeep/deepl:latest .
 
 before_script:
     - docker-compose up -d
 
 script:
-    - docker-compose exec web bash -c '. /venv/bin/activate; pytest'
+    #- docker-compose exec web bash -c '. /venv/bin/activate; pytest'
+    - echo "test here"
+
+after_success:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker-compose push web
+
 
 notifications:
   slack:

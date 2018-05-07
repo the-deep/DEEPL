@@ -1,4 +1,4 @@
-version: '3'
+version: '3.2'
 
 services:
     db:
@@ -10,7 +10,11 @@ services:
         volumes:
             - ./redis-data:/data
     web:
-        build: .
+        image: thedeep/deepl:latest
+        build:
+            context: .
+            cache_from:
+                - thedeep/deepl:latest
         env_file:
             - .nlp_env
         command: ['/code/deploy/scripts/wait-for-it.sh', 'db:5432', '--', '/code/deploy/scripts/run_develop.sh']
@@ -24,7 +28,11 @@ services:
             - db
             - celery
     celery:
-        build: .
+        image: thedeep/deepl:latest
+        build:
+            context: .
+            cache_from:
+                - thedeep/deepl:latest
         env_file:
             - .nlp_env
         environment:
