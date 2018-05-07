@@ -10,6 +10,9 @@ class TopicModelingModel(BaseModel):
     """
     group_id = models.CharField(max_length=50, unique=True)
     data = JSONField(default={})
+    number_of_topics = models.IntegerField()
+    keywords_per_topic = models.IntegerField()
+    depth = models.IntegerField()
     ready = models.BooleanField(default=False)
     extra_info = JSONField(default={})
 

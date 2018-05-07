@@ -16,11 +16,11 @@ from api.views import (
 
 urlpatterns = [
     url(r'^classify/$', DocumentClassifierView.as_view()),
-    url(r'topic-modeling/$', TopicModelingView.as_view()),
-    url(r'ner/$', NERView.as_view()),
-    url(r'ner-docs/$', NERWithDocIdView.as_view()),
-    url(r'versions/$', ApiVersionsView.as_view()),
-    url(r'keywords-extraction/$', KeywordsExtractionView.as_view()),
+    url(r'^topic-modeling/$', TopicModelingView.as_view()),
+    url(r'^ner/$', NERView.as_view()),
+    url(r'^ner-docs/$', NERWithDocIdView.as_view()),
+    url(r'^versions/$', ApiVersionsView.as_view()),
+    url(r'^keywords-extraction/$', KeywordsExtractionView.as_view()),
     url(r'^recommendation/$', RecommendationView.as_view()),
     url(r'^(?P<entity>[a-zA-Z\.]+)/correlation/$', CorrelationView.as_view()),
     url(r'^similarity/$', DocsSimilarityView.as_view()),

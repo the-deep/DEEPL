@@ -13,6 +13,7 @@ class TopicModelingView(APIView):
     """API for topic modeling"""
     def get(self, request, version=None):
         version = request.version
+        print('VERSION', version)
         if version == 'v2':
             validation_details = validate_get_topic_modeling(
                 request.query_params
@@ -22,22 +23,35 @@ class TopicModelingView(APIView):
                     validation_details['error_data'],
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            group_id = validation_details['params']['group_id']
+            params = validation_details['params']
+            group_id = params['group_id']
+            num_topics = params['number_of_topics']
+            kws_per_topic = params['keywords_per_topic']
+            depth = params['depth']
             try:
-                model = TopicModelingModel.objects.get(group_id=group_id)
+                model = TopicModelingModel.objects.get(
+                    group_id=group_id,
+                    keywords_per_topic=kws_per_topic,
+                    depth=depth,
+                    number_of_topics=num_topics
+                )
             except TopicModelingModel.DoesNotExist:
                 return Response(
                     {'message': 'Model does not exist. Please create model first by calling POST method.'},
                     status=status.HTTP_404_NOT_FOUND
                 )
             else:
+                if not model.ready:
+                    return Response(
+                        {'message': 'Model is being created. Try later'},
+                        status=status.HTTP_202_ACCEPTED
+                    )
                 return Response(model.data)
         else:
             return Response(
                 {'error': 'Invalid version. GET available from v2 only.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
 
     @check_if_test('topic_modeling')
     def post(self, request, version=None):
@@ -153,6 +167,9 @@ def validate_v2_topic_modeling_params(params):
 
 def validate_get_topic_modeling(params):
     errors = {}
+    basic_validation = basic_validate(params)
+    if not basic_validation['status']:
+        return basic_validation
     if not params.get('group_id'):
         errors['group_id'] = 'group_id is not present'
     if errors:
@@ -211,13 +228,8 @@ def v2_topic_modeling_handler(request):
         )
     params = validation_details['params']
 
-    # get classified docs
-    docs_qset = ClassifiedDocument.objects.filter(group_id=params['group_id']).\
-        values('id', 'group_id', 'text')
-
-    docs = list(map(lambda x: x['text'], docs_qset))
-
-    if not docs:
+    docs_qs = ClassifiedDocument.objects.filter(group_id=params['group_id'])
+    if docs_qs.count() == 0:
         return Response(
             {'message': 'No docs with given group_id found'},
             status=status.HTTP_404_NOT_FOUND
@@ -234,12 +246,15 @@ def v2_topic_modeling_handler(request):
             )
     except TopicModelingModel.DoesNotExist:
         TopicModelingModel.objects.create(
-            group_id=grp_id
+            group_id=grp_id,
+            number_of_topics=params['number_of_topics'],
+            keywords_per_topic=params['keywords_per_topic'],
+            depth=params['depth']
         )
         # send to background
         get_topics_and_subtopics_task.delay(
-            docs, params['number_of_topics'], params['keywords_per_topic'],
-            params['depth'], params['group_id']
+            params['group_id'], params['number_of_topics'],
+            params['keywords_per_topic'], params['depth']
         )
     return Response(
         {'message': 'Topic modeling model is being created'},

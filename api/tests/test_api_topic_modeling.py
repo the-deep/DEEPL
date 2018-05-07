@@ -2,6 +2,7 @@ from rest_framework.test import APITestCase
 
 from classifier.models import ClassifiedDocument
 from topic_modeling.models import TopicModelingModel
+from topic_modeling.tasks import get_topics_and_subtopics_task
 
 
 class TestTopicModelingAPI(APITestCase):
@@ -179,6 +180,12 @@ class TestTopicModelingAPIV2(APITestCase):
         data = response.json()
         assert 'error' in data
         assert 'version' in data['error']
+        # Now test for GET
+        response = self.client.get(url, params)
+        assert response.status_code == 400
+        data = response.json()
+        assert 'error' in data
+        assert 'version' in data['error']
 
     def test_no_group_id(self):
         params = {
@@ -187,6 +194,11 @@ class TestTopicModelingAPIV2(APITestCase):
             'keywords_per_topic': 2
         }
         response = self.client.post(self.url, params)
+        assert response.status_code == 400
+        data = response.json()
+        assert 'group_id' in data
+        # test get
+        response = self.client.get(self.url, params)
         assert response.status_code == 400
         data = response.json()
         assert 'group_id' in data
@@ -215,6 +227,13 @@ class TestTopicModelingAPIV2(APITestCase):
         assert 'depth' in data
         assert 'keywords_per_topic' not in data
         assert 'number_of_topics' not in data
+        # Test for GET
+        response = self.client.get(self.url, params)
+        assert response.status_code == 400, "Should be a bad request"
+        data = response.json()
+        assert 'depth' in data
+        assert 'keywords_per_topic' not in data
+        assert 'number_of_topics' not in data
 
     def test_no_number_of_topics(self):
         params = {
@@ -228,6 +247,13 @@ class TestTopicModelingAPIV2(APITestCase):
         assert 'number_of_topics' in data
         assert 'keywords_per_topic' not in data
         assert 'depth' not in data
+        # test for GET
+        response = self.client.get(self.url, params)
+        assert response.status_code == 400, "Should be a bad request"
+        data = response.json()
+        assert 'number_of_topics' in data
+        assert 'keywords_per_topic' not in data
+        assert 'depth' not in data
 
     def test_no_keywords_per_topic(self):
         params = {
@@ -235,6 +261,13 @@ class TestTopicModelingAPIV2(APITestCase):
             'number_of_topics': 3,
             'group_id': self.group_id
         }
+        response = self.client.post(self.url, params)
+        assert response.status_code == 400, "Should be a bad request"
+        data = response.json()
+        assert 'keywords_per_topic' in data
+        assert 'number_of_topics' not in data
+        assert 'depth' not in data
+        # test for GET
         response = self.client.post(self.url, params)
         assert response.status_code == 400, "Should be a bad request"
         data = response.json()
@@ -258,6 +291,9 @@ class TestTopicModelingAPIV2(APITestCase):
     def test_topic_modeling_get_no_model_exists(self):
         params = {
             'group_id': self.group_id,
+            'depth': 1,
+            'number_of_topics': 3,
+            'keywords_per_topic': 2
         }
         response = self.client.get(self.url, params)
         assert response.status_code == 404, "Model is not yet created"
@@ -271,5 +307,39 @@ class TestTopicModelingAPIV2(APITestCase):
             'number_of_topics': 3,
             'keywords_per_topic': 2
         }
+        # first post
+        self.client.post(self.url, params)
         response = self.client.get(self.url, params)
         assert response.status_code == 202, "Model is still not ready"
+
+    def test_topic_modeling_get_ready(self):
+        params = {
+            'group_id': self.group_id,
+            'depth': 1,
+            'number_of_topics': 3,
+            'keywords_per_topic': 2
+        }
+        # call post first
+        self.client.post(self.url, params)
+        # create the model, this is the background task done by celery
+        get_topics_and_subtopics_task(
+            params['group_id'],
+            params['number_of_topics'],
+            params['keywords_per_topic'],
+            params['depth']
+        )
+        response = self.client.get(self.url, params)
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, dict)
+        assert len(data.keys()) == params['number_of_topics']
+        for name, topic in data.items():
+            assert 'keywords' in topic
+            assert isinstance(topic['keywords'], list)
+            for kw in topic['keywords']:
+                assert isinstance(kw, list)
+                assert len(kw) == 2
+                assert isinstance(kw[0], str)
+                assert isinstance(kw[1], int) or isinstance(kw[1], float)
+            assert 'subtopics' in topic
+            assert not topic['subtopics']  # only one depth
