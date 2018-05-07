@@ -94,4 +94,4 @@ wrapt==1.10.11
 celery==4.1.0
 django-redis==4.9.0
 redis==2.10.6
-langdetect-1.0.7
+langdetect==1.0.7
