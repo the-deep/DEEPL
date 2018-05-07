@@ -66,7 +66,8 @@ class TestNERwithDocsAPI(APITestCase):
         params = {'doc_ids': [999, 1111, 300]}
         response = self.client.post(self.url, params)
         print(response.json())
-        assert response.status_code == 404, "No documents matched should give 404"
+        assert response.status_code == 404, \
+            "No documents matched should give 404"
 
     def test_ner_doc_ids(self):
         params = {
@@ -108,7 +109,25 @@ class TestNERwithDocsAPI(APITestCase):
             assert 'lat' in geometry['location']
             assert 'lng' in geometry['location']
             assert 'viewport' in geometry
-            
+
+    def test_cached(self):
+        params = {
+            'doc_ids': [self.classified_doc.id]
+        }
+        # first post and then again post to check cached key
+        response = self.client.post(self.url, params)
+        # now again post to check for cached key in info
+        response = self.client.post(self.url, params)
+        data = response.json()
+        assert isinstance(data, dict)
+        assert 'locations' in data
+        locations = data['locations']
+        assert isinstance(locations, list)
+        for location in locations:
+            assert 'name' in location
+            assert 'info' in location
+            assert 'cached' in location['info']
+            assert location['info']['cached'] is True
 
     def _get_model(self, version):
         # first create classifier

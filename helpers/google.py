@@ -21,7 +21,10 @@ def get_location_info(location):
     # First query the database, if not found, make a call
     try:
         cache = GoogleLocationCache.objects.get(_location=location.lower())
-        return cache.location_info
+        info = cache.location_info
+        # add cached
+        info.update({'cached': True})
+        return info
     except GoogleLocationCache.DoesNotExist:
         pass
     r = requests.get(get_google_geocode_url(location))
