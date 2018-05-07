@@ -1,0 +1,21 @@
+sudo: required
+
+python:
+    - '3.5'
+
+services:
+    - docker
+
+before_install:
+    - docker-compose build
+
+before_script:
+    - docker-compose up -d
+
+script:
+    - docker-compose exec web bash -c '. /venv/bin/activate; pytest'
+
+notifications:
+  slack:
+    rooms:
+        - secure: "XnwrmCA3FrxjQCm+RdbUD9BqQAuxc1hwdFVcNPaJ/cKSHlBMD9jlHplq4sXjykAIC4eurC37vSDqMggtUImthdDO3SCpudcv1gKz0fyVDlfSxRsP1Iccb1pUOhX2zz+pYXvGOfRxzlCdtXCE+pjsoheC8I826RP/H7kuxrJAznuh1wvO7tCruRkx8p1G/GhUu2hXRgJ3ulvG2hNyWGHK3XHg/TzSZWedF5BxZdykrYvRdWK1+jweYaKkZ7ojtonsBGzoEK+h+U2sgfn5EtQMa3SZCpWWAMu9QaLxDbc48pbR7+XgEs1HJWbdGUtREm1MSBTwEJ63Rpxfjqq1UEhIE9tI+hZQDV3x1RyBKv0e+MYeZHDJr0z3Rzg44F6/3BrL+UupMFbXr3Ex49JW3M7p/goH4yXgj5zRMQEAS4uY905PagT1jbNq57QAQzvnwwocbzQ6QO7Fn3BNmw1skVm7qEDpiWsch41c1JmMiU0eB87NUrnM4I6Z/1ts93rVS2QoqqbFr+jE4WjloLd/m6bVsdzrUzSGkxvRzBkqKgfOGpXcfFHXfGJ7fuL2aSgRY8frzQVd+m1yUDh0+zp0Gz8cgBD0C9PJmHzrQC9FHOvJqYcQxPGWChb/ZR0ozKGkxV1lo2VEsMU2pMi8IBhymLUVvwrC0IX2qk5xFRs1AkFWxSc="
