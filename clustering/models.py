@@ -16,12 +16,14 @@ class ClusteringModel(BaseModel):
     """
     Model to store clustering data
     """
+    # TODO: might need to maintain history of clusters
     name = models.CharField(max_length=100)
     group_id = models.CharField(max_length=20, unique=True, editable=False)
     _data = models.BinaryField()
     n_clusters = models.IntegerField()
     extra_info = JSONField(default={})
     silhouette_score = models.FloatField(default=-1.0)
+    last_clustered_on = models.DateTimeField(null=True)
     ready = models.BooleanField(default=False)
 
     def set_model(self, modelobj):

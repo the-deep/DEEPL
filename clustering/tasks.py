@@ -5,6 +5,7 @@ import logging
 
 from celery import task
 from django.conf import settings
+from django.utils import timezone
 
 from clustering.models import ClusteringModel, Doc2VecModel
 from clustering.base import ClusteringOptions
@@ -98,8 +99,9 @@ def create_new_clusters(
         docids_features,
         relevant_terms
     )
-    # mark clustering complete as true
+    # mark clustering complete as true, and update clustered date
     cluster_model.ready = True
+    cluster_model.last_clustered_on = timezone.now()
     cluster_model.save()
     return cluster_model
 
