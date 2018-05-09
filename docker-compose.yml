@@ -21,7 +21,7 @@ services:
         volumes:
             - .:/code:z
             - ./media:/media:z
-            - nlp_data:/code/nlp_data
+            - nlp_data:/nlp_data
         ports:
             - '8000:8000'
         depends_on:
@@ -41,7 +41,7 @@ services:
         volumes:
             - .:/code:z
             - ./media:/media:z
-            - nlp_data:/code/nlp_data
+            - nlp_data:/nlp_data
         tty: true
         depends_on:
             - db
