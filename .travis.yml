@@ -11,6 +11,7 @@ before_install:
     - chmod +x /tmp/cc-test-reporter
     - docker-compose pull
     - docker build --cache-from thedeep/deepl:latest --tag thedeep/deepl:latest .
+    - env >> .nlp_env
 
 before_script:
     - docker-compose up -d
