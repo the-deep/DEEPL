@@ -7,6 +7,8 @@ services:
     - docker
 
 before_install:
+    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > /tmp/cc-test-reporter
+    - chmod +x /tmp/cc-test-reporter
     - docker-compose pull
     - docker build --cache-from thedeep/deepl:latest --tag thedeep/deepl:latest .
 
@@ -14,10 +16,11 @@ before_script:
     - docker-compose up -d
 
 script:
-    - docker-compose exec web bash -c '. /venv/bin/activate; pytest'
+    - docker-compose exec web /code/deploy/scripts/run_tests.sh
 
 after_success:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - /tmp/cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
     - docker-compose push web
 
 

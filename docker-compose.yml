@@ -5,10 +5,12 @@ services:
         image: postgres:9.6
         volumes:
             - ./postgres-data:/var/lib/postgresql/data
+
     redis:
         image: redis:latest
         volumes:
             - ./redis-data:/data
+
     web:
         image: thedeep/deepl:latest
         build:
@@ -27,6 +29,7 @@ services:
         depends_on:
             - db
             - celery
+
     celery:
         image: thedeep/deepl:latest
         build:
