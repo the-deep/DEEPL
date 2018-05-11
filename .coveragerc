@@ -9,6 +9,7 @@ omit = */migrations/*
         */urls.py
         */tests.py
         export/*
+        *.ipynb
 
 [report]
 show_missing = true

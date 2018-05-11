@@ -17,7 +17,7 @@ before_script:
     - docker-compose up -d
 
 script:
-    - docker-compose exec web /code/deploy/scripts/run_tests.sh
+    - docker-compose exec web  bash -c '. /venv/bin/activate; HOME=/root/ USER=root /code/deploy/scripts/run_tests.sh'
 
 after_success:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
