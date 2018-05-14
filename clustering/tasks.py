@@ -33,8 +33,80 @@ def create_new_clusters(
             group_id=group_id,
             n_clusters=n_clusters
         )
-    options = ClusteringOptions(n_clusters=n_clusters)
+    return perform_clustering(cluster_model, CLUSTER_CLASS, doc2vec_group_id)
 
+
+def write_clustured_data_to_files(
+        model, docs_labels, cluster_centers,
+        docids_features, relevant_terms=None
+        ):
+    """Write the doc_clusterlabels and cluster_centers to files"""
+    cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
+    resource = Resource(
+        cluster_data_location,
+        Resource.FILE_AND_ENVIRONMENT
+    )
+    # create another resource(folder to keep files)
+    path = os.path.join(
+        resource.get_resource_location(),
+        'cluster_model_{}'.format(model.id)
+    )
+    # create the directory
+    p = subprocess.Popen(['mkdir', '-p', path], stdout=subprocess.PIPE)
+    _, err = p.communicate()
+    if err:
+        print("Couldn't create cluster data files. {}".format(err))
+        return
+    # now create centers file
+    center_path = os.path.join(path, settings.CLUSTERS_CENTERS_FILENAME)
+    center_resource = Resource(center_path, Resource.FILE)
+    # convert to python float first or it won't be json serializable
+    centers_data = {
+        i: compress_sparse_vector([float(y) for y in x])
+        for i, x in enumerate(cluster_centers)
+    }
+    center_resource.write_data(json.dumps(centers_data))
+    # now create labels file
+    labels_path = os.path.join(path, settings.CLUSTERED_DOCS_LABELS_FILENAME)
+    labels_resource = Resource(labels_path, Resource.FILE)
+    # create dict
+    dict_data = {x: {'label': y} for x, y in docs_labels}
+    for doc_id, features in docids_features.items():
+        # first make json serializable
+        dict_data[doc_id]['features'] = [
+            float(x) if isinstance(model.model, KMeansDoc2Vec) else x
+            for x in features
+        ]
+    # Write docs_clusterlabels
+    labels_resource.write_data(json.dumps(dict_data))
+    # Write relevant terms if present
+    if relevant_terms is not None:
+        relevant_path = os.path.join(path, settings.RELEVANT_TERMS_FILENAME)
+        relevant_resource = Resource(relevant_path, Resource.FILE)
+        relevant_resource.write_data(json.dumps(list(relevant_terms)))
+    print("Done writing data")
+
+
+@task
+def recluster(group_id, num_clusters):
+    try:
+        cluster_model = ClusteringModel.objects.get(
+            group_id=group_id,
+            n_clusters=num_clusters
+        )
+        perform_clustering(cluster_model)
+    except Exception as e:
+        logger.warn("Exception while reclustering.  {}".format(e))
+
+
+def perform_clustering(
+        cluster_model, CLUSTER_CLASS=KMeansDocs, doc2vec_group_id=None
+        ):
+    n_clusters = cluster_model.n_clusters
+    group_id = cluster_model.group_id
+    name = cluster_model.name
+
+    options = ClusteringOptions(n_clusters=n_clusters)
     if CLUSTER_CLASS == KMeansDocs:
         docs = ClassifiedDocument.objects.filter(group_id=group_id).\
                 values('id', 'text')
@@ -104,54 +176,3 @@ def create_new_clusters(
     cluster_model.last_clustered_on = timezone.now()
     cluster_model.save()
     return cluster_model
-
-
-def write_clustured_data_to_files(
-        model, docs_labels, cluster_centers,
-        docids_features, relevant_terms=None
-        ):
-    """Write the doc_clusterlabels and cluster_centers to files"""
-    cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
-    resource = Resource(
-        cluster_data_location,
-        Resource.FILE_AND_ENVIRONMENT
-    )
-    # create another resource(folder to keep files)
-    path = os.path.join(
-        resource.get_resource_location(),
-        'cluster_model_{}'.format(model.id)
-    )
-    # create the directory
-    p = subprocess.Popen(['mkdir', '-p', path], stdout=subprocess.PIPE)
-    _, err = p.communicate()
-    if err:
-        print("Couldn't create cluster data files. {}".format(err))
-        return
-    # now create centers file
-    center_path = os.path.join(path, settings.CLUSTERS_CENTERS_FILENAME)
-    center_resource = Resource(center_path, Resource.FILE)
-    # convert to python float first or it won't be json serializable
-    centers_data = {
-        i: compress_sparse_vector([float(y) for y in x])
-        for i, x in enumerate(cluster_centers)
-    }
-    center_resource.write_data(json.dumps(centers_data))
-    # now create labels file
-    labels_path = os.path.join(path, settings.CLUSTERED_DOCS_LABELS_FILENAME)
-    labels_resource = Resource(labels_path, Resource.FILE)
-    # create dict
-    dict_data = {x: {'label': y} for x, y in docs_labels}
-    for doc_id, features in docids_features.items():
-        # first make json serializable
-        dict_data[doc_id]['features'] = [
-            float(x) if isinstance(model.model, KMeansDoc2Vec) else x
-            for x in features
-        ]
-    # Write docs_clusterlabels
-    labels_resource.write_data(json.dumps(dict_data))
-    # Write relevant terms if present
-    if relevant_terms is not None:
-        relevant_path = os.path.join(path, settings.RELEVANT_TERMS_FILENAME)
-        relevant_resource = Resource(relevant_path, Resource.FILE)
-        relevant_resource.write_data(json.dumps(list(relevant_terms)))
-    print("Done writing data")

@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from clustering.models import ClusteringModel
 from clustering.serializers import ClusteringModelSerializer
-from clustering.tasks import create_new_clusters
+from clustering.tasks import create_new_clusters, recluster
 from classifier.models import ClassifiedDocument
 
 
@@ -120,3 +120,64 @@ class ClusteringView(APIView):
             'status': True,
             'data': data
         }
+
+
+class ReClusteringView(APIView):
+    """
+    Re-Cluster api
+    """
+    def post(self, request, version=None):
+        data = dict(request.data.items())
+        validation_details = validate_post_recluster_data(data)
+        if not validation_details['status']:
+            return Response(
+                validation_details['errors'],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        grp_id = data['group_id']
+        num_clusters = int(data['num_clusters'])
+        try:
+            cluster_model = ClusteringModel.objects.get(
+                group_id=grp_id,
+                n_clusters=num_clusters
+            )
+        except ClusteringModel.DoesNotExist:
+            return Response(
+                {'message': 'The corresponding cluster model does not exist.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        if not cluster_model.ready:
+            return Response(
+                {'message': 'The model is not ready. Try later'},
+                status=status.HTTP_202_ACCEPTED
+            )
+        # now call to do reclustering
+        cluster_model.ready = False
+        cluster_model.save()
+        recluster.delay(grp_id, num_clusters)
+        return Response(
+            {'message': 'Reclustering in progress.'},
+            status=status.HTTP_202_ACCEPTED
+        )
+
+
+def validate_post_recluster_data(data):
+    errors = {}
+    if not data.get('group_id'):
+        errors['group_id'] = 'group_id should be present'
+    num_clusters = data.get('num_clusters')
+    try:
+        v = int(num_clusters)
+        if v < 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        errors['num_clusters'] = 'num_clusters should be present and positive int'
+    if errors:
+        return {
+            'status': False,
+            'errors': errors
+        }
+    return {
+        'status': True,
+        'data': data
+    }
