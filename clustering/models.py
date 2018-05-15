@@ -23,6 +23,8 @@ class ClusteringModel(BaseModel):
     n_clusters = models.IntegerField()
     extra_info = JSONField(default={})
     silhouette_score = models.FloatField(default=-1.0)
+    last_clustering_started = models.DateTimeField(null=True)
+    # when clustering was completed
     last_clustered_on = models.DateTimeField(null=True)
     ready = models.BooleanField(default=False)
 
