@@ -38,7 +38,7 @@ def create_new_clusters(
 
 def write_clustured_data_to_files(
         model, docs_labels, cluster_centers,
-        docids_features, relevant_terms=None
+        docids_features, relevant_terms=None, update=False
         ):
     """Write the doc_clusterlabels and cluster_centers to files"""
     cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
@@ -65,6 +65,8 @@ def write_clustured_data_to_files(
         i: compress_sparse_vector([float(y) for y in x])
         for i, x in enumerate(cluster_centers)
     }
+    # Center data can be directly written whether update is true or false as
+    # centers gets updated
     center_resource.write_data(json.dumps(centers_data))
     # now create labels file
     labels_path = os.path.join(path, settings.CLUSTERED_DOCS_LABELS_FILENAME)
@@ -78,12 +80,22 @@ def write_clustured_data_to_files(
             for x in features
         ]
     # Write docs_clusterlabels
-    labels_resource.write_data(json.dumps(dict_data))
+    if update:
+        data = json.loads(labels_resource.get_data())
+        data.update(dict_data)
+        labels_resource.write_data(json.dumps(data))
+    else:
+        labels_resource.write_data(json.dumps(dict_data))
     # Write relevant terms if present
     if relevant_terms is not None:
         relevant_path = os.path.join(path, settings.RELEVANT_TERMS_FILENAME)
         relevant_resource = Resource(relevant_path, Resource.FILE)
-        relevant_resource.write_data(json.dumps(list(relevant_terms)))
+        if update:
+            data = set(json.loads(relevant_resource.get_data()))
+            data = data.union(list(relevant_terms))
+            relevant_resource.write_data(json.dumps(list(data)))
+        else:
+            relevant_resource.write_data(json.dumps(list(relevant_terms)))
     print("Done writing data")
 
 
@@ -105,6 +117,9 @@ def perform_clustering(
     n_clusters = cluster_model.n_clusters
     group_id = cluster_model.group_id
     name = cluster_model.name
+
+    cluster_model.last_clustered_started = timezone.now()
+    cluster_model.save()
 
     options = ClusteringOptions(n_clusters=n_clusters)
     if CLUSTER_CLASS == KMeansDocs:
@@ -153,7 +168,7 @@ def perform_clustering(
         features = []
         vectorizer = kmeans_model.vectorizer
         for txt in texts:
-            arr = vectorizer.fit_transform([txt]).toarray()[0]
+            arr = vectorizer.transform([txt]).toarray()[0]
             compressed = compress_sparse_vector(arr)
             features.append(compressed)
         relevant_terms = get_relevant_terms(list(map(tokenize, texts)))
@@ -176,3 +191,65 @@ def perform_clustering(
     cluster_model.last_clustered_on = timezone.now()
     cluster_model.save()
     return cluster_model
+
+
+@task
+def update_cluster(cluster_id):
+    try:
+        cluster_model = ClusteringModel.objects.get(id=cluster_id)
+    except ClusteringModel.DoesNotExist:
+        logger.warn("Clustering Model with id {} does not exist".format(
+            cluster_id
+        ))
+    # Now get unclustered documents
+    # those documents are the ones which have same group_id and been added
+    # after the last_cluster_started time
+    filter_criteria = {
+        'group_id': cluster_model.group_id
+    }
+    if cluster_model.last_clustering_started is not None:
+        filter_criteria['created_on__gte'] = \
+                cluster_model.last_clustering_started
+    docs = ClassifiedDocument.objects.filter(**filter_criteria).\
+        values('id', 'text')
+    texts = list(
+            map(lambda x: preprocess(x['text'], ignore_numbers=True), docs)
+        )
+    docids = list(map(lambda x: x['id'], docs))
+    kmeans_model = cluster_model.model
+    CLUSTER_CLASS = type(kmeans_model)
+    # TODO: add update criteria for doc2vec
+
+    # update status
+    cluster_model.ready = False
+    cluster_model.last_clustering_started = timezone.now()
+    cluster_model.save()
+
+    kmeans_model.update_cluster(texts)
+    docs_labels = zip(
+        docids,  # convert from np.int64 to int
+        list(map(lambda x: int(x), kmeans_model.labels_))
+    )
+    if CLUSTER_CLASS == KMeansDocs:
+        features = []
+        vectorizer = kmeans_model.vectorizer
+        for txt in texts:
+            arr = vectorizer.transform([txt]).toarray()[0]
+            compressed = compress_sparse_vector(arr)
+            features.append(compressed)
+        relevant_terms = get_relevant_terms(list(map(tokenize, texts)))
+    # write/update to file
+    docids_features = dict(zip(docids, features))
+    write_clustured_data_to_files(
+        cluster_model,
+        docs_labels,
+        kmeans_model.model.cluster_centers_,
+        docids_features,
+        relevant_terms,
+        update=True
+    )
+    # update status
+    cluster_model.last_clustered_on = timezone.now()
+    cluster_model.silhouette_score = kmeans_model.get_silhouette_score()
+    cluster_model.ready = True
+    cluster_model.save()

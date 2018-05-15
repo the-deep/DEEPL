@@ -8,7 +8,7 @@ class ClusteringOptions:
     """
     def __init__(
             self, n_clusters=8, use_hashing=True, use_idf=False,
-            n_components=None, minibatch=False, n_features=1000,
+            n_components=None, minibatch=True, n_features=1000,
             store_X=False
             ):
         self.n_clusters = n_clusters
@@ -23,6 +23,9 @@ class ClusteringOptions:
 class GenericClustering:
 
     def perform_cluster(self, documents):
+        raise NotImplementedError
+
+    def update_cluster(self, documents):
         raise NotImplementedError
 
     def get_silhouette_score(self):
