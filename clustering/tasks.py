@@ -160,7 +160,6 @@ def perform_clustering(
     cluster_model.group_id = group_id
     cluster_model.n_clusters = n_clusters
     logger.info("Saving model to database. Group_id".format(group_id))
-    cluster_model.silhouette_score = kmeans_model.get_silhouette_score()
     cluster_model.save()
 
     # create features for KMeansDocs
@@ -188,20 +187,14 @@ def perform_clustering(
     )
     # mark clustering complete as true, and update clustered date
     cluster_model.ready = True
+    cluster_model.silhouette_score = cluster_model.calculate_silhouette_score()
     cluster_model.last_clustered_on = timezone.now()
     cluster_model.save()
     return cluster_model
 
 
-@task
-def update_cluster(cluster_id):
-    try:
-        cluster_model = ClusteringModel.objects.get(id=cluster_id)
-    except ClusteringModel.DoesNotExist:
-        logger.warn("Clustering Model with id {} does not exist".format(
-            cluster_id
-        ))
-    # Now get unclustered documents
+def get_unclustered_docs(cluster_model):
+    """return docs dict with id and text"""
     # those documents are the ones which have same group_id and been added
     # after the last_cluster_started time
     filter_criteria = {
@@ -212,6 +205,18 @@ def update_cluster(cluster_id):
                 cluster_model.last_clustering_started
     docs = ClassifiedDocument.objects.filter(**filter_criteria).\
         values('id', 'text')
+    return docs
+
+
+@task
+def update_cluster(cluster_id):
+    try:
+        cluster_model = ClusteringModel.objects.get(id=cluster_id)
+    except ClusteringModel.DoesNotExist:
+        logger.warn("Clustering Model with id {} does not exist".format(
+            cluster_id
+        ))
+    docs = get_unclustered_docs(cluster_model)
     texts = list(
             map(lambda x: preprocess(x['text'], ignore_numbers=True), docs)
         )
@@ -226,10 +231,10 @@ def update_cluster(cluster_id):
     cluster_model.save()
 
     kmeans_model.update_cluster(texts)
-    docs_labels = zip(
+    docs_labels = list(zip(
         docids,  # convert from np.int64 to int
-        list(map(lambda x: int(x), kmeans_model.labels_))
-    )
+        list(map(lambda x: int(x), kmeans_model.model.labels_))
+    ))
     if CLUSTER_CLASS == KMeansDocs:
         features = []
         vectorizer = kmeans_model.vectorizer
@@ -250,6 +255,12 @@ def update_cluster(cluster_id):
     )
     # update status
     cluster_model.last_clustered_on = timezone.now()
-    cluster_model.silhouette_score = kmeans_model.get_silhouette_score()
+    cluster_model.silhouette_score = cluster_model.calculate_silhouette_score()
     cluster_model.ready = True
     cluster_model.save()
+
+
+@task
+def update_clusters():
+    for clustermodel in ClusteringModel.objects.all().values('id'):
+        update_cluster(clustermodel['id'])
