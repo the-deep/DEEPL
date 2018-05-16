@@ -36,7 +36,7 @@ def create_new_clusters(
     return perform_clustering(cluster_model, CLUSTER_CLASS, doc2vec_group_id)
 
 
-def write_clustured_data_to_files(
+def write_clustered_data_to_files(
         model, docs_labels, cluster_centers,
         docids_features, relevant_terms=None, update=False
         ):
@@ -118,7 +118,7 @@ def perform_clustering(
     group_id = cluster_model.group_id
     name = cluster_model.name
 
-    cluster_model.last_clustered_started = timezone.now()
+    cluster_model.last_clustering_started = timezone.now()
     cluster_model.save()
 
     options = ClusteringOptions(n_clusters=n_clusters)
@@ -179,7 +179,7 @@ def perform_clustering(
         "Writing clustering results to files. Group id: {}".
         format(group_id)
     )
-    write_clustured_data_to_files(
+    write_clustered_data_to_files(
         cluster_model,
         docs_labels,
         kmeans_model.model.cluster_centers_,
@@ -240,7 +240,7 @@ def update_cluster(cluster_id):
         relevant_terms = get_relevant_terms(list(map(tokenize, texts)))
     # write/update to file
     docids_features = dict(zip(docids, features))
-    write_clustured_data_to_files(
+    write_clustered_data_to_files(
         cluster_model,
         docs_labels,
         kmeans_model.model.cluster_centers_,
