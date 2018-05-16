@@ -9,7 +9,7 @@ from django.contrib.postgres.fields import JSONField
 from django.conf import settings
 
 from classifier.models import BaseModel
-from helpers.utils import Resource
+from helpers.utils import Resource, uncompress_compressed_vector, distance
 
 
 class ClusteringModel(BaseModel):
@@ -38,6 +38,24 @@ class ClusteringModel(BaseModel):
 
     def __str__(self):
         return "{} - Group {}".format(self.name, self.group_id)
+
+    def get_centers_data(self):
+        cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
+        resource = Resource(
+            cluster_data_location,
+            Resource.FILE_AND_ENVIRONMENT
+        )
+        # create another resource(folder to keep files)
+        path = os.path.join(
+            resource.get_resource_location(),
+            'cluster_model_{}'.format(self.id)
+        )
+        centers_path = os.path.join(
+            path, settings.CLUSTERS_CENTERS_FILENAME
+        )
+        labels_resource = Resource(centers_path, Resource.FILE)
+        data = json.loads(labels_resource.get_data())
+        return data
 
     def get_labels_data(self):
         cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
@@ -80,6 +98,33 @@ class ClusteringModel(BaseModel):
             return []
         return self.get_similar_docs_for_label(doc_label)
 
+    def calculate_silhouette_score(self):
+        """Calculate silhouette score for clusters"""
+        # NOTE/TODO: only for tf-idf now, not for doc2vec
+        # FORMULA: (b - a) / max (a, b)
+        # where b = minimal dist of point from all other cluster centroids
+        # a = dist from point to its own cluster centroid
+        labels_data = self.get_labels_data()
+        centers_data = self.get_centers_data()
+        same_cluster_avg_dist = 0  # A
+        diff_cluster_avg_dist = 0  # B
+        total_docs = len(labels_data.keys())
+        for k, v in labels_data.items():
+            a = 9999999
+            b = 9999999  # is the minimal distance
+            label_vector = uncompress_compressed_vector(v['features'])
+            for c, vec in centers_data.items():
+                center_vec = uncompress_compressed_vector(vec)
+                dist = distance(label_vector, center_vec)
+                if c == v['label']:
+                    a = dist
+                elif dist < b:
+                    b = dist
+            same_cluster_avg_dist += a
+            diff_cluster_avg_dist += b
+        B, A = diff_cluster_avg_dist, same_cluster_avg_dist
+        score = (B - A) / max(A, B)
+        return float(score)/float(total_docs)
 
 class Doc2VecModel(BaseModel):
     """

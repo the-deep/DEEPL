@@ -171,6 +171,11 @@ def uncompress_compressed_vector(compressed_vec):
     return v
 
 
+def distance(vec1, vec2):
+    d2 = sum(map(lambda x: (x[0]-x[1])**2, zip(vec1, vec2)))
+    return d2**0.5
+
+
 def get_env_path_or_exception(env_var):
     indicespath = os.environ.get(env_var)
     if not indicespath or not os.path.isdir(indicespath):
