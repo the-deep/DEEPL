@@ -7,7 +7,10 @@ from clustering.models import ClusteringModel, Doc2VecModel
 from clustering.base import ClusteringOptions
 from clustering.kmeans_doc2vec import KMeansDoc2Vec
 from clustering.kmeans_docs import KMeansDocs
-from clustering.helpers import write_clustered_data_to_files
+from clustering.helpers import (
+    write_clustered_data_to_files,
+    write_cluster_labels_data
+)
 from classifier.models import ClassifiedDocument
 from classifier.tf_idf import get_relevant_terms
 from helpers.utils import compress_sparse_vector
@@ -192,6 +195,7 @@ def update_cluster(cluster_id):
     cluster_model.silhouette_score = cluster_model.calculate_silhouette_score()
     cluster_model.ready = True
     cluster_model.save()
+    # TODO: keep track of intermediate silhouette scores
 
 
 @task
@@ -201,5 +205,23 @@ def update_clusters():
 
 
 @task
-def assign_cluster_to_doc(doc_id):
-    pass
+def assign_cluster_to_doc(doc_id, model=None):
+    doc = ClassifiedDocument.objects.get(id=doc_id)
+    grp_id = doc.group_id
+    cluster_model = ClusteringModel.objects.get(group_id=grp_id)
+    model = cluster_model.model  # instance of KMeansDocs class
+    processed = preprocess(doc.text)
+    X = model.vectorizer.transform([processed]).toarray()[0]
+    label = int(model.model.predict([X])[0])
+    docs_labels = [(doc_id, label)]
+    feature = compress_sparse_vector(list(map(lambda x: float(x), X)))
+    features = {doc_id: feature}
+    # update labels data
+    write_cluster_labels_data(
+        cluster_model, docs_labels, features, update=True
+    )
+    # calculate new silhouette score
+    silhouette_score = cluster_model.calculate_silhouette_score()
+    cluster_model.silhouette_score = silhouette_score
+    cluster_model.save()
+    # TODO: if silhouette score reaches below a threshold, rerun clusters

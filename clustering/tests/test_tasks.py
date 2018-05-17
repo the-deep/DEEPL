@@ -9,7 +9,8 @@ from clustering.tasks import (
     create_new_clusters,
     recluster,
     update_clusters,
-    get_unclustered_docs
+    get_unclustered_docs,
+    assign_cluster_to_doc
 )
 
 
@@ -93,6 +94,34 @@ class TestCreateClusters(APITestCase):
         assert newmodel.ready
         assert newmodel.last_clustering_started > model.last_clustering_started
         assert newmodel.last_clustered_on > model.last_clustered_on
+
+    def test_assign_cluster_to_doc(self):
+        # first remove all existing clusters
+        ClusteringModel.objects.all().delete()
+        # and then create a new cluster
+        create_new_clusters(self.cluster_name, self.group_id, self.n_clusters)
+        assert ClusteringModel.objects.all().count() == 1
+        model = ClusteringModel.objects.last()
+        # add new classifiedDocument
+        doc = ClassifiedDocument.objects.create(
+            classifier=self.doc_sample.classifier,
+            group_id=self.doc_sample.group_id,
+            text="This is another text",
+            classification_label="dummy_label"
+        )
+        labels_data = model.get_labels_data()
+        len_docs = len(labels_data.keys())
+        unclustered = get_unclustered_docs(model)
+        assert unclustered, "There should be 1 unclustered doc"
+
+        assign_cluster_to_doc(doc.id)
+
+        newmodel = ClusteringModel.objects.last()
+        labels_data = newmodel.get_labels_data()
+        newlen_docs = len(labels_data.keys())
+        # also check number of docs has increased. Read from file
+        assert newlen_docs == len_docs + 1, "Since one doc is added"
+        assert newmodel.ready
 
     def tearDown(self):
         # remove created dirs
