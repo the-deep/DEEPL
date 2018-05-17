@@ -1,19 +1,16 @@
-import os
-import json
-import subprocess
 import logging
 
 from celery import task
-from django.conf import settings
 from django.utils import timezone
 
 from clustering.models import ClusteringModel, Doc2VecModel
 from clustering.base import ClusteringOptions
 from clustering.kmeans_doc2vec import KMeansDoc2Vec
 from clustering.kmeans_docs import KMeansDocs
+from clustering.helpers import write_clustered_data_to_files
 from classifier.models import ClassifiedDocument
 from classifier.tf_idf import get_relevant_terms
-from helpers.utils import compress_sparse_vector, Resource
+from helpers.utils import compress_sparse_vector
 from helpers.common import preprocess, tokenize
 
 logger = logging.getLogger(__name__)
@@ -34,69 +31,6 @@ def create_new_clusters(
             n_clusters=n_clusters
         )
     return perform_clustering(cluster_model, CLUSTER_CLASS, doc2vec_group_id)
-
-
-def write_clustered_data_to_files(
-        model, docs_labels, cluster_centers,
-        docids_features, relevant_terms=None, update=False
-        ):
-    """Write the doc_clusterlabels and cluster_centers to files"""
-    cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
-    resource = Resource(
-        cluster_data_location,
-        Resource.FILE_AND_ENVIRONMENT
-    )
-    # create another resource(folder to keep files)
-    path = os.path.join(
-        resource.get_resource_location(),
-        'cluster_model_{}'.format(model.id)
-    )
-    # create the directory
-    p = subprocess.Popen(['mkdir', '-p', path], stdout=subprocess.PIPE)
-    _, err = p.communicate()
-    if err:
-        print("Couldn't create cluster data files. {}".format(err))
-        return
-    # now create centers file
-    center_path = os.path.join(path, settings.CLUSTERS_CENTERS_FILENAME)
-    center_resource = Resource(center_path, Resource.FILE)
-    # convert to python float first or it won't be json serializable
-    centers_data = {
-        i: compress_sparse_vector([float(y) for y in x])
-        for i, x in enumerate(cluster_centers)
-    }
-    # Center data can be directly written whether update is true or false as
-    # centers gets updated
-    center_resource.write_data(json.dumps(centers_data))
-    # now create labels file
-    labels_path = os.path.join(path, settings.CLUSTERED_DOCS_LABELS_FILENAME)
-    labels_resource = Resource(labels_path, Resource.FILE)
-    # create dict
-    dict_data = {x: {'label': y} for x, y in docs_labels}
-    for doc_id, features in docids_features.items():
-        # first make json serializable
-        dict_data[doc_id]['features'] = [
-            float(x) if isinstance(model.model, KMeansDoc2Vec) else x
-            for x in features
-        ]
-    # Write docs_clusterlabels
-    if update:
-        data = json.loads(labels_resource.get_data())
-        data.update(dict_data)
-        labels_resource.write_data(json.dumps(data))
-    else:
-        labels_resource.write_data(json.dumps(dict_data))
-    # Write relevant terms if present
-    if relevant_terms is not None:
-        relevant_path = os.path.join(path, settings.RELEVANT_TERMS_FILENAME)
-        relevant_resource = Resource(relevant_path, Resource.FILE)
-        if update:
-            data = set(json.loads(relevant_resource.get_data()))
-            data = data.union(list(relevant_terms))
-            relevant_resource.write_data(json.dumps(list(data)))
-        else:
-            relevant_resource.write_data(json.dumps(list(relevant_terms)))
-    print("Done writing data")
 
 
 @task
@@ -264,3 +198,8 @@ def update_cluster(cluster_id):
 def update_clusters():
     for clustermodel in ClusteringModel.objects.all().values('id'):
         update_cluster(clustermodel['id'])
+
+
+@task
+def assign_cluster_to_doc(doc_id):
+    pass

@@ -93,7 +93,6 @@ class TestCreateClusters(APITestCase):
         assert newmodel.ready
         assert newmodel.last_clustering_started > model.last_clustering_started
         assert newmodel.last_clustered_on > model.last_clustered_on
-        assert False
 
     def tearDown(self):
         # remove created dirs

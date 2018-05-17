@@ -40,16 +40,7 @@ class ClusteringModel(BaseModel):
         return "{} - Group {}".format(self.name, self.group_id)
 
     def get_centers_data(self):
-        cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
-        resource = Resource(
-            cluster_data_location,
-            Resource.FILE_AND_ENVIRONMENT
-        )
-        # create another resource(folder to keep files)
-        path = os.path.join(
-            resource.get_resource_location(),
-            'cluster_model_{}'.format(self.id)
-        )
+        path = self.get_cluster_data_path()
         centers_path = os.path.join(
             path, settings.CLUSTERS_CENTERS_FILENAME
         )
@@ -58,22 +49,30 @@ class ClusteringModel(BaseModel):
         return data
 
     def get_labels_data(self):
-        cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
-        resource = Resource(
-            cluster_data_location,
-            Resource.FILE_AND_ENVIRONMENT
-        )
-        # create another resource(folder to keep files)
-        path = os.path.join(
-            resource.get_resource_location(),
-            'cluster_model_{}'.format(self.id)
-        )
+        path = self.get_cluster_data_path()
         labels_path = os.path.join(
             path, settings.CLUSTERED_DOCS_LABELS_FILENAME
         )
         labels_resource = Resource(labels_path, Resource.FILE)
         data = json.loads(labels_resource.get_data())
         return data
+
+    def get_cluster_data_path(self):
+        resource = self.get_cluster_data_resource()
+        # create another resource(folder to keep files)
+        path = os.path.join(
+            resource.get_resource_location(),
+            'cluster_model_{}'.format(self.id)
+        )
+        return path
+
+    @staticmethod
+    def get_cluster_data_resource():
+        cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
+        return Resource(
+            cluster_data_location,
+            Resource.FILE_AND_ENVIRONMENT
+        )
 
     def get_doc_label(self, docid, labeldata=None):
         if labeldata is None:
@@ -125,6 +124,7 @@ class ClusteringModel(BaseModel):
         B, A = diff_cluster_avg_dist, same_cluster_avg_dist
         score = (B - A) / max(A, B)
         return float(score)/float(total_docs)
+
 
 class Doc2VecModel(BaseModel):
     """
