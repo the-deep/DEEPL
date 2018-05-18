@@ -205,7 +205,7 @@ def update_clusters():
 
 
 @task
-def assign_cluster_to_doc(doc_id, model=None):
+def assign_cluster_to_doc(doc_id):
     doc = ClassifiedDocument.objects.get(id=doc_id)
     grp_id = doc.group_id
     cluster_model = ClusteringModel.objects.get(group_id=grp_id)
