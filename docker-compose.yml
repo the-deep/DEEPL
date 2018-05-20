@@ -40,7 +40,7 @@ services:
             - .nlp_env
         environment:
             - INSTANCE_TYPE=CELERY
-        command: ['/code/deploy/scripts/run_develop.sh', '/code/deploy/scripts/celery.sh']
+        command: ['/code/deploy/scripts/celery.sh']
         volumes:
             - .:/code:z
             - ./media:/media:z
