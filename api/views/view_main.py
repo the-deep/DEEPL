@@ -34,7 +34,7 @@ from clustering.tasks import assign_cluster_to_doc
 
 import traceback
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class DocumentClassifierView(APIView):

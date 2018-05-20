@@ -1,16 +1,11 @@
-from celery import task
+from deepl.celery import app
+
+import logging
+
+logger = logging.getLogger('celery')
 
 
-@task
-def test_celery():
-    import time
-    time.sleep(3)
-    with open('/tmp/a.log', 'w') as f:
-        f.write('bibek pandey')
-        f.close()
-
-
-@task
+@app.task
 def test_db():
     from classifier.models import ClassifierModel, ClassifiedDocument
     classifier_model = ClassifierModel.objects.last()
