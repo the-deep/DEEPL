@@ -178,19 +178,19 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
         'loggers': {
             'celery': {
                 'handlers': ['SysLog'],
-                'propagate': True,
+                'propagate': True
             },
             'channels': {
                 'handlers': ['SysLog'],
-                'propagate': True,
+                'propagate': True
             },
             'django': {
                 'handlers': ['SysLog'],
-                'propagate': True,
+                'propagate': True
             },
             '': {
                 'handlers': ['SysLog'],
-                'propagate': True,
+                'propagate': True
             },
         },
     }
