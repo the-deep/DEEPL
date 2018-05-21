@@ -1,7 +1,6 @@
 import unittest
 import os
 import json
-
 from django.conf import settings
 from rest_framework.test import APITestCase
 
@@ -15,8 +14,8 @@ from helpers.utils import Resource
 class TestKMeansDocs(unittest.TestCase):
     def setUp(self):
         self.documents = [
-            "this is a test document that is to be tested for various NLP algorithms.",
-            "document classification and clustering is a very important task in NLP",
+            "this is a test document that is to be tested for various NLP algorithms.",  # noqa
+            "document classification and clustering is a very important task in NLP", # noqa
             "Computers are these days almost as important as electricity",
             "Not only computers are important, they are part of life as well"
         ]

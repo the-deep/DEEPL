@@ -2,6 +2,7 @@ from rest_framework.test import APITestCase
 from django.conf import settings
 
 from clustering.tasks import create_new_clusters
+from clustering.models import ClusteringModel
 
 import os
 
@@ -26,7 +27,7 @@ class TestClusteringAPI(APITestCase):
         # set values
         self.group_id = '1'
         self.num_clusters = 2
-        self.api_url = '/api/clustering/'
+        self.api_url = '/api/cluster/'
         self.valid_params = {
             'group_id': self.group_id,
             'num_clusters': self.num_clusters
@@ -120,6 +121,85 @@ class TestClusteringAPI(APITestCase):
             assert isinstance(term, str)
         assert 'group_id' in data
         assert isinstance(data['group_id'], str)
+
+    def tearDown(self):
+        # remove test cluster folder
+        os.system('rm -r {}'.format(self.cluster_data_path))
+
+
+class TestReClusteringAPI(APITestCase):
+    """Tests for re-clustering"""
+    fixtures = [
+        'fixtures/classifier.json',
+        'fixtures/test_classified_docs.json',
+        'fixtures/test_base_models.json',
+    ]
+
+    def setUp(self):
+        self.cluster_data_path = 'test_clusters/'
+        # create path if not exist
+        os.system('mkdir -p {}'.format(self.cluster_data_path))
+        os.environ[settings.ENVIRON_CLUSTERING_DATA_LOCATION] = \
+            self.cluster_data_path
+        # set values
+        self.group_id = '1'
+        self.num_clusters = 2
+        self.url = '/api/re-cluster/'
+        self.valid_params = {
+            'group_id': self.group_id,
+            'num_clusters': self.num_clusters
+        }
+        self.cluster_model = create_new_clusters(
+            "test_cluster", self.group_id, self.num_clusters
+        )
+
+    def test_no_params(self):
+        params = {}
+        resp = self.client.post(self.url, params)
+        assert resp.status_code == 400
+        data = resp.json()
+        assert 'group_id' in data
+        assert 'num_clusters' in data
+
+    def test_no_group_id(self):
+        params = {'num_clusters': 3}
+        resp = self.client.post(self.url, params)
+        assert resp.status_code == 400
+        data = resp.json()
+        assert 'group_id' in data
+
+    def test_no_num_clusters(self):
+        params = {'group_id': '1'}
+        resp = self.client.post(self.url, params)
+        assert resp.status_code == 400
+        data = resp.json()
+        assert 'num_clusters' in data
+
+    def test_non_existent_cluster(self):
+        """Cluster with group id does not exist"""
+        params = self.valid_params
+        params['group_id'] = 'does not exist'
+        resp = self.client.post(self.url, params)
+        assert resp.status_code == 404
+        data = resp.json()
+        assert 'message' in data
+
+    def test_not_ready_cluster(self):
+        """The cluster is not yet finished running"""
+        # first set ready = False
+        self.cluster_model.ready = False
+        self.cluster_model.save()
+        resp = self.client.post(self.url, self.valid_params)
+        assert resp.status_code == 202, "If not ready, accepted response"
+
+    def test_recluster(self):
+        # first set ready true, which will then be resent for clustering
+        self.cluster_model.ready = True
+        self.cluster_model.save()
+        resp = self.client.post(self.url, self.valid_params)
+        assert resp.status_code == 202, "If sent for reclustering, accepted response"
+        # check ready status of our clustering model, should be false
+        assert not ClusteringModel.objects.get(id=self.cluster_model.id).ready
 
     def tearDown(self):
         # remove test cluster folder

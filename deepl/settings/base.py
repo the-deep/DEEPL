@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+from celery.schedules import crontab
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(
@@ -174,23 +175,37 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
                 'address': (os.environ.get('PAPERTRAIL_HOST'),
                             int(os.environ.get('PAPERTRAIL_PORT')))
             },
+            'FileHandler': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'formatter': 'simple',
+                'filename': '/tmp/deepl.log'
+            },
         },
         'loggers': {
             'celery': {
                 'handlers': ['SysLog'],
-                'propagate': True,
+                'propagate': True
             },
             'channels': {
                 'handlers': ['SysLog'],
-                'propagate': True,
+                'propagate': True
             },
             'django': {
                 'handlers': ['SysLog'],
-                'propagate': True,
+                'propagate': True
             },
             '': {
                 'handlers': ['SysLog'],
-                'propagate': True,
+                'propagate': True
             },
         },
     }
+
+
+CELERY_BEAT_SCHEDULE = {
+    'topic_modeling_every_other_day': {
+        'task': 'topic_modeling.tasks.get_topics_and_subtopics_task',
+        'schedule': crontab(day_of_week='*/2'),
+    }
+}

@@ -13,7 +13,6 @@ class TopicModelingView(APIView):
     """API for topic modeling"""
     def get(self, request, version=None):
         version = request.version
-        print('VERSION', version)
         if version == 'v2':
             validation_details = validate_get_topic_modeling(
                 request.query_params

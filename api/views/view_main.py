@@ -30,10 +30,11 @@ from NER.ner import get_ner_tagging
 from classifier.globals import get_classifiers
 
 from correlation.tasks import get_documents_correlation
+from clustering.tasks import assign_cluster_to_doc
 
 import traceback
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class DocumentClassifierView(APIView):
@@ -109,6 +110,12 @@ class DocumentClassifierView(APIView):
             group_id=grp_id,
             extra_info={"language": language}
         )
+        # now add the doc to a cluster, only if new doc is present
+        if not data.get('doc_id'):
+            # doc id is send for already present doc
+            # we want to cluster new document
+            assign_cluster_to_doc.delay(doc.id)
+
         classified_excerpts = classify_lead_excerpts(
             classifier['classifier'],
             text,

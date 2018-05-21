@@ -11,6 +11,7 @@ from api.views import (
     DocsSimilarityView,
     SimilarDocsView,
     ClusteringView,
+    ReClusteringView,
     ClassifiedDocumentView,
 )
 
@@ -25,7 +26,8 @@ urlpatterns = [
     url(r'^(?P<entity>[a-zA-Z\.]+)/correlation/$', CorrelationView.as_view()),
     url(r'^similarity/$', DocsSimilarityView.as_view()),
     url(r'^similardocs/$', SimilarDocsView.as_view()),
-    url(r'^clustering/$', ClusteringView.as_view()),
+    url(r'^cluster/$', ClusteringView.as_view()),
+    url(r'^re-cluster/$', ReClusteringView.as_view()),
     url(r'^doc/$', ClassifiedDocumentView.as_view())
 ]
 

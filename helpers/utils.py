@@ -81,8 +81,11 @@ class Resource:
 
     def __get_file_data(self, fullpath=None):
         fullpath = self.get_resource_location()
-        with open(fullpath) as f:
-            return f.read()
+        try:
+            with open(fullpath) as f:
+                return f.read()
+        except FileNotFoundError:
+            return None
 
     def get_resource_location(self):
         """Get location from env if set else self.location"""
@@ -169,6 +172,11 @@ def uncompress_compressed_vector(compressed_vec):
     for i, val in compressed_vec:
         v[i] = val
     return v
+
+
+def distance(vec1, vec2):
+    d2 = sum(map(lambda x: (x[0]-x[1])**2, zip(vec1, vec2)))
+    return d2**0.5
 
 
 def get_env_path_or_exception(env_var):

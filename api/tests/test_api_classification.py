@@ -108,10 +108,6 @@ class TestClassificationAPI(APITestCase):
         data = get_processed_data(csv_path)
         return create_classifier_model(version, data)
 
-    def _create_classified_docs(self, classifier_model):
-        classifier = classifier_model.classifier
-        texts = []
-
 
 class TestUpdateGroupId(APITestCase):
     fixtures = [
