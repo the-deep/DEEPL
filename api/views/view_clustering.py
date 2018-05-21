@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from clustering.models import ClusteringModel
 from clustering.serializers import ClusteringModelSerializer
-from clustering.tasks import create_new_clusters, recluster
+from clustering.tasks import create_new_clusters_task, recluster
 from classifier.models import ClassifiedDocument
 
 
@@ -29,7 +29,10 @@ class ClusteringView(APIView):
             cluster_model = ClusteringModel.objects.get(id=model_id)
         except ClusteringModel.DoesNotExist:
             return Response(
-                {'message': 'Clustering model corresponding to model id does not exist'},
+                {
+                    'message':
+                    'Clustering model corresponding to model id does not exist'
+                },
                 status=status.HTTP_404_NOT_FOUND
             )
         serializer = ClusteringModelSerializer(cluster_model)
@@ -59,7 +62,7 @@ class ClusteringView(APIView):
             )
         except ClusteringModel.DoesNotExist:
             # TODO: find optimal clusters
-            cluster_model = create_new_clusters.delay(
+            cluster_model = create_new_clusters_task.delay(
                 data.get('name', grp_id),  # name is not mandatory
                 grp_id,
                 n_clusters=num_clusters,

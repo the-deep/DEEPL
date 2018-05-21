@@ -73,6 +73,35 @@ def write_relevent_terms_data(model, relevant_terms, update=False):
         relevant_resource.write_data(json.dumps(list(relevant_terms)))
 
 
+def write_cluster_score_vs_size(model, doc_size):
+    """
+    Write new scores and doc_size to file.
+    NOTE: This will override the previous data
+    @model: ClusteringModel instance
+    @doc_size: Number of leads on which clustering was done
+    """
+    data = [(doc_size, model.silhouette_score)]
+    path = model.get_cluster_data_path()
+    data_path = os.path.join(path, settings.CLUSTER_SCORE_DOCS_SIZE_FILENAME)
+    data_resource = Resource(data_path, Resource.FILE)
+    data_resource.write_data(json.dumps(data))
+
+
+def update_cluster_score_vs_size(model, increased_size=1):
+    """
+    Update scores. This won't override.
+    @model: ClusteringModel isntance, this contains new score
+    @increased_size
+    """
+    current_data = model.get_cluster_score_vs_size_data()
+    last_size = current_data[-1][0]
+    current_data.append((last_size+increased_size, model.silhouette_score))
+    path = model.get_cluster_data_path()
+    data_path = os.path.join(path, settings.CLUSTER_SCORE_DOCS_SIZE_FILENAME)
+    data_resource = Resource(data_path, Resource.FILE)
+    data_resource.write_data(json.dumps(current_data))
+
+
 def write_clustered_data_to_files(
         model, docs_labels, cluster_centers,
         docids_features, relevant_terms=None, update=False

@@ -50,6 +50,11 @@ class TestCreateClusters(APITestCase):
             "cluster_model_{}".format(model.id)
         )
         assert os.path.isdir(dirname)
+        # also check size vs cluster score file created
+        data = model.get_cluster_score_vs_size_data()
+        assert data is not None
+        assert data != []
+        assert isinstance(data, list)
 
     def test_recluster(self):
         # first remove all existing clusters
@@ -63,6 +68,11 @@ class TestCreateClusters(APITestCase):
         assert newmodel.ready
         assert newmodel.last_clustering_started > model.last_clustering_started
         assert newmodel.last_clustered_on > model.last_clustered_on
+        # also check size vs cluster score file created
+        data = model.get_cluster_score_vs_size_data()
+        assert data is not None
+        assert data != []
+        assert isinstance(data, list)
 
     def test_update_cluster(self):
         # first remove all existing clusters
@@ -82,8 +92,15 @@ class TestCreateClusters(APITestCase):
         len_docs = len(labels_data.keys())
         unclustered = get_unclustered_docs(model)
         assert unclustered, "There should be 1 unclustered doc"
+        # get current score_vs size data
+        old_data = model.get_cluster_score_vs_size_data()
 
         update_clusters()
+
+        # get new clustere score vs size data
+        new_data = model.get_cluster_score_vs_size_data()
+        assert len(old_data) + 1 == len(new_data)
+        assert new_data[-2] == old_data[-1]
 
         newmodel = ClusteringModel.objects.last()
         labels_data = newmodel.get_labels_data()

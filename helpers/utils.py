@@ -81,8 +81,11 @@ class Resource:
 
     def __get_file_data(self, fullpath=None):
         fullpath = self.get_resource_location()
-        with open(fullpath) as f:
-            return f.read()
+        try:
+            with open(fullpath) as f:
+                return f.read()
+        except FileNotFoundError:
+            return None
 
     def get_resource_location(self):
         """Get location from env if set else self.location"""

@@ -9,22 +9,22 @@ from clustering.kmeans_doc2vec import KMeansDoc2Vec
 from clustering.kmeans_docs import KMeansDocs
 from clustering.helpers import (
     write_clustered_data_to_files,
-    write_cluster_labels_data
+    write_cluster_labels_data,
+    write_cluster_score_vs_size,
+    update_cluster_score_vs_size,
 )
 from classifier.models import ClassifiedDocument
 from classifier.tf_idf import get_relevant_terms
 from helpers.utils import compress_sparse_vector
 from helpers.common import preprocess, tokenize
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('celery')
 
 
-@task
 def create_new_clusters(
         name, group_id, n_clusters,
         CLUSTER_CLASS=KMeansDocs, doc2vec_group_id=None
         ):
-    """If already exists, override it"""
     try:
         cluster_model = ClusteringModel.objects.get(group_id=group_id)
     except ClusteringModel.DoesNotExist:
@@ -33,7 +33,19 @@ def create_new_clusters(
             group_id=group_id,
             n_clusters=n_clusters
         )
-    return perform_clustering(cluster_model, CLUSTER_CLASS, doc2vec_group_id)
+    updated_model = perform_clustering(
+        cluster_model, CLUSTER_CLASS, doc2vec_group_id
+    )
+    # create score_vs_size
+    size = ClassifiedDocument.objects.filter(group_id=group_id).count()
+    write_cluster_score_vs_size(updated_model, size)
+    return updated_model
+
+
+@task
+def create_new_clusters_task(*args, **kwargs):
+    create_new_clusters(*args, **kwargs)
+    return True
 
 
 @task
@@ -43,7 +55,10 @@ def recluster(group_id, num_clusters):
             group_id=group_id,
             n_clusters=num_clusters
         )
-        perform_clustering(cluster_model)
+        updated_model = perform_clustering(cluster_model)
+        size = ClassifiedDocument.objects.filter(group_id=group_id).count()
+        write_clustered_data_to_files(updated_model, size)
+        return True
     except Exception as e:
         logger.warn("Exception while reclustering.  {}".format(e))
 
@@ -154,6 +169,7 @@ def update_cluster(cluster_id):
             cluster_id
         ))
     docs = get_unclustered_docs(cluster_model)
+    increased_size = docs.count()
     texts = list(
             map(lambda x: preprocess(x['text'], ignore_numbers=True), docs)
         )
@@ -195,7 +211,8 @@ def update_cluster(cluster_id):
     cluster_model.silhouette_score = cluster_model.calculate_silhouette_score()
     cluster_model.ready = True
     cluster_model.save()
-    # TODO: keep track of intermediate silhouette scores
+    # Update size vs silhouette scores
+    update_cluster_score_vs_size(cluster_model, increased_size)
 
 
 @task

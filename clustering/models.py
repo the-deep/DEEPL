@@ -48,6 +48,17 @@ class ClusteringModel(BaseModel):
         data = json.loads(labels_resource.get_data())
         return data
 
+    def get_cluster_score_vs_size_data(self):
+        path = self.get_cluster_data_path()
+        data_path = os.path.join(
+            path, settings.CLUSTER_SCORE_DOCS_SIZE_FILENAME
+        )
+        data_resource = Resource(data_path, Resource.FILE)
+        datastr = data_resource.get_data()
+        if datastr is None:
+            return []
+        return json.loads(datastr)
+
     def get_labels_data(self):
         path = self.get_cluster_data_path()
         labels_path = os.path.join(
