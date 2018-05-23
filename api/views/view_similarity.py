@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from similarity.globals import get_similarity_model
-from similarity.helpers import get_similar_docs
 from classifier.models import ClassifiedDocument
 from clustering.models import ClusteringModel
 
@@ -87,7 +86,7 @@ class SimilarDocsView(APIView):
             similar_docs = clustering_model.get_similar_docs(docid)
         elif doc:
             model = clustering_model.model
-            features = model.vectorizer.fit_transform([doc])[0]
+            features = model.vectorizer.transform([doc])[0]
             label = model.model.predict(features)
             similar_docs = clustering_model.get_similar_docs_for_label(label)
         return Response({'similar_docs': [int(x) for x in similar_docs]})
