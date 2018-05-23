@@ -186,6 +186,14 @@ def classification_confidence(classification_probabilities):
     return (maxprob - numrev)/(1. - numrev) or MIN_CONFIDENCE
 
 
+def get_keywords_from_docs(docs):
+    """
+    @docs: [<tokenized texts> ... ]
+    Returns the relevant keywords
+    """
+    pass
+
+
 if __name__ == '__main__':
     import pandas as pd
     excerpt = 'Humanitarian needs are said to include access to a sufficient supply of quality water, education, shelter, child protection, health, and nutrition. '

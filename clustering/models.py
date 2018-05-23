@@ -10,6 +10,7 @@ from django.conf import settings
 
 from classifier.models import BaseModel
 from helpers.utils import Resource, uncompress_compressed_vector, distance
+from clustering.helpers import write_relevant_terms_data
 
 
 class ClusteringModel(BaseModel):
@@ -107,6 +108,35 @@ class ClusteringModel(BaseModel):
             # TODO: more informative
             return []
         return self.get_similar_docs_for_label(doc_label)
+
+    def get_relevant_terms_data(self):
+        """This gets data from file unlike compute_relevant terms,
+        which calculates relevant terms"""
+        path = self.get_cluster_data_path()
+        data_path = os.path.join(
+            path, settings.RELEVANT_TERMS_FILENAME
+        )
+        data_resource = Resource(data_path, Resource.FILE)
+        raw = data_resource.get_data()
+        if not raw:
+            return json.loads(raw)
+        # compute and write to file
+        data = self.compute_relevant_terms()
+        # Write to file
+        write_relevant_terms_data(self, data)
+        return data
+
+    def compute_relevant_terms(self):
+        km = self.model.model
+        vectorizer = self.model.vectorizer
+        order_centroids = km.cluster_centers_.argsort()[:, ::-1]
+        terms = vectorizer.get_feature_names()
+        clusters_terms = {}
+        for i in range(self.n_clusters):
+            clusters_terms[i] = []
+            for ind in order_centroids[i, :10]:  # NOTE: 10 terms per cluster
+                clusters_terms[i].append(terms[ind])
+        return clusters_terms
 
     def calculate_silhouette_score(self):
         """Calculate silhouette score for clusters"""

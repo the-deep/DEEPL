@@ -40,9 +40,9 @@ class KMeansDocs(GenericClustering):
                         binary=False)
         else:
             vectorizer = TfidfVectorizer(
-                    max_df=0.5,
+                    max_df=100,
                     # max_features=self.options.n_features,
-                    min_df=2, stop_words='english',
+                    min_df=1, stop_words='english',
                     use_idf=self.options.use_idf)
         self.vectorizer = vectorizer
         X = vectorizer.fit_transform(documents)

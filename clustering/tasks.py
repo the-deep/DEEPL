@@ -12,6 +12,7 @@ from clustering.helpers import (
     write_cluster_labels_data,
     write_cluster_score_vs_size,
     update_cluster_score_vs_size,
+    write_relevent_terms_data,
 )
 from classifier.models import ClassifiedDocument
 from classifier.tf_idf import get_relevant_terms
@@ -122,7 +123,6 @@ def perform_clustering(
             arr = vectorizer.transform([txt]).toarray()[0]
             compressed = compress_sparse_vector(arr)
             features.append(compressed)
-        relevant_terms = get_relevant_terms(list(map(tokenize, texts)))
 
     docids_features = dict(zip(docids, features))
     # Now write to files
@@ -134,9 +134,12 @@ def perform_clustering(
         cluster_model,
         docs_labels,
         kmeans_model.model.cluster_centers_,
-        docids_features,
-        relevant_terms
+        docids_features
     )
+    # relevant terms can be calculated only after writing other data
+    relevant_terms = cluster_model.compute_relevant_terms()
+    write_relevent_terms_data(cluster_model, relevant_terms)
+
     # mark clustering complete as true, and update clustered date
     cluster_model.ready = True
     cluster_model.silhouette_score = cluster_model.calculate_silhouette_score()
@@ -195,7 +198,6 @@ def update_cluster(cluster_id):
             arr = vectorizer.transform([txt]).toarray()[0]
             compressed = compress_sparse_vector(arr)
             features.append(compressed)
-        relevant_terms = get_relevant_terms(list(map(tokenize, texts)))
     # write/update to file
     docids_features = dict(zip(docids, features))
     write_clustered_data_to_files(
@@ -203,9 +205,12 @@ def update_cluster(cluster_id):
         docs_labels,
         kmeans_model.model.cluster_centers_,
         docids_features,
-        relevant_terms,
         update=True
     )
+    # relevant terms can be calculated only after writing other data
+    relevant_terms = cluster_model.compute_relevant_terms()
+    write_relevent_terms_data(cluster_model, relevant_terms)
+
     # update status
     cluster_model.last_clustered_on = timezone.now()
     cluster_model.silhouette_score = cluster_model.calculate_silhouette_score()

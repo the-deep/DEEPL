@@ -7,7 +7,7 @@ class ClusteringOptions:
     Object that stores info about how the model is created
     """
     def __init__(
-            self, n_clusters=8, use_hashing=True, use_idf=False,
+            self, n_clusters=8, use_hashing=False, use_idf=False,
             n_components=None, minibatch=True, n_features=1000,
             store_X=False
             ):

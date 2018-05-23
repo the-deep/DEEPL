@@ -59,18 +59,18 @@ def write_cluster_labels_data(
 def write_relevent_terms_data(model, relevant_terms, update=False):
     """
     @model: ClusteringModel instance
-    @relevant_terms: [<relevant_term>, ...]
+    @relevant_terms: { <cluster_label>: [<relevant_term>, ...], ...}
     @update: False means replace content in file
     """
     path = model.get_cluster_data_path()
     relevant_path = os.path.join(path, settings.RELEVANT_TERMS_FILENAME)
     relevant_resource = Resource(relevant_path, Resource.FILE)
     if update:
-        data = set(json.loads(relevant_resource.get_data()))
-        data = data.union(list(relevant_terms))
-        relevant_resource.write_data(json.dumps(list(data)))
+        curr = relevant_resource.get_data()
+        curr.update(relevant_terms)
+        relevant_resource.write_data(json.dumps(curr))
     else:
-        relevant_resource.write_data(json.dumps(list(relevant_terms)))
+        relevant_resource.write_data(json.dumps(relevant_terms))
 
 
 def write_cluster_score_vs_size(model, doc_size):
@@ -104,7 +104,7 @@ def update_cluster_score_vs_size(model, increased_size=1):
 
 def write_clustered_data_to_files(
         model, docs_labels, cluster_centers,
-        docids_features, relevant_terms=None, update=False
+        docids_features, update=False
         ):
     """Write the doc_clusterlabels and cluster_centers to files"""
     path = model.get_cluster_data_path()
@@ -119,7 +119,4 @@ def write_clustered_data_to_files(
     write_or_update_centers_data(model, cluster_centers)
     # write labels data
     write_cluster_labels_data(model, docs_labels, docids_features, update)
-    # Write relevant terms if present
-    if relevant_terms is not None:
-        write_relevent_terms_data(model, relevant_terms, update)
     print("Done writing data")
