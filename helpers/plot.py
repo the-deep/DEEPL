@@ -1,6 +1,9 @@
-import matplotlib.pyplot as plt
-import datetime
-from scipy import ndimage
+import matplotlib
+matplotlib.use('Agg')
+
+import matplotlib.pyplot as plt  # noqa
+import datetime  # noqa
+from scipy import ndimage  # noqa
 
 
 COLORS = [
@@ -21,16 +24,22 @@ COLORS = [
 ]
 
 
-def plot(data, title=""):
+def plot(data, title="", options={}):
     x = list(map(lambda x: x[0], data))
     y = list(map(lambda x: x[1], data))
     fig = plt.figure(figsize=(15, 8))
-    plt.xticks([x for x in range(500, 28000, 1500)])
-    plt.xlabel('# of TRAINING SETS')
-    plt.ylabel('ACCURACY')
-    plt.grid(True)
+    xticks = options.get('xticks', range(500, 28000, 1500))
+    xlabel = options.get('x_label', '# of Training Sets')
+    ylabel = options.get('y_label', 'Accuracy')
+    plt.xticks(xticks)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.grid(options.get('grid', True))
     plt.plot(x, y, 'k')
-    fig.savefig(str(datetime.datetime.now())+".png")
+    return fig
+    # if path is None:
+        # path = str(datetime.datetime.now())+".png"
+    # fig.savefig(path)
 
 
 def plot_multiple(data_dict, title=""):

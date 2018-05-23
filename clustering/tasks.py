@@ -12,12 +12,11 @@ from clustering.helpers import (
     write_cluster_labels_data,
     write_cluster_score_vs_size,
     update_cluster_score_vs_size,
-    write_relevent_terms_data,
+    write_relevant_terms_data,
 )
 from classifier.models import ClassifiedDocument
-from classifier.tf_idf import get_relevant_terms
 from helpers.utils import compress_sparse_vector
-from helpers.common import preprocess, tokenize
+from helpers.common import preprocess
 
 logger = logging.getLogger('celery')
 
@@ -138,7 +137,7 @@ def perform_clustering(
     )
     # relevant terms can be calculated only after writing other data
     relevant_terms = cluster_model.compute_relevant_terms()
-    write_relevent_terms_data(cluster_model, relevant_terms)
+    write_relevant_terms_data(cluster_model, relevant_terms)
 
     # mark clustering complete as true, and update clustered date
     cluster_model.ready = True
@@ -209,7 +208,7 @@ def update_cluster(cluster_id):
     )
     # relevant terms can be calculated only after writing other data
     relevant_terms = cluster_model.compute_relevant_terms()
-    write_relevent_terms_data(cluster_model, relevant_terms)
+    write_relevant_terms_data(cluster_model, relevant_terms)
 
     # update status
     cluster_model.last_clustered_on = timezone.now()
@@ -246,4 +245,6 @@ def assign_cluster_to_doc(doc_id):
     silhouette_score = cluster_model.calculate_silhouette_score()
     cluster_model.silhouette_score = silhouette_score
     cluster_model.save()
+    # update_size vs silhouette scores
+    update_cluster_score_vs_size(cluster_model, 1)  # increased size is 1
     # TODO: if silhouette score reaches below a threshold, rerun clusters

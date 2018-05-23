@@ -10,7 +10,7 @@ from django.conf import settings
 
 from classifier.models import BaseModel
 from helpers.utils import Resource, uncompress_compressed_vector, distance
-from clustering.helpers import write_relevant_terms_data
+from .helpers import write_relevant_terms_data
 
 
 class ClusteringModel(BaseModel):

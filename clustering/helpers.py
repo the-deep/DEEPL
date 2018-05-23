@@ -5,6 +5,7 @@ import subprocess
 from django.conf import settings
 
 from helpers.utils import compress_sparse_vector, Resource
+from helpers.plot import plot
 from clustering.kmeans_doc2vec import KMeansDoc2Vec
 
 
@@ -56,7 +57,7 @@ def write_cluster_labels_data(
         labels_resource.write_data(json.dumps(dict_data))
 
 
-def write_relevent_terms_data(model, relevant_terms, update=False):
+def write_relevant_terms_data(model, relevant_terms, update=False):
     """
     @model: ClusteringModel instance
     @relevant_terms: { <cluster_label>: [<relevant_term>, ...], ...}
@@ -85,6 +86,8 @@ def write_cluster_score_vs_size(model, doc_size):
     data_path = os.path.join(path, settings.CLUSTER_SCORE_DOCS_SIZE_FILENAME)
     data_resource = Resource(data_path, Resource.FILE)
     data_resource.write_data(json.dumps(data))
+    # now plot
+    plot_score_vs_size(model, data)
 
 
 def update_cluster_score_vs_size(model, increased_size=1):
@@ -100,6 +103,18 @@ def update_cluster_score_vs_size(model, increased_size=1):
     data_path = os.path.join(path, settings.CLUSTER_SCORE_DOCS_SIZE_FILENAME)
     data_resource = Resource(data_path, Resource.FILE)
     data_resource.write_data(json.dumps(current_data))
+    plot_score_vs_size(model, current_data)
+
+
+def plot_score_vs_size(model, data):
+    options = {
+        'x_label': 'Number of Docs',
+        'y_label': 'Clustering Score'
+    }
+    fig = plot(data, "Cluster Scores vs Number of Documents", options)
+    path = model.get_cluster_data_path()
+    fig_path = os.path.join(path, settings.CLUSTERS_SCORE_PLOT_FILENAME)
+    fig.savefig(fig_path)
 
 
 def write_clustered_data_to_files(

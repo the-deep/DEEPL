@@ -58,10 +58,14 @@ class TestClusterCreationDocs(APITestCase):
         size_score_path = os.path.join(
             path, settings.CLUSTER_SCORE_DOCS_SIZE_FILENAME
         )
+        size_score_fig_path = os.path.join(
+            path, settings.CLUSTERS_SCORE_PLOT_FILENAME
+        )
         center_resource = Resource(center_path, Resource.FILE)
         labels_resource = Resource(labels_path, Resource.FILE)
         relevant_resource = Resource(relevant_path, Resource.FILE)
         size_score_resource = Resource(size_score_path, Resource.FILE)
+        size_score_fig_resource = Resource(size_score_fig_path, Resource.FILE)
         # check centers
         try:
             center_resource.validate()
@@ -99,6 +103,11 @@ class TestClusterCreationDocs(APITestCase):
             for x in data:
                 assert isinstance(x, list)
                 assert len(x) == 2
+        # check plot saved
+        try:
+            size_score_fig_resource.validate()
+        except Exception as e:
+            assert False, "No score plot stored. " + e.args
 
     def get_model_path(self, model):
         cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION
