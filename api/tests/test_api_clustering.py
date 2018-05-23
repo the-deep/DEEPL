@@ -197,9 +197,57 @@ class TestReClusteringAPI(APITestCase):
         self.cluster_model.ready = True
         self.cluster_model.save()
         resp = self.client.post(self.url, self.valid_params)
-        assert resp.status_code == 202, "If sent for reclustering, accepted response"
+        assert resp.status_code == 202, "If sent for reclustering, accepted response"  # noqa
         # check ready status of our clustering model, should be false
         assert not ClusteringModel.objects.get(id=self.cluster_model.id).ready
+
+    def tearDown(self):
+        # remove test cluster folder
+        os.system('rm -r {}'.format(self.cluster_data_path))
+
+
+class TestClusteringDataAPI(APITestCase):
+    """Tests for clustering data"""
+    fixtures = [
+        'fixtures/classifier.json',
+        'fixtures/test_classified_docs.json',
+        'fixtures/test_base_models.json',
+    ]
+
+    def setUp(self):
+        self.cluster_data_path = 'test_clusters/'
+        # create path if not exist
+        os.system('mkdir -p {}'.format(self.cluster_data_path))
+        os.environ[settings.ENVIRON_CLUSTERING_DATA_LOCATION] = \
+            self.cluster_data_path
+        self.group_id = '1'
+        self.num_clusters = 2
+        self.url = '/api/cluster-data/'
+        self.cluster_model = create_new_clusters(
+            "test", self.group_id, self.num_clusters
+        )
+
+    def test_post(self):
+        resp = self.client.post(self.url, {})
+        assert resp.status_code == 405
+
+    def test_no_group_id(self):
+        resp = self.client.get(self.url, {})
+        assert resp.status_code == 400
+
+    def test_cluster_data(self):
+        """Test by sending valid data"""
+        params = {'group_id': self.group_id}
+        resp = self.client.get(self.url, params)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert 'data' in data
+        assert isinstance(data['data'], list)
+        for entry in data['data']:
+            assert isinstance(entry, dict)
+            assert 'cluster' in entry
+            assert 'score' in entry
+            assert 'value' in entry
 
     def tearDown(self):
         # remove test cluster folder

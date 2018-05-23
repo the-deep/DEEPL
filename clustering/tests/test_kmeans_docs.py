@@ -55,9 +55,14 @@ class TestClusterCreationDocs(APITestCase):
             settings.CLUSTERED_DOCS_LABELS_FILENAME
         )
         relevant_path = os.path.join(path, settings.RELEVANT_TERMS_FILENAME)
+        size_score_path = os.path.join(
+            path, settings.CLUSTER_SCORE_DOCS_SIZE_FILENAME
+        )
         center_resource = Resource(center_path, Resource.FILE)
         labels_resource = Resource(labels_path, Resource.FILE)
         relevant_resource = Resource(relevant_path, Resource.FILE)
+        size_score_resource = Resource(size_score_path, Resource.FILE)
+        # check centers
         try:
             center_resource.validate()
         except Exception as e:
@@ -65,6 +70,7 @@ class TestClusterCreationDocs(APITestCase):
         else:
             data = json.loads(center_resource.get_data())
             assert isinstance(data, dict)
+        # check labels
         try:
             labels_resource.validate()
         except Exception as e:
@@ -72,14 +78,27 @@ class TestClusterCreationDocs(APITestCase):
         else:
             data = json.loads(labels_resource.get_data())
             assert isinstance(data, dict)
+        # check relevant
         try:
             relevant_resource.validate()
         except Exception as e:
             assert False, "No relevant data stored. " + e.args
         else:
             data = json.loads(relevant_resource.get_data())
+            assert isinstance(data, dict)
+            for k, v in data.items():
+                assert isinstance(v, list)
+        # check size vs score
+        try:
+            size_score_resource.validate()
+        except Exception as e:
+            assert False, "No score data stored. " + e.args
+        else:
+            data = json.loads(size_score_resource.get_data())
             assert isinstance(data, list)
-            assert not all(map(lambda x: len(x) < 2, data))
+            for x in data:
+                assert isinstance(x, list)
+                assert len(x) == 2
 
     def get_model_path(self, model):
         cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION

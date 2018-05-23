@@ -164,6 +164,49 @@ class ReClusteringView(APIView):
         )
 
 
+class ClusteringDataView(APIView):
+    def get(self, request, version=None):
+        data = dict(request.query_params.items())
+        validation_details = self._validate_get_data(data)
+        if not validation_details['status']:
+            return Response(
+                validation_details['errors'],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        grp_id = data['group_id']
+        # now get cluster
+        try:
+            cluster_model = ClusteringModel.objects.get(group_id=grp_id)
+        except ClusteringModel.DoesNotExist:
+            return Response(
+                {'message': 'No such cluster found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        data = cluster_model.get_relevant_terms_data()
+        cluster_format_data = []
+        for k, v in data.items():
+            size = len(v)
+            for i, e in enumerate(v):
+                cluster_format_data.append(
+                    {'cluster': k, 'score': size-i, 'value': e}
+                )
+            return Response({'data': cluster_format_data})
+
+    def _validate_get_data(self, data):
+        errors = {}
+        if not data.get('group_id'):
+            errors['group_id'] = 'group_id not provided'
+        if errors:
+            return {
+                'status': False,
+                'errors': errors
+            }
+        return {
+            'status': True,
+            'data': data
+        }
+
+
 def validate_post_recluster_data(data):
     errors = {}
     if not data.get('group_id'):
@@ -174,7 +217,7 @@ def validate_post_recluster_data(data):
         if v < 0:
             raise ValueError
     except (ValueError, TypeError):
-        errors['num_clusters'] = 'num_clusters should be present and positive int'
+        errors['num_clusters'] = 'num_clusters should be present and positive int'  # noqa
     if errors:
         return {
             'status': False,

@@ -162,7 +162,6 @@ class DocumentClassifierView(APIView):
 
 class ClassifiedDocumentView(APIView):
     def put(self, request):
-        print(request.data.items())
         data = dict(request.data.items())
         validation_details = self._validate_post_data(data)
         if not validation_details['status']:
