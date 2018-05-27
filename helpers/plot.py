@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt  # noqa
 import datetime  # noqa
 from scipy import ndimage  # noqa
 
+import logging  # noqa
+
+logger = logging.getLogger('django')
+
 
 COLORS = [
     '#73926e',
@@ -25,21 +29,16 @@ COLORS = [
 
 
 def plot(data, title="", options={}):
-    x = list(map(lambda x: x[0], data))
-    y = list(map(lambda x: x[1], data))
+    x = [x[0] for x in data]
+    y = [x[1] for x in data]
     fig = plt.figure(figsize=(15, 8))
-    xticks = options.get('xticks', range(500, 28000, 1500))
     xlabel = options.get('x_label', '# of Training Sets')
     ylabel = options.get('y_label', 'Accuracy')
-    plt.xticks(xticks)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid(options.get('grid', True))
     plt.plot(x, y, 'k')
     return fig
-    # if path is None:
-        # path = str(datetime.datetime.now())+".png"
-    # fig.savefig(path)
 
 
 def plot_multiple(data_dict, title=""):
@@ -48,7 +47,6 @@ def plot_multiple(data_dict, title=""):
     for k, data in data_dict.items():
         x = list(map(lambda x: x[0], data))
         y = list(map(lambda x: x[1], data))
-
         sigma = 3
         x_g1d = ndimage.gaussian_filter1d(x, sigma)
         y_g1d = ndimage.gaussian_filter1d(y, sigma)
