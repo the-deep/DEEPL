@@ -11,7 +11,7 @@ from helpers.utils import timeit
 @timeit
 def create_document_clusters(
         name, group_id, n_clusters,
-        CLUSTER_CLASS=KMeansDocs, doc2vec_group_id=None
+        CLUSTER_CLASS=KMeansDocs, doc2vec_group_id=None, recreate=True
         ):
     """
     Create document clusters(ClusteringModel object) based on input params
@@ -24,8 +24,9 @@ def create_document_clusters(
     # first check if group_id already exists or not
     try:
         ClusteringModel.objects.get(group_id=group_id)
-        raise Exception("Cluster model with group_id {} already exists".format(
-            group_id))
+        if not recreate:
+            raise Exception("Cluster model with group_id {} already exists".format(
+                group_id))
     except ClusteringModel.DoesNotExist:
         pass
         # create new clustering model

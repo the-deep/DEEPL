@@ -190,7 +190,7 @@ class ClusteringDataView(APIView):
                 cluster_format_data.append(
                     {'cluster': k, 'score': size-i, 'value': e}
                 )
-            return Response({'data': cluster_format_data})
+        return Response({'data': cluster_format_data})
 
     def _validate_get_data(self, data):
         errors = {}
