@@ -13,11 +13,13 @@ def find_optimal_clusters(
         min_clusters=2,
         max_clusters=20,
         CLUSTER_CLASS=KMeansDocs,
+        filter_criteria={},
         doc2vec_group_id=None):
     max_silhouette = -1.0  # to compare with
     clusters = 1
     if CLUSTER_CLASS == KMeansDocs:
-        docs = ClassifiedDocument.objects.all().values('id', 'text')
+        docs = ClassifiedDocument.objects.all().filter(**filter_criteria)\
+                .values('id', 'text')
         texts = list(map(lambda x: x['text'], docs))
         cluster_params = texts
     elif CLUSTER_CLASS == KMeansDoc2Vec:

@@ -1,6 +1,7 @@
 
 from django.db import transaction
 
+from classifier.models import ClassifiedDocument
 from clustering.models import ClusteringModel
 from clustering.kmeans_docs import KMeansDocs
 from clustering.kmeans_doc2vec import KMeansDoc2Vec
@@ -25,8 +26,10 @@ def create_document_clusters(
     try:
         ClusteringModel.objects.get(group_id=group_id)
         if not recreate:
-            raise Exception("Cluster model with group_id {} already exists".format(
-                group_id))
+            raise Exception(
+                "Cluster model with group_id {} already exists".format(
+                    group_id)
+            )
     except ClusteringModel.DoesNotExist:
         pass
         # create new clustering model
@@ -35,11 +38,36 @@ def create_document_clusters(
     )
 
 
+@timeit
+def create_clusters(num_clusters):
+    groups = ClassifiedDocument.objects.all().values('group_id').\
+            distinct()
+    for g in groups:
+        gid = g['group_id']
+        create_document_clusters(
+            'Cluster for {}'.format(gid), gid, num_clusters
+        )
+
+
 def main(*args, **kwargs):
     # TODO: get num_clusters from args
     modelname = kwargs.get('model_name')
     modelgroup_id = kwargs.get('group_id')
     cluster_method = kwargs.get('cluster_method')
+    try:
+        num_clusters = int(kwargs.get('num_clusters'))
+    except (ValueError, TypeError):
+        print("Empty/invalid number of clusters. Usage: --num_clusters <int>")
+        return
+
+    if not modelname and not modelgroup_id:  # means create all clusters
+        # prompt user for confirmation as this will override all clusters
+        yn = input('Are you sure you want to re/create all clusters? Doing this will override existing clusters.(y/n)')  # noqa
+        if yn.lower() == 'y':
+            create_clusters(num_clusters)
+        else:
+            print('Operation cancelled. Provide other options to cluster specific clusters')  # noqa
+        return
     if not modelname:
         print("Model name not provided. Provide it with: --model_name <name>")
         return
@@ -59,14 +87,9 @@ def main(*args, **kwargs):
             print('Provide --doc2vec_group_id for clustring with doc2vec')
             return
     else:
-        print("Invalid cluster method. Valid methods: --cluster_method=[doc2vec|bow]")
+        print("Invalid cluster method. Valid methods: --cluster_method=[doc2vec|bow]")  # noqa
         return
 
-    try:
-        num_clusters = int(kwargs.get('num_clusters'))
-    except (ValueError, TypeError):
-        print("Empty/invalid number of clusters. Usage: --num_clusters <int>")
-        return
     try:
         with transaction.atomic():
             create_document_clusters(
