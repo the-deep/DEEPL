@@ -8,11 +8,12 @@ from classifier.models import ClassifiedDocument, ClassifierModel
 from clustering.tasks import create_new_clusters
 
 
-class iTestDocsSimilarityAPI(APITestCase):
+class TestDocsSimilarityAPI(APITestCase):
     """
     API tests for documents similarity
     """
     def setUp(self):
+        os.environ[settings.INDICES_PATH_ENV_VAR] = 'nlp_data/test_indices'
         set_similarity_model()  # this will initialize global similarity_model
         self.valid_params = {
             'doc1': 'This is a valid doc that uses words from text indices like\
