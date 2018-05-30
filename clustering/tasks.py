@@ -20,6 +20,9 @@ from helpers.common import preprocess
 
 logger = logging.getLogger('celery')
 
+# If silhouette score reaches below this value, recluster
+SILHOUETTE_THRESHOLD = 0.2
+
 
 def create_new_clusters(
         name, group_id, n_clusters,
@@ -247,4 +250,10 @@ def assign_cluster_to_doc(doc_id):
     cluster_model.save()
     # update_size vs silhouette scores
     update_cluster_score_vs_size(cluster_model, 1)  # increased size is 1
-    # TODO: if silhouette score reaches below a threshold, rerun clusters
+    if silhouette_score < SILHOUETTE_THRESHOLD:
+        logger.warning(
+            "cluster score for cluster {} reached below threshold {}. Re-clustering.".format(  # noqa
+                cluster_model.id, SILHOUETTE_THRESHOLD
+        ))
+        update_cluster(cluster_model.id)
+    return True
