@@ -41,9 +41,11 @@ def plot(data, title="", options={}):
     return fig
 
 
-def plot_multiple(data_dict, title=""):
+def plot_multiple(data_dict, title="", options={}):
     colorind = 0
     fig = plt.figure(figsize=(15, 8))
+    plt.xlabel(options.get('x_label', 'Number of items'))
+    plt.ylabel(options.get('y_label', 'Score'))
     for k, data in data_dict.items():
         x = list(map(lambda x: x[0], data))
         y = list(map(lambda x: x[1], data))
