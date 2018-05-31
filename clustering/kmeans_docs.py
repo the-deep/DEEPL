@@ -69,7 +69,6 @@ class KMeansDocs(GenericClustering):
         km.fit(X)
         self.X = X
         self.cluster_centers = km.cluster_centers_
-        print("Clustering done...\nreturning model")
         return self
 
     def update_cluster(self, documents):

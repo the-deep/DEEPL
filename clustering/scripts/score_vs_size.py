@@ -7,25 +7,19 @@ from classifier.models import ClassifiedDocument
 from clustering.base import ClusteringOptions
 from clustering.kmeans_docs import KMeansDocs
 from helpers.utils import timeit
-from helpers.plot import plot, plot_multiple
-from .optimal_clusters import find_optimal_clusters
+from helpers.common import preprocess
+from helpers.plot import plot_multiple
 
 
 @timeit
 def plot_score_vs_size(group_id, num_clusters=5):
-    # first find optimal clusters
-    # n, score = find_optimal_clusters(filter_criteria={'group_id': group_id})
-    # print(
-        # "The optimal number of clusters is {} with a score {}".
-        # format(n, score)
-    # )
     texts = [
-        x['text']
+        preprocess(x['text'], ignore_numbers=True)
         for x in ClassifiedDocument.
         objects.filter(group_id=group_id).values('id', 'text')
     ]
     multi_plot_data = OrderedDict()
-    for n_clusters in range(2, 15):
+    for n_clusters in range(2, 16):
         start_size = 5
         step_size = 2
         if len(texts) < start_size+0*step_size:  # condition is arbitrary
