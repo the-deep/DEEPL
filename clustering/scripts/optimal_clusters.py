@@ -20,7 +20,7 @@ def find_optimal_clusters(
     if CLUSTER_CLASS == KMeansDocs:
         docs = ClassifiedDocument.objects.all().filter(**filter_criteria)\
                 .values('id', 'text')
-        texts = list(map(lambda x: x['text'], docs))
+        texts = [x['text'] for x in docs]
         cluster_params = texts
     elif CLUSTER_CLASS == KMeansDoc2Vec:
         # get Doc2VecModel
