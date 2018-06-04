@@ -83,13 +83,13 @@ def create_and_save_classifier_model(
 
 
 def main(*args, **kwargs):
-    if not kwargs.get('modelversion'):
+    if not kwargs.get('model_version'):
         print("Version not provided. Provide it as --modelversion <version>")
         return
     # TODO; check for model name
-    version = kwargs['modelversion']
+    version = kwargs['model_version']
     # csv_path = '_playground/sample_data/processed_sectors_subsectors.csv'
-    csv_path = 'fixtures/processed_data_for_testing.csv'
+    csv_path = '_playground/sample_data/all_en_processed_sectors_subsectors.csv'
 
     from helpers.deep import get_processed_data
 
