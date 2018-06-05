@@ -1,4 +1,5 @@
 import langdetect
+from googletrans import Translator
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -44,6 +45,7 @@ class DocumentClassifierView(APIView):
     def __init__(self):
         # load all the classifiers
         self.classifiers = get_classifiers()
+        self.translator = Translator()
 
     def post(self, request, version):
         data = dict(request.data.items())
@@ -85,6 +87,21 @@ class DocumentClassifierView(APIView):
                 status.HTTP_404_NOT_FOUND
             )
         text = data['text']
+
+        # get language
+        language = langdetect.detect(text)
+        original = None
+        try:
+            if language != 'en':
+                original = text
+                logger.info("not english language")
+                translation = self.translator.translate(text)
+                translated = translation.text
+                text = translated
+                logger.info("Translated text: {}".format(translated))
+        except Exception as e:
+            logger.warn("Exception while translating text. {}".format(e))
+
         classified = classify_text(classifier['classifier'], text)
 
         if not data.get('deeper'):
@@ -98,8 +115,9 @@ class DocumentClassifierView(APIView):
         # Create classified Document
         grp_id = data.get('group_id')
 
-        # get language
-        language = langdetect.detect(text)
+        extra_info = {"language": language}
+        if original:
+            extra_info['original'] = original
 
         doc = ClassifiedDocument.objects.create(
             text=text,
@@ -108,8 +126,9 @@ class DocumentClassifierView(APIView):
             classification_label=classified[0][0],
             classification_probabilities=classified,
             group_id=grp_id,
-            extra_info={"language": language}
+            extra_info=extra_info
         )
+
         # now add the doc to a cluster, only if new doc is present
         if not data.get('doc_id'):
             # doc id is send for already present doc

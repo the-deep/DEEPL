@@ -1,3 +1,5 @@
+import langdetect
+
 from rest_framework.test import APITestCase
 
 from helpers.deep import get_processed_data
@@ -54,6 +56,26 @@ class TestClassificationAPI(APITestCase):
         # Just to check if list contains tuples, if not exception raised
         for label, prob in data['classification']:
             pass
+
+    def test_api_with_text_non_english(self):
+        params = {
+            'text': 'Les êtres humains ne sont jamais satisfaits.',
+            'deeper': 'true'
+        }
+        response = self.client.post(self.url, params)
+        assert response.status_code == 200
+        data = response.json()
+        assert "classification" in data
+        assert "classification_confidence" in data
+        assert type(data['classification']) == list
+        # Just to check if list contains tuples, if not exception raised
+        for label, prob in data['classification']:
+            pass
+        # check if 'language' key is not english and 'original' key is present
+        lastone = ClassifiedDocument.objects.last()
+        # assert langdetect.detect(lastone.text) == 'en'
+        assert lastone.extra_info['language'] != 'en'
+        assert 'original' in lastone.extra_info
 
     def test_api_with_text_deeper(self):
         params = {'text': 'This is to be classified', 'deeper': '1'}
