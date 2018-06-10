@@ -65,9 +65,10 @@ class TestClusteringAPI(APITestCase):
         params = self.valid_params
         response = self.client.post(self.api_url, params)
         data = response.json()
+        print(response.json())
         assert response.status_code == 202, "No data returned but accepted"
         data = response.json()
-        assert 'message' in data
+        assert 'cluster_model_id' in data
 
     def test_clustered_prepared_resposne(self):
         # create a clustered model
@@ -76,29 +77,29 @@ class TestClusteringAPI(APITestCase):
         )
         params = self.valid_params
         response = self.client.post(self.api_url, params)
+        print(response.json())
         assert response.status_code == 201
         data = response.json()
-        data = response.json()
-        assert 'cluster_id' in data
-        assert isinstance(data['cluster_id'], int)
-        assert data['cluster_id'] == cluster_model.id
+        assert 'cluster_model_id' in data
+        assert isinstance(data['cluster_model_id'], int)
+        assert data['cluster_model_id'] == cluster_model.id
 
     def test_get_cluster_invalid_model_id(self):
         params = {}
         invalids = [None, "abcd", "1.1", "-1"]
         for invalid in invalids:
             if invalid is not None:
-                params['model_id'] = invalid
+                params['cluster_model_id'] = invalid
             response = self.client.get(self.api_url, params)
             assert response.status_code == 400, "no model_id should be 400"
             data = response.json()
-            assert 'model_id' in data
+            assert 'cluster_model_id' in data
 
     def test_get_cluster_non_existent_model_id(self):
-        params = {'model_id': 9876543}
+        params = {'cluster_model_id': 9876543}
         response = self.client.get(self.api_url, params)
         print(response.json())
-        assert response.status_code == 404, "non existent model_id is 404"
+        assert response.status_code == 404, "non existent cluster_model_id is 404"  # noqa
         data = response.json()
         assert 'message' in data
 
@@ -106,7 +107,7 @@ class TestClusteringAPI(APITestCase):
         cluster_model = create_new_clusters(
             "test_cluster", self.group_id, 2
         )
-        params = {'model_id': cluster_model.id}
+        params = {'cluster_model_id': cluster_model.id}
         response = self.client.get(self.api_url, params)
         assert response.status_code == 200
         data = response.json()
@@ -223,21 +224,41 @@ class TestClusteringDataAPI(APITestCase):
         self.group_id = '1'
         self.num_clusters = 2
         self.url = '/api/cluster-data/'
-        self.cluster_model = create_new_clusters(
-            "test", self.group_id, self.num_clusters
-        )
 
     def test_post(self):
         resp = self.client.post(self.url, {})
         assert resp.status_code == 405
 
-    def test_no_group_id(self):
+    def test_no_model_id(self):
         resp = self.client.get(self.url, {})
         assert resp.status_code == 400
+        data = resp.json()
+        assert 'cluster_model_id' in data
+
+    def test_cluster_data_not_ready(self):
+        # remove all clusters
+        ClusteringModel.objects.all().delete()
+        # create one and set ready false
+        cluster_model = create_new_clusters(
+            "test", self.group_id, self.num_clusters
+        )
+        cluster_model.ready = False
+        cluster_model.save()
+        params = {'cluster_model_id': cluster_model.id}
+        resp = self.client.get(self.url, params)
+        assert resp.status_code == 202
+        data = resp.json()
+        assert 'message' in data
 
     def test_cluster_data(self):
         """Test by sending valid data"""
-        params = {'group_id': self.group_id}
+        # Remove clusters
+        ClusteringModel.objects.all().delete()
+        # first create a cluster
+        cluster_model = create_new_clusters(
+            "test", self.group_id, self.num_clusters
+        )
+        params = {'cluster_model_id': cluster_model.id}
         resp = self.client.get(self.url, params)
         assert resp.status_code == 200
         data = resp.json()

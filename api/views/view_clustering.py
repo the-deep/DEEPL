@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from clustering.models import ClusteringModel
 from clustering.serializers import ClusteringModelSerializer
-from clustering.tasks import create_new_clusters_task, recluster
+from clustering.tasks import create_clusters_task, recluster
 from classifier.models import ClassifiedDocument
 
 
@@ -24,7 +24,7 @@ class ClusteringView(APIView):
                 validation_details['errors'],
                 status=status.HTTP_400_BAD_REQUEST
             )
-        model_id = data['model_id']
+        model_id = data['cluster_model_id']
         try:
             cluster_model = ClusteringModel.objects.get(id=model_id)
         except ClusteringModel.DoesNotExist:
@@ -58,17 +58,24 @@ class ClusteringView(APIView):
             )
         try:
             cluster_model = ClusteringModel.objects.get(
-                group_id=grp_id
+                group_id=grp_id,
+                n_clusters=num_clusters
             )
         except ClusteringModel.DoesNotExist:
             # TODO: find optimal clusters
-            cluster_model = create_new_clusters_task.delay(
-                data.get('name', grp_id),  # name is not mandatory
-                grp_id,
-                n_clusters=num_clusters,
+            cluster_model = ClusteringModel.objects.create(
+                group_id=grp_id,
+                name=data.get('name', grp_id),  # name is not mandatory
+                n_clusters=num_clusters
+            )
+            create_clusters_task.delay(
+                cluster_model.id
             )
             return Response(
-                {"message": "Clustering is in progress. Try later for data."},
+                {
+                    "message": "Clustering is in progress. Use cluster_model_id for data",  # noqa
+                    "cluster_model_id": cluster_model.id
+                },
                 status=status.HTTP_202_ACCEPTED
             )
         if not cluster_model.ready:
@@ -77,7 +84,7 @@ class ClusteringView(APIView):
                 status=status.HTTP_202_ACCEPTED
             )
         return Response(
-            {'cluster_id': cluster_model.id},
+            {'cluster_model_id': cluster_model.id},
             status=status.HTTP_201_CREATED
         )
 
@@ -104,16 +111,16 @@ class ClusteringView(APIView):
 
     def _validate_get_data(self, data):
         errors = {}
-        model_id = data.get('model_id')
+        model_id = data.get('cluster_model_id')
         if not model_id:
-            errors['model_id'] = "Cluster model_id should be present"
+            errors['cluster_model_id'] = "cluster_model_id should be present"
         else:
             try:
                 i = int(model_id)
                 if i < 0:
                     raise ValueError
             except (ValueError, TypeError):
-                errors['model_id'] = 'model_id should be positive integer'
+                errors['cluster_model_id'] = 'cluster_model_id should be positive integer'
         if errors:
             return {
                 'status': False,
@@ -173,14 +180,19 @@ class ClusteringDataView(APIView):
                 validation_details['errors'],
                 status=status.HTTP_400_BAD_REQUEST
             )
-        grp_id = data['group_id']
+        model_id = data['cluster_model_id']
         # now get cluster
         try:
-            cluster_model = ClusteringModel.objects.get(group_id=grp_id)
+            cluster_model = ClusteringModel.objects.get(id=model_id)
         except ClusteringModel.DoesNotExist:
             return Response(
                 {'message': 'No such cluster found'},
                 status=status.HTTP_404_NOT_FOUND
+            )
+        if not cluster_model.ready:
+            return Response(
+                {'message': 'Clustering in progress. Try again laer'},
+                status=status.HTTP_202_ACCEPTED
             )
         data = cluster_model.get_relevant_terms_data()
         cluster_format_data = []
@@ -194,8 +206,8 @@ class ClusteringDataView(APIView):
 
     def _validate_get_data(self, data):
         errors = {}
-        if not data.get('group_id'):
-            errors['group_id'] = 'group_id not provided'
+        if not data.get('cluster_model_id'):
+            errors['cluster_model_id'] = 'cluster_model_id not provided'
         if errors:
             return {
                 'status': False,
