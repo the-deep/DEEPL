@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 
 from classifier.models import ClassifiedDocument
 from clustering.base import ClusteringOptions
+from clustering.models import ClusteringModel
 from clustering.kmeans_docs import KMeansDocs
 from clustering.tasks import create_new_clusters
 from helpers.utils import Resource
@@ -39,7 +40,9 @@ class TestClusterCreationDocs(APITestCase):
 
     def setUp(self):
         # choose random group_id from database
-        self.group_id = ClassifiedDocument.objects.last().group_id
+        self.classified_doc = ClassifiedDocument.objects.last()
+        self.classifier = self.classified_doc.classifier
+        self.group_id = self.classified_doc.group_id
         self.cluster_data_path = 'test_clusters/'
         # create path if not exist
         os.system('mkdir -p {}'.format(self.cluster_data_path))
@@ -47,7 +50,11 @@ class TestClusterCreationDocs(APITestCase):
             self.cluster_data_path
 
     def test_data_files_created(self):
+        # First remove existing clsuter models
+        ClusteringModel.objects.all().delete()
+        # create one
         model = create_new_clusters('test', self.group_id, 2)
+        assert model.all_clustered, "All docs should be clustered while cluster model is created new"  # noqa
         path = self.get_model_path(model)
         center_path = os.path.join(path, settings.CLUSTERS_CENTERS_FILENAME)
         labels_path = os.path.join(
@@ -108,6 +115,22 @@ class TestClusterCreationDocs(APITestCase):
             size_score_fig_resource.validate()
         except Exception as e:
             assert False, "No score plot stored. " + e.args
+
+    def test_all_clustered_if_docs_added(self):
+        # First remove existing clsuter models
+        ClusteringModel.objects.all().delete()
+        # create one
+        model = create_new_clusters('test', self.group_id, 2)
+        assert model.all_clustered, "All docs should be clustered while cluster model is created new"  # noqa
+        # now add a Classified Document with same group_id
+        ClassifiedDocument.objects.create(
+            text="test text",
+            classifier=self.classifier,
+            group_id=self.group_id
+        )
+        # re get the model
+        model = ClusteringModel.objects.get(id=model.id)
+        assert not model.all_clustered, "all_clustered should be false whenever a new doc is added"  # noqa
 
     def get_model_path(self, model):
         cluster_data_location = settings.ENVIRON_CLUSTERING_DATA_LOCATION

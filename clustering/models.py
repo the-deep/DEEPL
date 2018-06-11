@@ -28,6 +28,8 @@ class ClusteringModel(BaseModel):
     # when clustering was completed
     last_clustered_on = models.DateTimeField(null=True)
     ready = models.BooleanField(default=False)
+    # flag indicating if all documents in a group have been clustered or not
+    all_clustered = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('group_id', 'n_clusters',)
