@@ -189,6 +189,9 @@ def update_cluster(cluster_id):
         logger.warn("Clustering Model with id {} does not exist".format(
             cluster_id
         ))
+    if cluster_model.all_clustered:
+        # if all clustered, no need to recluster
+        return
     docs = get_unclustered_docs(cluster_model)
     increased_size = docs.count()
     texts = list(
