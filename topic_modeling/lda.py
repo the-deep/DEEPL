@@ -13,13 +13,17 @@ def get_topics_and_subtopics(
     """
     pre_processing_func should work on tokenized strings
     """
-    texts = [pre_processing_func(document) for document in documents]
+    texts = [pre_processing_func(document).split() for document in documents]
     dictionary = corpora.Dictionary(texts)
     corpus = [dictionary.doc2bow(text) for text in texts]
-    return _get_subtopics(corpus, dictionary, num_topics, num_words, depth, passes)
+    return _get_subtopics(
+        corpus, dictionary, num_topics, num_words, depth, passes
+    )
 
 
-def _get_subtopics(corpus, dictionary, num_topics, num_words, depth, passes=10):
+def _get_subtopics(
+        corpus, dictionary, num_topics, num_words, depth, passes=10
+        ):
     """The recursive function"""
     ldamodel = models.ldamodel.LdaModel(
         corpus,
