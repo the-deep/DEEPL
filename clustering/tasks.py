@@ -1,6 +1,6 @@
 import logging
 
-from celery import task
+from deepl.celery import app
 from django.utils import timezone
 
 from clustering.models import ClusteringModel, Doc2VecModel
@@ -36,22 +36,38 @@ def create_new_clusters(
             group_id=group_id,
             n_clusters=n_clusters
         )
+    return create_clusters(cluster_model.id)
+
+
+def create_clusters(
+        cluster_model_id,
+        CLUSTER_CLASS=KMeansDocs, doc2vec_group_id=None
+        ):
+    try:
+        cluster_model = ClusteringModel.objects.get(id=cluster_model_id)
+    except ClusteringModel.DoesNotExist:
+        logger.warn("Clustering model with id {} does not exist".format(
+            cluster_model_id)
+        )
+        return None
     updated_model = perform_clustering(
         cluster_model, CLUSTER_CLASS, doc2vec_group_id
     )
     # create score_vs_size
-    size = ClassifiedDocument.objects.filter(group_id=group_id).count()
+    size = ClassifiedDocument.objects.filter(
+            group_id=cluster_model.group_id
+        ).count()
     write_cluster_score_vs_size(updated_model, size)
     return updated_model
 
 
-@task
-def create_new_clusters_task(*args, **kwargs):
-    create_new_clusters(*args, **kwargs)
+@app.task
+def create_clusters_task(*args, **kwargs):
+    create_clusters(*args, **kwargs)
     return True
 
 
-@task
+@app.task
 def recluster(group_id, num_clusters):
     try:
         cluster_model = ClusteringModel.objects.get(
@@ -165,7 +181,7 @@ def get_unclustered_docs(cluster_model):
     return docs
 
 
-@task
+@app.task
 def update_cluster(cluster_id):
     try:
         cluster_model = ClusteringModel.objects.get(id=cluster_id)
@@ -222,13 +238,13 @@ def update_cluster(cluster_id):
     update_cluster_score_vs_size(cluster_model, increased_size)
 
 
-@task
+@app.task
 def update_clusters():
     for clustermodel in ClusteringModel.objects.all().values('id'):
         update_cluster(clustermodel['id'])
 
 
-@task
+@app.task
 def assign_cluster_to_doc(doc_id):
     doc = ClassifiedDocument.objects.get(id=doc_id)
     grp_id = doc.group_id

@@ -19,7 +19,7 @@ class ClusteringModel(BaseModel):
     """
     # TODO: might need to maintain history of clusters
     name = models.CharField(max_length=100)
-    group_id = models.CharField(max_length=20, unique=True, editable=False)
+    group_id = models.CharField(max_length=20, editable=False)
     _data = models.BinaryField()
     n_clusters = models.IntegerField()
     extra_info = JSONField(default={})
@@ -28,6 +28,9 @@ class ClusteringModel(BaseModel):
     # when clustering was completed
     last_clustered_on = models.DateTimeField(null=True)
     ready = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('group_id', 'n_clusters',)
 
     def set_model(self, modelobj):
         self._data = pickle.dumps(modelobj)

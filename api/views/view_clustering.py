@@ -80,7 +80,10 @@ class ClusteringView(APIView):
             )
         if not cluster_model.ready:
             return Response(
-                {"message": "Clustering is in progress. Try later for data."},
+                {
+                    "message": "Clustering is in progress. Try later for data.",  # noqa
+                    "cluster_model_id": cluster_model.id
+                },
                 status=status.HTTP_202_ACCEPTED
             )
         return Response(
