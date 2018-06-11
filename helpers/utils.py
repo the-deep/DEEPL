@@ -133,6 +133,28 @@ def merge_lists(la, lb, key=lambda x: x):
     return merged
 
 
+class Timeit:
+    """Context manager as well as decorator"""
+
+    def __enter__(self):
+        self.start = time.time()
+
+    def __exit__(self, *args, **kwds):
+        end = time.time()
+        print("The block took {}ms".format(end - self.start))
+
+    def __call__(self, func_to_be_tracked):
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            ret = func_to_be_tracked(*args, **kwargs)
+            end = time.time()
+            fname = func_to_be_tracked.__name__
+            print("The function '{}' took {}ms.".format(fname, end - start))
+            return ret
+        return wrapper
+
+
+# this is for backward compatibility
 def timeit(func_to_be_tracked):
     """Decorator to calculate elapsed time for a function"""
     def wrapper(*args, **kwargs):
