@@ -1,6 +1,7 @@
 from rest_framework.test import APITestCase
 from django.conf import settings
 
+from classifier.models import ClassifiedDocument
 from clustering.tasks import create_new_clusters
 from clustering.models import ClusteringModel
 
@@ -217,11 +218,13 @@ class TestClusteringDataAPI(APITestCase):
 
     def setUp(self):
         self.cluster_data_path = 'test_clusters/'
+        self.classified_doc = ClassifiedDocument.objects.last()
+        self.classifier = self.classified_doc.classifier
         # create path if not exist
         os.system('mkdir -p {}'.format(self.cluster_data_path))
         os.environ[settings.ENVIRON_CLUSTERING_DATA_LOCATION] = \
             self.cluster_data_path
-        self.group_id = '1'
+        self.group_id = self.classified_doc.group_id
         self.num_clusters = 2
         self.url = '/api/cluster-data/'
 
@@ -250,7 +253,7 @@ class TestClusteringDataAPI(APITestCase):
         data = resp.json()
         assert 'message' in data
 
-    def test_cluster_data(self):
+    def test_cluster_data_fully_clustered(self):
         """Test by sending valid data"""
         # Remove clusters
         ClusteringModel.objects.all().delete()
@@ -263,12 +266,43 @@ class TestClusteringDataAPI(APITestCase):
         assert resp.status_code == 200
         data = resp.json()
         assert 'data' in data
+        assert 'full_clustered' in data
+        assert data['full_clustered'], "Recently created model should be fully clustered"  # noqa
         assert isinstance(data['data'], list)
         for entry in data['data']:
             assert isinstance(entry, dict)
             assert 'cluster' in entry
             assert 'score' in entry
             assert 'value' in entry
+
+    def test_cluster_data_not_fully_clustered(self):
+        """Test by sending valid data"""
+        # Remove clusters
+        ClusteringModel.objects.all().delete()
+        # first create a cluster
+        cluster_model = create_new_clusters(
+            "test", self.group_id, self.num_clusters
+        )
+        # add a classifed doc
+        ClassifiedDocument.objects.create(
+            text="test test test",
+            group_id=self.group_id,
+            classifier=self.classifier
+        )
+        params = {'cluster_model_id': cluster_model.id}
+        resp = self.client.get(self.url, params)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert 'data' in data
+        assert 'full_clustered' in data
+        assert not data['full_clustered'], "If doc is added, model should not be fully clustered"  # noqa
+        assert isinstance(data['data'], list)
+        for entry in data['data']:
+            assert isinstance(entry, dict)
+            assert 'cluster' in entry
+            assert 'score' in entry
+            assert 'value' in entry
+
 
     def tearDown(self):
         # remove test cluster folder
