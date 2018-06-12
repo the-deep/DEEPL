@@ -63,6 +63,7 @@ def create_clusters(
 
 @app.task
 def create_clusters_task(*args, **kwargs):
+    logger.info("in create_clusters_task")
     create_clusters(*args, **kwargs)
     return True
 

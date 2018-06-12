@@ -9,7 +9,7 @@ from classifier.models import ClassifiedDocument
 
 
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class ClusteringView(APIView):
@@ -68,6 +68,7 @@ class ClusteringView(APIView):
                 name=data.get('name', grp_id),  # name is not mandatory
                 n_clusters=num_clusters
             )
+            logger.info("Calling create_clusters_task")
             create_clusters_task.delay(
                 cluster_model.id
             )
