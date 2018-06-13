@@ -5,13 +5,16 @@ import pandas as pd
 import json
 from classifier.NaiveBayesSKlearn import SKNaiveBayesClassifier
 
+import googletrans
+import langdetect
+
 
 def get_processed_data(csv_file_path):
     """
     return processed_data [(text, label), ... ] from csv file
     NOTE: the processed data should be csv with fields excerpt and sector
     """
-    df = pd.read_csv(csv_file_path)
+    df = pd.read_csv(csv_file_path, error_bad_lines=False)
     punc_nums_preprocessor = SKNaiveBayesClassifier.preprocess
     processed = df.assign(excerpt=df['excerpt'].apply(punc_nums_preprocessor))
     excerpts = processed['excerpt']
@@ -35,12 +38,25 @@ def get_sector_excerpt(df):
     """Return list of tuples with sector and excerpt -> [(excerpt, sector)...]
     @df : DataFrame
     """
+    translator = googletrans.Translator()
+    cnt = 0
     lst = []
+    allcnt = 0
     for v in df[df['twodim'].notnull()][['twodim', 'excerpt']].iterrows():
         for k in v[1].twodim:
-            if type(v[1].excerpt) != str:
+            allcnt += 1
+            excerpt = v[1].excerpt
+            if type(excerpt) != str or not excerpt.strip():
                 continue
-            lst.append((v[1].excerpt, k['sector']))
+            try:
+                lang = langdetect.detect(excerpt)
+            except Exception:
+                print(excerpt)
+                continue
+            if lang != 'en':
+                cnt += 1
+                excerpt = translator.translate(excerpt).text
+            lst.append((excerpt, k['sector']))
     return lst
 
 
