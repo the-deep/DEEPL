@@ -41,82 +41,84 @@ logger.setLevel(logging.WARNING)
 
 num_accuracy = []
 
-try:
-    logger.info('.. GETTING DEEP DATA\n')
-    print('.. GETTING DEEP DATA\n')
-    deepdata = get_processed_data(
-        '_playground/sample_data/processed_sectors_subsectors.csv'
-    )
-    logger.info('.. SHUFFLING DEEP DATA\n')
-    print('.. SHUFFLING DEEP DATA\n')
-    random.shuffle(deepdata)
+def main(*args, **kwargs):
 
-    total = len(deepdata)
-
-    logger.info('.. INITIALIZING DATASETSIZE TO 500\n')
-    print('.. INITIALIZING DATASETSIZE TO 500\n')
-    dataset_num = 500
-    logger.info('.. SETTING SIZE INCREMENT TO 150\n')
-    print('.. SETTING SIZE INCREMENT TO 150\n')
-    increment = 150
-
-    # first create dir to store accuracy vs size data
-    logger.info('.. CREATING DIRECTORY `DEEP_DATA` FOR STORING DATA\n')
-    print('.. CREATING DIRECTORY `DEEP_DATA` FOR STORING DATA\n')
-    dirpath = os.path.join(os.path.expanduser('~'), 'data_DEEPL')
-    subprocess.call(['mkdir', '-p', dirpath])
-
-    filepath = os.path.join(dirpath, 'accuracy_vs_size.txt')
-    logger.info('.. RUNNING LOOP')
-    print('.. RUNNING LOOP')
-    sectors_accuracies = {}
-    while dataset_num <= total:
+    try:
+        logger.info('.. GETTING DEEP DATA\n')
+        print('.. GETTING DEEP DATA\n')
+        deepdata = get_processed_data(
+            '_playground/sample_data/processed_sectors_subsectors.csv'
+        )
+        logger.info('.. SHUFFLING DEEP DATA\n')
+        print('.. SHUFFLING DEEP DATA\n')
         random.shuffle(deepdata)
-        one_fourth = int(dataset_num/4.0)
-        train = deepdata[:dataset_num][one_fourth:]
-        test = deepdata[:dataset_num][:one_fourth]
-        logger.info('.. dataset_num:{}\n'.format(dataset_num))
-        classifier = CLASSIFIER.new(train)
-        classifier.calculate_confusion_matrix(test)
 
-        # calculate accuracy for other
-        indices = classifier.confusion_matrix._indices
-        matrix = classifier.confusion_matrix._confusion
-        if not sectors_accuracies:
-            sectors_accuracies = {k: [] for k, v in indices.items()}
-        for k, v in indices:
-            total = sum(matrix[v])
-            correct = matrix[v][v]
-            sectors_accuracies[k].append([dataset_num, correct/float(total)])
+        total = len(deepdata)
 
-        accuracy = classifier.get_accuracy(test)
-        num_accuracy.append((dataset_num, accuracy))
-        logger.info('.. accuracy: {}\n'.format(accuracy))
-        print('.. accuracy: {}\n'.format(accuracy))
+        logger.info('.. INITIALIZING DATASETSIZE TO 500\n')
+        print('.. INITIALIZING DATASETSIZE TO 500\n')
+        dataset_num = 500
+        logger.info('.. SETTING SIZE INCREMENT TO 150\n')
+        print('.. SETTING SIZE INCREMENT TO 150\n')
+        increment = 150
 
-        dataset_num += increment
-    # now plot
-    data = num_accuracy
-    x = list(map(lambda x: x[0], data))
-    y = list(map(lambda x: x[1], data))
+        # first create dir to store accuracy vs size data
+        logger.info('.. CREATING DIRECTORY `DEEP_DATA` FOR STORING DATA\n')
+        print('.. CREATING DIRECTORY `DEEP_DATA` FOR STORING DATA\n')
+        dirpath = os.path.join(os.path.expanduser('~'), 'data_DEEPL')
+        subprocess.call(['mkdir', '-p', dirpath])
 
-    print("$$$$$$$$$$$$$$$$$$$")
-    print(data)
-    print("$$$$$$$$$$$$$$$$$$$")
-    print(sectors_accuracies)
-    print("$$$$$$$$$$$$$$$$$$$")
+        filepath = os.path.join(dirpath, 'accuracy_vs_size.txt')
+        logger.info('.. RUNNING LOOP')
+        print('.. RUNNING LOOP')
+        sectors_accuracies = {}
+        while dataset_num <= total:
+            random.shuffle(deepdata)
+            one_fourth = int(dataset_num/4.0)
+            train = deepdata[:dataset_num][one_fourth:]
+            test = deepdata[:dataset_num][:one_fourth]
+            logger.info('.. dataset_num:{}\n'.format(dataset_num))
+            classifier = CLASSIFIER.new(train)
+            classifier.calculate_confusion_matrix(test)
 
-    fig = plt.figure(figsize=(15, 8))
-    plt.xticks([x for x in range(500, 28000, 1500)])
-    plt.xlabel('# of TRAINING SETS')
-    plt.ylabel('ACCURACY')
-    plt.grid(True)
-    plt.plot(x, y, 'k')
-    plt.savefig(str(datetime.datetime.now())+".png")
+            # calculate accuracy for other
+            indices = classifier.confusion_matrix._indices
+            matrix = classifier.confusion_matrix._confusion
+            if not sectors_accuracies:
+                sectors_accuracies = {k: [] for k, v in indices.items()}
+            for k, v in indices:
+                total = sum(matrix[v])
+                correct = matrix[v][v]
+                sectors_accuracies[k].append([dataset_num, correct/float(total)])
 
-    logger.info('.. DONE!!!')
-except Exception as e:
-    import traceback
-    logger.info(traceback.format_exc())
-    print(traceback.format_exc())
-    logger.info('\n')
+            accuracy = classifier.get_accuracy(test)
+            num_accuracy.append((dataset_num, accuracy))
+            logger.info('.. accuracy: {}\n'.format(accuracy))
+            print('.. accuracy: {}\n'.format(accuracy))
+
+            dataset_num += increment
+        # now plot
+        data = num_accuracy
+        x = list(map(lambda x: x[0], data))
+        y = list(map(lambda x: x[1], data))
+
+        print("$$$$$$$$$$$$$$$$$$$")
+        print(data)
+        print("$$$$$$$$$$$$$$$$$$$")
+        print(sectors_accuracies)
+        print("$$$$$$$$$$$$$$$$$$$")
+
+        fig = plt.figure(figsize=(15, 8))
+        plt.xticks([x for x in range(500, 28000, 1500)])
+        plt.xlabel('# of TRAINING SETS')
+        plt.ylabel('ACCURACY')
+        plt.grid(True)
+        plt.plot(x, y, 'k')
+        plt.savefig(str(datetime.datetime.now())+".png")
+
+        logger.info('.. DONE!!!')
+    except Exception as e:
+        import traceback
+        logger.info(traceback.format_exc())
+        print(traceback.format_exc())
+        logger.info('\n')
