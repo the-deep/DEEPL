@@ -3,23 +3,35 @@ Helper functions [ DEEP specific ]
 """
 import pandas as pd
 import json
+import re
 from classifier.NaiveBayesSKlearn import SKNaiveBayesClassifier
 
 import googletrans
 import langdetect
 
 
-def get_processed_data(csv_file_path):
+def get_processed_data(csv_file_path, delim=','):
     """
     return processed_data [(text, label), ... ] from csv file
     NOTE: the processed data should be csv with fields excerpt and sector
     """
-    df = pd.read_csv(csv_file_path, error_bad_lines=False)
+    df = pd.read_csv(csv_file_path, sep=delim, error_bad_lines=False)
     punc_nums_preprocessor = SKNaiveBayesClassifier.preprocess
     processed = df.assign(excerpt=df['excerpt'].apply(punc_nums_preprocessor))
     excerpts = processed['excerpt']
     sector_labels = processed['sector']
     return list(zip(excerpts, sector_labels))
+
+
+def create_processed_data(
+        data,
+        input_csv_path='_playground/sample_data/nlp_out_new.csv',
+        output_csv_path='_playground/sample_data/processed_new_data.csv'):
+    data = process_deep_entries_data(input_csv_path)
+    excerpts, sectors = zip(*data)
+    df_data = {'excerpt': excerpts, 'sector': sectors}
+    df = pd.DataFrame(data=df_data)
+    df.to_csv(output_csv_path)
 
 
 def get_all_sectors(df):
@@ -34,28 +46,27 @@ def get_all_sectors(df):
     return lst
 
 
-def get_sector_excerpt(df):
+def get_sector_excerpt(df, translate=False):
     """Return list of tuples with sector and excerpt -> [(excerpt, sector)...]
     @df : DataFrame
     """
-    translator = googletrans.Translator()
-    cnt = 0
+    if translate:
+        translator = googletrans.Translator()
     lst = []
-    allcnt = 0
     for v in df[df['twodim'].notnull()][['twodim', 'excerpt']].iterrows():
         for k in v[1].twodim:
-            allcnt += 1
             excerpt = v[1].excerpt
             if type(excerpt) != str or not excerpt.strip():
                 continue
-            try:
-                lang = langdetect.detect(excerpt)
-            except Exception:
-                print(excerpt)
-                continue
-            if lang != 'en':
-                cnt += 1
-                excerpt = translator.translate(excerpt).text
+            excerpt = re.sub('[\r\n\t]', ' ', v[1].excerpt)
+            if translate:
+                try:
+                    lang = langdetect.detect(excerpt)
+                except Exception:
+                    print(excerpt)
+                    continue
+                if lang != 'en':
+                    excerpt = translator.translate(excerpt).text
             lst.append((excerpt, k['sector']))
     return lst
 

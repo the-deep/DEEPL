@@ -38,6 +38,10 @@ class Command(BaseCommand):
             '--group_id', type=str, default=None,
             help="Group id of Model."
         )
+        parser.add_argument(
+            '--path', type=str, default=None,
+            help='Path of some file'
+        )
         # Add other custom args required by the scripts
 
     def handle(self, *args, **options):

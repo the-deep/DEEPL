@@ -18,7 +18,7 @@ def create_classifier_model(
         version,
         data,
         classifier_class=SKNaiveBayesClassifier,
-        confusion_matrix=False
+        confusion_matrix=True
         ):
     """
     Create a new classifier object to save to the database
@@ -86,10 +86,9 @@ def main(*args, **kwargs):
     if not kwargs.get('model_version'):
         print("Version not provided. Provide it as --modelversion <version>")
         return
+    csv_path = kwargs.get('path', '_playground/sample_data/processed_new_data.csv')
     # TODO; check for model name
     version = kwargs['model_version']
-    csv_path = '_playground/sample_data/processed_new_data.csv'
-    # csv_path = '_playground/sample_data/all_en_processed_sectors_subsectors.csv'
 
     from helpers.deep import get_processed_data
 
