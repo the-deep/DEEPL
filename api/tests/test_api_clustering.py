@@ -265,15 +265,22 @@ class TestClusteringDataAPI(APITestCase):
         resp = self.client.get(self.url, params)
         assert resp.status_code == 200
         data = resp.json()
-        assert 'data' in data
         assert 'full_clustered' in data
         assert data['full_clustered'], "Recently created model should be fully clustered"  # noqa
-        assert isinstance(data['data'], list)
-        for entry in data['data']:
+        assert isinstance(data, dict)
+        assert 'keywords' in data
+        assert 'docs' in data
+        assert isinstance(data['docs'], dict)
+        for entry in data['keywords']:
             assert isinstance(entry, dict)
             assert 'cluster' in entry
             assert 'score' in entry
             assert 'value' in entry
+        for label, docs in data['docs'].items():
+            assert isinstance(docs, list)
+            assert docs, "Docs should not be empty for a cluster"
+            for docid in docs:
+                assert isinstance(docid, int)
 
     def test_cluster_data_not_fully_clustered(self):
         """Test by sending valid data"""
@@ -293,11 +300,12 @@ class TestClusteringDataAPI(APITestCase):
         resp = self.client.get(self.url, params)
         assert resp.status_code == 200
         data = resp.json()
-        assert 'data' in data
+        assert 'keywords' in data
+        assert 'docs' in data
         assert 'full_clustered' in data
         assert not data['full_clustered'], "If doc is added, model should not be fully clustered"  # noqa
-        assert isinstance(data['data'], list)
-        for entry in data['data']:
+        assert isinstance(data['keywords'], list)
+        for entry in data['keywords']:
             assert isinstance(entry, dict)
             assert 'cluster' in entry
             assert 'score' in entry
