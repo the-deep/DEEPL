@@ -292,7 +292,7 @@ If complete, it will send 200.
 #### Sample Response Body
 <pre>
 {
-    "data": [
+    "keywords": [
         {
             "value": "party",
             "cluster": 1,
@@ -353,7 +353,12 @@ If complete, it will send 200.
             "cluster": 6,
             "score": 7
         }
-    ]
+    ],
+    "full_clustered": true,
+    "docs": {
+        "<cluster_label 0>": [1,2,3],
+        "<cluster_label 1>": [5,6,7]
+    }
 }
 </pre>
 

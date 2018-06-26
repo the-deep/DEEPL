@@ -195,10 +195,11 @@ class ClusteringDataView(APIView):
             )
         if not cluster_model.ready:
             return Response(
-                {'message': 'Clustering in progress. Try again laer'},
+                {'message': 'Clustering in progress. Try again later'},
                 status=status.HTTP_202_ACCEPTED
             )
         data = cluster_model.get_relevant_terms_data()
+        cluster_docs = {}
         cluster_format_data = []
         for k, v in data.items():
             size = len(v)
@@ -206,8 +207,14 @@ class ClusteringDataView(APIView):
                 cluster_format_data.append(
                     {'cluster': k, 'score': size-i, 'value': e}
                 )
+        # get docs and clusters
+        docs_clusters = cluster_model.get_labels_data()
+        for k, v in docs_clusters.items():
+            lab = v['label']
+            cluster_docs[lab] = cluster_docs.get(lab, []) + [int(k)]
         return Response({
-            'data': cluster_format_data,
+            'keywords': cluster_format_data,
+            'docs': cluster_docs,
             'full_clustered': cluster_model.all_clustered
         })
 
