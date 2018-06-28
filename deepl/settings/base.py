@@ -40,9 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
 
+    'corsheaders',
     'rest_framework',
+
+    'api_auth',
     'core',
     'api',
     'helpers',
@@ -63,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'deepl.middleware.token_middleware.CheckTokenMiddleware',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
