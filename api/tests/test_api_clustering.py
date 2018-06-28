@@ -5,9 +5,12 @@ from classifier.models import ClassifiedDocument
 from clustering.tasks import create_new_clusters
 from clustering.models import ClusteringModel
 
+from api.tests.utils import with_token_auth_tests
+
 import os
 
 
+@with_token_auth_tests
 class TestClusteringAPI(APITestCase):
     """
     Tests for clustering API
@@ -33,6 +36,8 @@ class TestClusteringAPI(APITestCase):
             'group_id': self.group_id,
             'num_clusters': self.num_clusters
         }
+        # this creates token and adds that to client header
+        super().setUp()
 
     def test_no_group_id(self):
         params = {}
@@ -66,7 +71,6 @@ class TestClusteringAPI(APITestCase):
         params = self.valid_params
         response = self.client.post(self.api_url, params)
         data = response.json()
-        print(response.json())
         assert response.status_code == 202, "No data returned but accepted"
         data = response.json()
         assert 'cluster_model_id' in data
@@ -78,7 +82,6 @@ class TestClusteringAPI(APITestCase):
         )
         params = self.valid_params
         response = self.client.post(self.api_url, params)
-        print(response.json())
         assert response.status_code == 201
         data = response.json()
         assert 'cluster_model_id' in data
@@ -99,7 +102,6 @@ class TestClusteringAPI(APITestCase):
     def test_get_cluster_non_existent_model_id(self):
         params = {'cluster_model_id': 9876543}
         response = self.client.get(self.api_url, params)
-        print(response.json())
         assert response.status_code == 404, "non existent cluster_model_id is 404"  # noqa
         data = response.json()
         assert 'message' in data
@@ -129,6 +131,7 @@ class TestClusteringAPI(APITestCase):
         os.system('rm -r {}'.format(self.cluster_data_path))
 
 
+@with_token_auth_tests
 class TestReClusteringAPI(APITestCase):
     """Tests for re-clustering"""
     fixtures = [
@@ -154,6 +157,8 @@ class TestReClusteringAPI(APITestCase):
         self.cluster_model = create_new_clusters(
             "test_cluster", self.group_id, self.num_clusters
         )
+        # this creates token and adds that to client header
+        super().setUp()
 
     def test_no_params(self):
         params = {}
@@ -208,6 +213,7 @@ class TestReClusteringAPI(APITestCase):
         os.system('rm -r {}'.format(self.cluster_data_path))
 
 
+@with_token_auth_tests
 class TestClusteringDataAPI(APITestCase):
     """Tests for clustering data"""
     fixtures = [

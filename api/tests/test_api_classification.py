@@ -1,5 +1,3 @@
-import langdetect
-
 from rest_framework.test import APITestCase
 
 from helpers.deep import get_processed_data
@@ -7,7 +5,10 @@ from helpers.create_classifier import create_classifier_model
 from classifier.models import ClassifiedDocument, ClassifierModel
 from classifier.globals import init
 
+from api.tests.utils import with_token_auth_tests
 
+
+@with_token_auth_tests
 class TestClassificationAPI(APITestCase):
     """
     Tests for text classification API
@@ -131,6 +132,7 @@ class TestClassificationAPI(APITestCase):
         return create_classifier_model(version, data)
 
 
+@with_token_auth_tests
 class TestUpdateGroupId(APITestCase):
     fixtures = [
         'fixtures/test_base_models.json',

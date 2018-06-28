@@ -1,6 +1,9 @@
 from rest_framework.test import APITestCase
 
+from api.tests.utils import with_token_auth_tests
 
+
+@with_token_auth_tests
 class TestKeywordsExtractionAPI(APITestCase):
     """
     Tests for Keywords Extraction api

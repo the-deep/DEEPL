@@ -4,7 +4,10 @@ from classifier.models import ClassifiedDocument
 from helpers.deep import get_processed_data
 from helpers.create_classifier import create_classifier_model
 
+from api.tests.utils import with_token_auth_tests
 
+
+@with_token_auth_tests
 class TestNERAPI(APITestCase):
     """
     Tests for Keywords Named Entity Recognition API
@@ -34,6 +37,7 @@ class TestNERAPI(APITestCase):
             assert 'start' in x
 
 
+@with_token_auth_tests
 class TestNERwithDocsAPI(APITestCase):
     """
     Tests for Keywords Named Entity Recognition API

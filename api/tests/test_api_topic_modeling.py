@@ -4,7 +4,10 @@ from classifier.models import ClassifiedDocument
 from topic_modeling.models import TopicModelingModel
 from topic_modeling.tasks import get_topics_and_subtopics_task
 
+from api.tests.utils import with_token_auth_tests
 
+
+@with_token_auth_tests
 class TestTopicModelingAPI(APITestCase):
     """
     Tests for Topic Modeling API
@@ -160,6 +163,7 @@ class TestTopicModelingAPI(APITestCase):
         assert depth2, "At least one topic should have depth 2"
 
 
+@with_token_auth_tests
 class TestTopicModelingAPIV2(APITestCase):
     """Test cases for v2 topic modeling api"""
     fixtures = [

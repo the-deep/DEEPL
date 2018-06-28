@@ -7,7 +7,10 @@ from similarity.globals import set_similarity_model
 from classifier.models import ClassifiedDocument, ClassifierModel
 from clustering.tasks import create_new_clusters
 
+from api.tests.utils import with_token_auth_tests
 
+
+@with_token_auth_tests
 class TestDocsSimilarityAPI(APITestCase):
     """
     API tests for documents similarity
@@ -61,6 +64,7 @@ has leadership'
 uld be greater than/equal to 0"
 
 
+@with_token_auth_tests
 class TestSimilarDocsAPI(APITestCase):
     """
     API tests for similar docs
