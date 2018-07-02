@@ -39,14 +39,14 @@ class Profile(models.Model):
         tokens = self.tokens.filter(is_test=True)
         if not tokens:
             return None
-        return str(tokens[0])
+        return tokens[0].token
 
     @property
     def api_token(self):
         tokens = self.tokens.filter(is_test=False)
         if not tokens:
             return None
-        return str(tokens[0])
+        return tokens[0].token
 
 
 class Token(models.Model):
