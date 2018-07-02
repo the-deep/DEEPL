@@ -48,6 +48,7 @@ export default class TopicModelingForm extends React.Component {
 
         fetch('/api/topic-modeling/', {
             method: 'POST',
+            credentials: 'same-origin',
             //headers: {'Content-Type':'application/x-www-form-urlencoded'},
             body: data
         })

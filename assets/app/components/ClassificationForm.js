@@ -38,6 +38,7 @@ export class ClassificationForm extends React.Component {
         formdata.append('text', this.state.text);
         formdata.append('deeper', '1');
         fetch('/api/v'+this.state.version+'/classify/', {
+            credentials: 'same-origin',
             method: 'POST',
             headers: headers,
             body: formdata

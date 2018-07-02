@@ -16,8 +16,27 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
+from rest_framework import routers
+
+from api_auth.views import UserViewSet
+
+from core.views import LoginView, RegisterView, user_logout
+
+
+router = routers.DefaultRouter()
+# User routers
+router.register(
+    r'users', UserViewSet,
+    base_name='user'
+)
+
 urlpatterns = [
     url(r'^api/', include('api.urls')),
     url(r'^admin', admin.site.urls),
+    url(r'^login', LoginView.as_view(), name='login'),
+    url(r'^logout', user_logout, name='logout'),
+    url(r'^register', RegisterView.as_view(), name='register'),
     url(r'^', include('core.urls')),
 ]
+
+urlpatterns += router.urls

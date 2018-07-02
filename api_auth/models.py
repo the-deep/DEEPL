@@ -34,6 +34,20 @@ class Profile(models.Model):
         else:
             super().save(*args, **kwargs)
 
+    @property
+    def test_token(self):
+        tokens = self.tokens.filter(is_test=True)
+        if not tokens:
+            return None
+        return str(tokens[0])
+
+    @property
+    def api_token(self):
+        tokens = self.tokens.filter(is_test=False)
+        if not tokens:
+            return None
+        return str(tokens[0])
+
 
 class Token(models.Model):
     token = models.CharField(max_length=64, unique=True, default=uuid.uuid4)

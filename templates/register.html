@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} DEEPL Register{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4 text-center">
+            <h3 class="text-center"> Registration for API </h3>
+            <div class="text-center text-danger">{{message}}</div>
+            <div>
+                <form method="post" action="/login">
+                    {% csrf_token %}
+                    <br/>
+                    <label>Firstname:</label>
+                    <input type="text" name="first_name" /><br/><br/>
+                    <label>Lastname:</label>
+                    <input type="text" name="last_name" /><br/><br/>
+                    <label>Occupation:</label>
+                    <input type="text" name="occupation" /><br/><br/>
+                    <label>Address:</label>
+                    <input type="text" name="address" /><br/><br/>
+                    <label>Username:</label>
+                    <input type="text" name="username" /><br/><br/>
+                    <label>Password:</label>
+                    <input placeholder="Don't forget this!" type="password" name="password" /><br/><br/>
+                    <button type="submit">Register</button><br/><br/>
+                    <a href="/login">Already Registered??</a> 
+                </form>
+            </div>
+        </div>
+        <div class="col-md-4"></div>
+    </div>
+</div>
+{% endblock %}

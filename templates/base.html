@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>DEEPL</title>
+        <title>{% block title %}DEEPL{% endblock %}</title>
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
         <style>
             #navbar {
@@ -25,11 +25,19 @@
     <body>
         <div id="navbar">
             <span id="logo">DEEPL</span><br>
-            <small id="tagline">A Humanitarian Natural Language Processing tool</small>
+            <div class="row">
+                <div class="col-md-8">
+                    <small id="tagline">A Humanitarian Natural Language Processing tool</small>
+                </div>
+                <div class="col-md-4 text-right">
+                    {% if user.is_authenticated %}
+                    {{ user }} | <a href="/logout">logout</a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-        <div id="main" class="container-fluid">
-        </div>
-        <script src="{% static 'dist/bundle.js' %}" type="text/javascript"></script>
+        {% block content %}
+        {% endblock %}
     </body>
 </html>
 

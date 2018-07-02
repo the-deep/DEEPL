@@ -17,6 +17,7 @@ export default class KeywordsExtractionForm extends React.Component {
         const data = new URLSearchParams();
         data.append("document", this.state.text);
         fetch('/api/keywords-extraction/', {
+            credentials: 'same-origin',
             method: 'POST',
             //headers: {'Content-Type':'application/x-www-form-urlencoded'},
             body: data

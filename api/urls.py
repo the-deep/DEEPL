@@ -14,6 +14,7 @@ from api.views import (
     ClusteringDataView,
     ReClusteringView,
     ClassifiedDocumentView,
+    TokenView
 )
 
 urlpatterns = [
@@ -30,7 +31,8 @@ urlpatterns = [
     url(r'^cluster/$', ClusteringView.as_view()),
     url(r'^cluster-data/$', ClusteringDataView.as_view()),
     url(r'^re-cluster/$', ReClusteringView.as_view()),
-    url(r'^doc/$', ClassifiedDocumentView.as_view())
+    url(r'^doc/$', ClassifiedDocumentView.as_view()),
+    url(r'^token/$', TokenView.as_view())
 ]
 
 VERSION_PATTERN = '(?P<version>[a-z0-9A-Z\.]+)'
