@@ -19,7 +19,9 @@ export class ClassificationForm extends React.Component {
     }
 
     componentDidMount() {
-        fetch('/api/versions/')
+        fetch('/api/versions/', {
+            credentials: 'same-origin'
+        })
         .then(response => response.json())
         .then(data => {
             const versions = data.versions.map(x=>x.version);
