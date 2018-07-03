@@ -11,19 +11,26 @@
             <h3 class="text-center"> Registration for API </h3>
             <div class="text-center text-danger">{{message}}</div>
             <div>
-                <form method="post" action="/login">
+                <form method="post" action="/register">
                     {% csrf_token %}
                     <br/>
+                    {% for item, val in errors.items %}
+                    <b class="text-danger"> {{item}}: {{val.0}} </b> <br/></br>
+                    {% endfor %}
                     <label>Firstname:</label>
                     <input type="text" name="first_name" /><br/><br/>
                     <label>Lastname:</label>
                     <input type="text" name="last_name" /><br/><br/>
-                    <label>Occupation:</label>
-                    <input type="text" name="occupation" /><br/><br/>
-                    <label>Address:</label>
-                    <input type="text" name="address" /><br/><br/>
                     <label>Username:</label>
                     <input type="text" name="username" /><br/><br/>
+                    <label>Email:</label>
+                    <input type="email" name="email" /><br/><br/>
+                    <label>Occupation:</label>
+                    <input type="text" name="occupation" /><br/><br/>
+                    <label>Organization:</label>
+                    <input type="text" name="organization" /><br/><br/>
+                    <label>Address:</label>
+                    <input type="text" name="address" /><br/><br/>
                     <label>Password:</label>
                     <input placeholder="Don't forget this!" type="password" name="password" /><br/><br/>
                     <button type="submit">Register</button><br/><br/>

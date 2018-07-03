@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.views import View
 from rest_framework.views import APIView
@@ -38,15 +39,22 @@ class LoginView(View):
 
 
 class RegisterView(View):
-    def get(self, request):
+    def get(self, request, context={}):
         if request.user.is_authenticated():
             return redirect('/')
-        return render(request, 'register.html', {})
+        return render(request, 'register.html', context)
 
     def post(self, request):
-        userdata = request.POST
-        serializer = UserSerializer(userdata)
-        serializer.create()
+        userdata = dict(request.POST.items())
+        serializer = UserSerializer(data=userdata)
+        if not serializer.is_valid():
+            errors = serializer.errors
+            return self.get(request, {'errors': errors})
+        user = serializer.save()
+        print('setting password')
+        user.set_password(userdata['password'])
+        user.save()
+        return LoginView().get(request, {'message': 'Successful register'})
 
 
 def user_logout(request):

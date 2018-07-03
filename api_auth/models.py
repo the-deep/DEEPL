@@ -28,9 +28,10 @@ class Profile(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id or not self.tokens:
-            # save and then generate a token
+            # save and then generate an api token and a test token
             super().save(*args, **kwargs)
-            Token.objects.create(user=self)
+            Token.objects.create(user=self, is_test=False)
+            Token.objects.create(user=self, is_test=True)
         else:
             super().save(*args, **kwargs)
 

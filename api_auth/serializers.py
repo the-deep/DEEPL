@@ -18,6 +18,10 @@ class UserSerializer(serializers.ModelSerializer):
         allow_null=True,
         required=False
     )
+    email = serializers.CharField(
+        required=True,
+        allow_null=False
+    )
 
     class Meta:
         model = User
