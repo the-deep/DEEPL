@@ -8,7 +8,7 @@ import {Link, Switch, Router, Route, hashHistory} from 'react-router-dom';
 export class Main extends React.Component {
     componentDidMount() {
         console.log('fetching token');
-        fetch('/api/token', {
+        fetch('/api/token/', {
             credentials: "same-origin"
         })
         .then(response => response.json())
