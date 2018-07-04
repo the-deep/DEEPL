@@ -20,3 +20,6 @@ CLASSPATH=/nlp_resources/stanford-ner-2018-02-27/
 STANFORD_MODELS=/nlp_resources/stanford-ner-2018-02-27/classifiers/
 
 CI=true
+
+SENTRY_DSN=
+SERVER_ENVIRONMENT=local

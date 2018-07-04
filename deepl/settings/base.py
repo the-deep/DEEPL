@@ -43,6 +43,8 @@ INSTALLED_APPS = [
 
     'corsheaders',
     'rest_framework',
+    # SENTRY
+    'raven.contrib.django.raven_compat',
 
     'api_auth',
     'core',
@@ -212,3 +214,15 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(day_of_week='*/2'),
     }
 }
+
+
+# SENTRY
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
+if SENTRY_DSN:
+    RAVEN_CONFIG = {
+        'dsn': os.environ.get('SENTRY_DSN', ''),
+        # If you are using git, you can also automatically configure the
+        # release based on the git info.
+        # 'release': raven.fetch_git_sha(os.path.abspath(os.pardir)),
+        'environment': os.environ.get('SERVER_ENVIRONMENT', 'local')
+        }
