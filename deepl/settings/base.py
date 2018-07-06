@@ -93,7 +93,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'deepl.wsgi.application'
 
 REST_FRAMEWORK = {
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning'
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    'DEFAULT_THROTTLE_CLASSES': (
+        'deepl.throttling.custom_throttling.DemoUserRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '50/day'
+    },
 }
 
 
