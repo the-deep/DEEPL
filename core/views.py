@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class HomePageView(APIView):
     def get(self, request):
-        user = request.user
+        # user = request.user
         # if not user.is_authenticated():
             # return redirect('/login')
         return render(request, 'main.html', {})

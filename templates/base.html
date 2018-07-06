@@ -24,14 +24,16 @@
     </head>
     <body>
         <div id="navbar">
-            <span id="logo">DEEPL</span><br>
+            <a href="/" style="text-decoration:none; color: #333"><span id="logo">DEEPL</span></a><br>
             <div class="row">
                 <div class="col-md-8">
                     <small id="tagline">A Humanitarian Natural Language Processing tool</small>
                 </div>
                 <div class="col-md-4 text-right">
                     {% if user.is_authenticated %}
-                    {{ user }} | <a href="/logout">logout</a>
+                        {{ user }} | <a href="/logout">Logout</a>
+                    {% else %}
+                        <a href="/login">Login</a>
                     {% endif %}
                 </div>
             </div>

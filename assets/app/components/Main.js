@@ -7,15 +7,14 @@ import {Link, Switch, Router, Route, hashHistory} from 'react-router-dom';
 
 export class Main extends React.Component {
     componentDidMount() {
-        console.log('fetching token');
         fetch('/api/token/', {
             credentials: "same-origin"
         })
         .then(response => response.json())
         .then(data => {
             localStorage.clear();
-            localStorage.setItem('api_token', data['api_token']);
-            localStorage.setItem('test_token', data['test_token']);
+            localStorage.setItem('api_token', data['api_token'] || '');
+            localStorage.setItem('test_token', data['test_token'] || '');
         });
     }
 
