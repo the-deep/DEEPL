@@ -1,10 +1,13 @@
 import React from 'react';
 
+import {API_LIMIT_MESSAGE} from '../Messages';
+
+
 export default class KeywordsExtractionForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            text: null
+            text: null,
         };
     }
 
@@ -22,21 +25,31 @@ export default class KeywordsExtractionForm extends React.Component {
             //headers: {'Content-Type':'application/x-www-form-urlencoded'},
             body: data
         })
-        .then(response => {return response.json()})
-        .then(data => {this.props.sendData(data);});
+        .then(response => {
+            if (response.status === 429) {
+                console.log('sending empty data');
+                const data = {'1grams': [], '2grams':[], message: API_LIMIT_MESSAGE};
+                console.log(data);
+                return data;
+            }
+            return response.json();
+        })
+        .then(data => {console.log('...'); return this.props.sendData(data);});
     }
 
     render () {
         return (
-            <form>
-                <div className="form-group">
-                    <label htmlFor="email"><b>Extract keywords from: </b></label>
-                    <textarea className="form-control" onChange={this.handleChange}></textarea><br/>
-                </div>
-                <div className="form-group">
-                    <button className="btn btn-success form-control" type="submit" onClick={this.handleSubmit}> Get Keywords</button>
-                </div>
-            </form>
+            <div>
+                <form>
+                    <div className="form-group">
+                        <label htmlFor="email"><b>Extract keywords from: </b></label>
+                        <textarea className="form-control" onChange={this.handleChange}></textarea><br/>
+                    </div>
+                    <div className="form-group">
+                        <button className="btn btn-success form-control" type="submit" onClick={this.handleSubmit}> Get Keywords</button>
+                    </div>
+                </form>
+            </div>
         );
     }
 };

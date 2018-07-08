@@ -8,7 +8,8 @@ export default class KeywordsExtraction extends React.Component {
         this.state = {
             data: {
                 '1grams': [],
-                '2grams': []
+                '2grams': [],
+                'message': ''
             },
             loaded: false,
         };
@@ -31,6 +32,7 @@ export default class KeywordsExtraction extends React.Component {
         return (
             <div className="row">
             <div className="col-md-6">
+                <h4 className="text-danger text-center">{this.state.data.message}</h4>
                 <KeywordsExtractionForm sendData={this.getData} />
             </div>
             <div className="col-md-3">

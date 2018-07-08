@@ -10,17 +10,11 @@ class CheckTokenMiddleware(object):
 
     def __call__(self, request, *args):
         if '/api/' in request.path and 'token' not in request.path:
-            if not request.user.is_authenticated():
-                token = request.META.get('HTTP_AUTHORIZATION')
-                if not token:
-                    return HttpResponse(
-                        json.dumps(
-                            {'message': 'Token not provided. Please provide token as API-Token header field.'}
-                        ),
-                        status=403,
-                        content_type='application/json'
-                    )
-                    token = token.replace('Token ', '')
+            token = request.META.get('HTTP_AUTHORIZATION')
+            if not request.user.is_authenticated() and not token:
+                # just let it pass, throttle will handle this
+                return self.get_response(request)
+            if token:
                 try:
                     token = token.replace('Token ', '')
                     tokenobj = Token.objects.get(token=token)
@@ -30,7 +24,7 @@ class CheckTokenMiddleware(object):
                         status=403,
                         content_type='application/json'
                     )
-            else:
+            elif request.user.is_authenticated():
                 # disable csrf checks
                 setattr(request, '_dont_enforce_csrf_checks', True)
                 # If user is authenticated, then use test token

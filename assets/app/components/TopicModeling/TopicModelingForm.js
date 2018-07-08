@@ -1,5 +1,7 @@
 import React from 'react';
 
+import {API_LIMIT_MESSAGE} from '../Messages';
+
 export default class TopicModelingForm extends React.Component {
     constructor(props) {
         super(props);
@@ -8,6 +10,7 @@ export default class TopicModelingForm extends React.Component {
             levels: 1,
             keywordsPerTopic: 3,
             numTopics: 2,
+            message: ''
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -52,7 +55,15 @@ export default class TopicModelingForm extends React.Component {
             //headers: {'Content-Type':'application/x-www-form-urlencoded'},
             body: data
         })
-        .then(response => {window.scrollTo(0,0);return response.json()})
+        .then(response => {
+            if (response.status === 429) {
+                this.setState({message: API_LIMIT_MESSAGE});
+                console.log(this.state);
+                return [];
+            }
+            window.scrollTo(0,0);
+            return response.json();
+        })
         .then(data => {this.props.sendData(data);});
     }
 
@@ -61,6 +72,7 @@ export default class TopicModelingForm extends React.Component {
         return (
             <div>
             <h3>Find Topics/Subtopics</h3>
+            <h4 className="text-center text-danger">{this.state.message}</h4>
             <form>
                 <div className="form-group">
                     <label><b>Num topics</b></label>

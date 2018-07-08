@@ -4,11 +4,16 @@ import React from 'react';
 export class TokensList extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            test_token: '', 
+            api_token: ''
+        };
     }
 
     componentWillMount() {
-        this.test_token = localStorage.getItem('test_token');
-        this.api_token = localStorage.getItem('api_token');
+        const test_token = localStorage.getItem('test_token') || 'Please Login.';
+        const api_token = localStorage.getItem('api_token') || 'Please Login.';
+        this.setState({test_token, api_token});
     }
 
     render() {
@@ -16,8 +21,8 @@ export class TokensList extends React.Component {
             <div className="row">
                 <div className="col-md-6">
                     <h3>My tokens</h3>
-                    <label> Test Token : </label> {this.test_token} <br/> <br/>
-                    <label> Api Token : </label> {this.api_token} <br/> <br/>
+                    <label> Test Token : </label> {this.state.test_token} <br/> <br/>
+                    <label> Api Token : </label> {this.state.api_token} <br/> <br/>
                 </div>
                 <div className="col-md-6">
                     <h3> About tokens </h3>
