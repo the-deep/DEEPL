@@ -1,0 +1,49 @@
+FROM ubuntu:16.04
+
+MAINTAINER bewakes bewakepandey@gmail.com
+
+# Update and install common packages with apt
+RUN apt-get update -y && \
+    apt-get install -y \
+        git \
+        locales \
+        vim \
+        curl \
+        cron \
+        python-dev \
+        python3 \
+        python3-dev \
+        python3-setuptools \
+        python3-pip \
+        # Required by cloudwatch scripts
+        unzip \
+        libwww-perl \
+        libdatetime-perl \
+        python3-tk \
+        # to automatically set java environment variables
+        unzip \
+        wget
+
+# Support utf-8
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+
+# Install uwsgi for django
+# RUN pip3 install uwsgi
+
+WORKDIR /code
+
+RUN pip3 install virtualenv
+RUN virtualenv /venv
+
+COPY requirements.txt /code/
+
+RUN . /venv/bin/activate && \
+    pip install -r requirements.txt
+
+RUN mkdir -p /code/nlp_data/nlp_indices/ /code/nlp_data/doc2vec_data \
+    /code/nlp_data/clustering
+
+COPY . /code/
+
+RUN echo "source /venv/bin/activate" >> ~/.bashrc
