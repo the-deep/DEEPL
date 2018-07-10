@@ -306,7 +306,7 @@ def keywords_correlation(*args, **kwargs):
 
 
 def subtopic_correlation(*args, **kwargs):
-    subtopics =  [
+    subtopics = [
         "Nutrition", "Shelter", "Agriculture", "Cross", "Protection",
         "WASH", "Livelihood", "NFI", "Logistic", "Health", "Food", "Education",
     ]
