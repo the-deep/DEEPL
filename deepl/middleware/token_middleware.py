@@ -17,26 +17,16 @@ class CheckTokenMiddleware(object):
     def __call__(self, request, *args):
         if '/api/' in request.path and 'token' not in request.path:
             token = request.META.get('HTTP_AUTHORIZATION')
+
             # Check if coming from localhost. If so, send static response
             host = request.META.get('HTTP_HOST', '')
             if settings.DEBUG and 'localhost' in host:
-                response = get_static_response(request)
-                if response is None:
-                    return HttpResponse(
-                        json.dumps(
-                            {'message': 'No static response for this url.'}
-                        ),
-                        status=410,  # 410 GONE
-                        content_type='application/json'
-                    )
-                else:
-                    return HttpResponse(
-                        json.dumps(response),
-                        content_type='application/json'
-                    )
+                return handle_localhost(request, self.get_response)
+
             if not request.user.is_authenticated() and not token:
                 # just let it pass, throttle will handle this
                 return self.get_response(request)
+
             if token:
                 try:
                     token = token.replace('Token ', '')
@@ -58,18 +48,44 @@ class CheckTokenMiddleware(object):
         return self.get_response(request)
 
 
+def handle_localhost(request, get_response):
+    """
+    Handles requests from localhost. This decides what to return,
+    to call view or not
+    """
+    response = get_static_response(request)
+    if response is None:
+        return HttpResponse(
+            json.dumps(
+                {'message': 'No static response for this url.'}
+            ),
+            status=410,  # 410 GONE
+            content_type='application/json'
+        )
+    elif isinstance(response, dict):
+        return HttpResponse(
+            json.dumps(response),
+            content_type='application/json'
+        )
+    else:
+        # means, pass it to the view, response is simple and does not require
+        # complex models and computations
+        return get_response(request)
+
+
 def get_static_response(request):
     url = request.path
-    m = re.match('/api/(v\d+/|)(.*)', url)
+    m = re.match('/api/(v\d+/|)(.*?)/.*', url)
     action = m.group(2)
-    # replace back slash
+    # replace forward slash
     if action[-1] == '/':
         action = action[:-1]
     action = action.replace('-', '_')
+    print(action)
     try:
         module = import_module('static_responses.{}'.format(action))
         if hasattr(module, 'static_data'):
-            data = module.static_data()
+            data = module.static_data(request)
             return data
         else:
             logger.warn("Module for static response found but no method static_data()")
