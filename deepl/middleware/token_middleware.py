@@ -1,6 +1,6 @@
 import re
+import os
 import json
-from django.conf import settings
 from django.http import HttpResponse
 from importlib import import_module
 
@@ -19,8 +19,7 @@ class CheckTokenMiddleware(object):
             token = request.META.get('HTTP_AUTHORIZATION')
 
             # Check if coming from localhost. If so, send static response
-            host = request.META.get('HTTP_HOST', '')
-            if settings.DEBUG and 'localhost' in host:
+            if os.environ.get('DUMMY_RESPONSES', 'False').lower() == 'true':
                 return handle_localhost(request, self.get_response)
 
             if not request.user.is_authenticated() and not token:

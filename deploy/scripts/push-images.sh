@@ -5,13 +5,14 @@ ROOT_DIR=$(dirname "$(dirname "$BASE_DIR")") # /code/
 
 DEEPL_SERVER_REPO='https://github.com/the-deep/DEEPL.git'
 
+echo TRAVIS BRANCH $TRAVIS_BRANCH
 # Ignore Pull requets
 if ! [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
     echo '[Travis Build] Pull request found ... exiting...'
     exit
 fi
 
-if [[ $TRAVIS_BRANCH == "develop" ]] || [[ $TRAVIS_BRANCH == "feature-local-api-resoponse" ]]; then
+if [[ $TRAVIS_BRANCH == "develop" ]] || [[ $TRAVIS_BRANCH == "feature-local-api-response" ]]; then
     # build and push to lite
     echo "PUSHING image for $TRAVIS_BRANCH branch"
     docker build --cache-from thedeep/deepl:latest-lite --tag thedeep/deepl:latest-lite . -f Dockerfile-lite
