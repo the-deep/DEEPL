@@ -11,8 +11,9 @@ if ! [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
     exit
 fi
 
-if [[ $TRAVIS_BRANCH == "develop" ]]; then
+if [[ $TRAVIS_BRANCH == "develop" ]] || [[ $TRAVIS_BRANCH == "feature-local-api-resoponse" ]]; then
     # build and push to lite
+    echo "PUSHING image for $TRAVIS_BRANCH branch"
     docker build --cache-from thedeep/deepl:latest-lite --tag thedeep/deepl:latest-lite . -f Dockerfile-lite
     docker push thedeep/deepl:latest-lite
 fi
