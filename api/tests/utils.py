@@ -20,7 +20,12 @@ def with_token_auth_tests(cls):
         # this is not used
         def no_test_test_no_token(self):
             client = APIClient()
-            # if not attribute called api_url do nothing
+            # Set invalid token, because no token is also
+            # accepted(but handled by throttling) client
+            client.credentials(
+                HTTP_AUTHORIZATION='Token invalid-token'
+            )
+            # If not attribute called api_url do nothing
             if not hasattr(self, 'api_url'):
                 return
             # try post
