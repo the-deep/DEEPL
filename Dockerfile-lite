@@ -27,7 +27,6 @@ RUN apt-get update -y && \
 # Support utf-8
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
-ENV DUMMY_RESPONSES True
 
 # Install uwsgi for django
 # RUN pip3 install uwsgi
@@ -49,5 +48,5 @@ COPY . /code/
 
 RUN echo "source /venv/bin/activate" >> ~/.bashrc
 
-RUN source /code/.nlp_env
-RUN sh /code/deploy/scripts/wait-for-it.sh db:5432 -- /code/deploy/scripts/run_develop.sh]
+ENV DUMMY_RESPONSES True
+CMD bash -c '/code/deploy/scripts/wait-for-it.sh db:5432 -- /code/deploy/scripts/run_develop.sh'
