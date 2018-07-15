@@ -133,10 +133,10 @@ def preprocess(inp, ignore_numbers=False):
     func = compose(
         ' '.join,
         str.split,
-        str.lower,
-        remove_punc_and_nums,
         lemmatize,
         rm_stop_words_txt,
+        str.lower,
+        remove_punc_and_nums,
         str
     )
     processed = func(inp)
