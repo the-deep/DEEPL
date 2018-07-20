@@ -1,6 +1,6 @@
 # import unittest
 
-from topic_modeling.lda import get_topics_and_subtopics
+from topic_modeling.lda import LDAModel
 
 
 def test_get_topics_and_subtopics():
@@ -14,7 +14,8 @@ def test_get_topics_and_subtopics():
     num_topics = 3
     depth = 2
     keywords_per_topic = 3
-    data = get_topics_and_subtopics(
+    lda = LDAModel()
+    data = lda.get_topics_and_subtopics(
         documents, num_topics, keywords_per_topic, depth
     )
     for name, topic in data.items():
@@ -41,3 +42,26 @@ def test_get_topics_and_subtopics():
                         isinstance(kw[1], float)
                 assert 'subtopics' in topic
     assert depth2, "At least one topic should have depth 2"
+
+
+def test_get_topics_correlation():
+    """Test  function ldaModel.get_topics_composition()"""
+    documents = [
+        "Exercise is good for health",
+        "An apple a day keeps the doctor away",
+        "Early to bed and early to rise makes a man healthy, wealthy and wise",
+    ]
+    num_topics = 3
+    keywords_per_topic = 3
+    lda = LDAModel()
+    correlation = lda.get_topics_correlation(
+        documents, num_topics, keywords_per_topic
+    )
+    assert isinstance(correlation, dict)
+    assert len(correlation.keys()) == num_topics
+    print(correlation)
+    for k, v in correlation.items():
+        assert len(v.keys()) == num_topics, "Each topic should have relation with all others including itself"
+        assert float(v[k]) >= 0.99999, "Should be aligned with itself"
+        for kk, vv in v.items():
+            assert vv <= 1.0

@@ -15,6 +15,7 @@ class TopicModelingModel(BaseModel):
     depth = models.IntegerField()
     ready = models.BooleanField(default=False)
     extra_info = JSONField(default={})
+    last_run_on = models.DateField(null=True)
 
     def __str__(self):
         return self.group_id
