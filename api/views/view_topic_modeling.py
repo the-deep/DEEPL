@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from topic_modeling.lda import get_topics_and_subtopics
+from topic_modeling.lda import LDAModel
 from topic_modeling.tasks import get_topics_and_subtopics_task
 from topic_modeling.models import TopicModelingModel
 from classifier.models import ClassifiedDocument
@@ -206,7 +206,8 @@ def v1_topic_modeling_handler(request):
             doc.text for doc in documents
         ]
 
-    lda_output = get_topics_and_subtopics(
+    lda = LDAModel()
+    lda_output = lda.get_topics_and_subtopics(
         params['documents'],
         params['number_of_topics'],
         params['keywords_per_topic'],

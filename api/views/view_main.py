@@ -27,6 +27,8 @@ from classifier.serializers import (
     ClassifiedExcerptSerializer,
 )
 from topic_modeling.keywords_extraction import get_key_ngrams
+from topic_modeling.models import TopicModelingModel
+from topic_modeling.tasks import get_topics_and_subtopics_task
 from NER.ner import get_ner_tagging
 from classifier.globals import get_classifiers
 
@@ -207,7 +209,6 @@ class ClassifiedDocumentView(APIView):
     def _validate_post_data(self, data):
         errors = {}
         items = data.get('items')
-        print('items', items)
         if not items:
             errors['items'] = 'items should be present'
         elif not isinstance(items, list):
@@ -456,7 +457,9 @@ class CorrelationView(APIView):
                 (x.classification_label, x.text)
                 for x in classified_docs
             ]
-        if entity == 'subtopics':
+        if entity == 'topics':
+            return self.get_topic_correlation(params)
+        elif entity == 'subtopics':
             try:
                 correlated_data = get_documents_correlation(classified_docs)
             except Exception:
@@ -472,11 +475,35 @@ class CorrelationView(APIView):
             correlated_data = {}
         return Response(correlated_data)
 
+    def get_topic_correlation(self, params):
+        gid = params.get('group_id')
+        if not gid:
+            return Response(
+                {'group_id': 'group_id should be present'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        model = TopicModelingModel.objects.filter(group_id=gid).first()
+        if not model or not model.ready:
+            # Send request to create model
+            if not model:
+                get_topics_and_subtopics_task.delay(gid)
+            return Response(
+                {'message': 'Correlation is being calculated'},
+                status=status.HTTP_202_ACCEPTED
+            )
+        else:
+            # Data ready
+            return Response(
+                {'topics_correlation': model.extra_info['topics_correlation']}
+            )
+
     def _validate_params(self, params):
         errors = {}
         doc_ids = params.get('doc_ids', [])
-        if not doc_ids or type(doc_ids) != list:
-            errors['doc_ids'] = 'Provide doc_ids. It should be a list of integers.'
+        group_id = params.get('group_id')
+        if not group_id and (not doc_ids or type(doc_ids) != list):
+            errors['doc_ids'] = 'Provide doc_ids. It should be a list of integers. Or provide group_id.'
+            errors['group_id'] = 'Provide group_id. Or provide doc_ids.'
         for x in doc_ids:
             try:
                 int(x)

@@ -17,7 +17,8 @@ def with_token_auth_tests(cls):
                 HTTP_AUTHORIZATION='Token ' + str(self.token.token)
             )
 
-        def test_no_token(self):
+        # this is not used
+        def no_test_test_no_token(self):
             client = APIClient()
             # if not attribute called api_url do nothing
             if not hasattr(self, 'api_url'):

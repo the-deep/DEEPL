@@ -36,33 +36,21 @@ class LDAModel:
         )
         topics = self.model.get_document_topics(self.corpus)
         # TODO: get topic names instead of just labels
-        document_topics = [x for x in topics]
+        document_topics = [dict(x) for x in topics]
         '''document_topics is now of the form
-            [[(0, 0.028578395456892954),
-            (1, 0.028590695375263975),
-            (2, 0.88566177734064022),
-            (3, 0.02859074725263475),
-            (4, 0.028578384574568121)],
-            [(0, 0.83994446267426459),
-            (1, 0.040021024978900019),
-            (2, 0.040005850180507181),
-            (3, 0.04002093774612768),
-            (4, 0.040007724420200605)]]
+            [ {0: <val>, 1:<val>...}, ...]
+            where each dict gives the composition of topic in the document
         We want vector of each topic'''
-        raw_vecs = zip(*document_topics)
-        '''Now, raw_vecs is something like this:
-        [((0, 0.028578395456892954),
-        (0, 0.83994446267426459),
-        (0, 0.040007682551798526)),
-        ((1, 0.028590695375263975),
-        (1, 0.040021024978900019),
-        (1, 0.040020920481166559)),
-        ((2, 0.88566177734064022),
-        (2, 0.040005850180507181),
-        (2, 0.040005803525886292))]
-        We want to remove first element from each tuple'''
-        vectors = [np.asarray([y for x, y in each]) for each in raw_vecs]
-        # now normalize
+        # initialize with zero
+        vectors = [
+            [0.0 for _ in range(len(documents))]
+            for _ in range(num_topics)
+        ]
+        for doc_ind, composition in enumerate(document_topics):
+            for topic_id, value in composition.items():
+                vectors[topic_id][doc_ind] = value
+        vectors = [np.asarray(x) for x in vectors]
+        # normalize vectors
         normalized_vectors = [x/np.linalg.norm(x) for x in vectors]
         # now ready for calculation of correlation
         correlation = {}
@@ -71,8 +59,8 @@ class LDAModel:
             key = 'Topic {}'.format(i+1)
             correlation[key] = {}
             for j in range(0, size):
-                correlation[key]['Topic {}'.format(j+1)] =\
-                        np.dot(x, normalized_vectors[j])
+                correlation[key]['Topic {}'.format(j+1)] = (
+                        np.dot(x, normalized_vectors[j]))
         return correlation
 
 

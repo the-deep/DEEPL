@@ -347,3 +347,45 @@ class TestTopicModelingAPIV2(APITestCase):
                 assert isinstance(kw[1], int) or isinstance(kw[1], float)
             assert 'subtopics' in topic
             assert not topic['subtopics']  # only one depth
+
+
+class TestTopicsCorrelation(APITestCase):
+    """Test cases for topic correlation"""
+    fixtures = [
+        'fixtures/test_base_models.json',
+        'fixtures/classifier.json',
+        'fixtures/test_classified_docs.json',
+    ]
+
+    def setUp(self):
+        self.url = '/api/topics/correlation/'
+        self.group_id = ClassifiedDocument.objects.last().group_id
+
+    def test_no_group_id(self):
+        params = {}
+        resp = self.client.post(self.url, params)
+        assert resp.status_code == 400
+        data = resp.json()
+        assert 'group_id' in data
+
+    def test_topic_correlation_not_ready(self):
+        params = {'group_id': self.group_id}
+        resp = self.client.post(self.url, params)
+        assert resp.status_code == 202
+        data = resp.json()
+        assert 'message' in data
+
+    def test_topic_correlation_ready(self):
+        params = {'group_id': self.group_id}
+        # create a model, whose content will be returned by the api
+        get_topics_and_subtopics_task(self.group_id)
+        resp = self.client.post(self.url, params)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert 'topics_correlation' in data
+        correlation = data['topics_correlation']
+        assert isinstance(correlation, dict)
+        for k, v in correlation.items():
+            assert isinstance(v, dict)
+            for kk, vv in v.items():
+                assert isinstance(vv, float)
