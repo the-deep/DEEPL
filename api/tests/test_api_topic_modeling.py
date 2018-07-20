@@ -386,6 +386,7 @@ class TestTopicsCorrelation(APITestCase):
         correlation = data['topics_correlation']
         assert isinstance(correlation, dict)
         for k, v in correlation.items():
+            assert 'topic ' not in k.lower(), "Tocpic name should be real"
             assert isinstance(v, dict)
             for kk, vv in v.items():
                 assert isinstance(vv, float)

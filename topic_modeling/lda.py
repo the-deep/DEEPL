@@ -35,13 +35,18 @@ class LDAModel:
             documents, num_topics, num_words, depth=1
         )
         topics = self.model.get_document_topics(self.corpus)
-        # TODO: get topic names instead of just labels
         document_topics = [dict(x) for x in topics]
         '''document_topics is now of the form
             [ {0: <val>, 1:<val>...}, ...]
             where each dict gives the composition of topic in the document
         We want vector of each topic'''
-        # initialize with zero
+        topic_names = []
+        for x in range(num_topics):
+            data = self.topics_subtopics['Topic {}'.format(x)]
+            topic_names.append(
+                data['keywords'][0][0]  # get the first keyword
+            )
+        # initialize topic vectors with zero
         vectors = [
             [0.0 for _ in range(len(documents))]
             for _ in range(num_topics)
@@ -56,10 +61,10 @@ class LDAModel:
         correlation = {}
         size = len(normalized_vectors)
         for i, x in enumerate(normalized_vectors):
-            key = 'Topic {}'.format(i+1)
+            key = topic_names[i]
             correlation[key] = {}
             for j in range(0, size):
-                correlation[key]['Topic {}'.format(j+1)] = (
+                correlation[key][topic_names[j]] = (
                         np.dot(x, normalized_vectors[j]))
         return correlation
 
