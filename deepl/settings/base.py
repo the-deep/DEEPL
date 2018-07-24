@@ -98,7 +98,7 @@ REST_FRAMEWORK = {
         'deepl.throttling.custom_throttling.DemoUserRateThrottle',
     ),
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '50/day'
+        'anon': '{}/day'.format(os.environ.get('THROTTLE_RATE', 300))
     },
 }
 

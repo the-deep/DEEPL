@@ -1,9 +1,5 @@
 import numpy as np
-# from helpers.common import preprocess
-
-def preprocess(input):
-    table = str.maketrans('', '', '.!?`-')
-    return input.translate(table)
+from helpers.common import preprocess, text_to_sentences
 
 
 def page_rank(matrix, epsilon=0.001, d=0.85, max_iter=200):
@@ -60,7 +56,9 @@ def summarize_text(text, num_sentences=4):
     @text: text to be summarized
     """
     # get sorted sentence_ranks
-    sentences = [x.strip() for x in text.split('.')]
+    sentences = [x.strip() for x in text_to_sentences(text.strip())]
+    if len(sentences) < 4:
+        return ''
     sentences_rank = text_rank(sentences)
     imp_sentences = sentences_rank[:num_sentences]
     # now we have important sentences, order them as in the original text

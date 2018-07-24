@@ -186,6 +186,10 @@ def classification_confidence(classification_probabilities):
     return (maxprob - numrev)/(1. - numrev) or MIN_CONFIDENCE
 
 
+def text_to_sentences(text):
+    return re.findall('\W*.*?[\.!\?]', text)
+
+
 def get_keywords_from_docs(docs):
     """
     @docs: [<tokenized texts> ... ]
