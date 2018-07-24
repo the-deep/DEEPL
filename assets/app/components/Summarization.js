@@ -60,7 +60,7 @@ export default class Summarization extends React.Component {
                                 className="btn btn-success form-control"
                                 type="submit"
                                 onClick={this.handleSubmit}
-                            > Get Keywords
+                            > Get Summary
                             </button>
                         </div>
                     </form>
