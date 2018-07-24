@@ -12,8 +12,8 @@ class SummarizationView(APIView):
     """
     API for text summarization
     """
-    def get(self, request):
-        data = dict(request.query_params.items())
+    def post(self, request):
+        data = dict(request.data.items())
         validation = validate_summarization_data(data)
         if not validation['status']:
             return Response(
