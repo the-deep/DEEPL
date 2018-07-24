@@ -2,6 +2,7 @@ import React from 'react';
 import Classification from './Classification';
 import TopicModeling from './TopicModeling';
 import KeywordsExtraction from './KeywordsExtraction';
+import Summarization from './Summarization';
 import TokensList from './TokensList';
 import {Link, Switch, Router, Route, hashHistory} from 'react-router-dom';
 
@@ -24,7 +25,8 @@ export class Main extends React.Component {
                 <ul className="nav-menu">
                     <li><Link to="/classification"><b>Classify</b></Link> | </li>
                     <li><Link to="/topic-modeling"><b>Topic Modeling</b></Link> | </li>
-                    <li><Link to="/keywords-extraction"><b>Keywords Extraction</b></Link> || </li>
+                    <li><Link to="/keywords-extraction"><b>Keywords Extraction</b></Link> | </li>
+                    <li><Link to="/summarization"><b>Summarization</b></Link> || </li>
                     <li><Link to="/tokens"><b>My Tokens</b></Link></li>
                 </ul>
                 <Switch>
@@ -32,6 +34,7 @@ export class Main extends React.Component {
                     <Route path='/classification' component={Classify}/>
                     <Route path='/topic-modeling' component={TopicModeling}/>
                     <Route path='/keywords-extraction' component={KeywordsExtraction}/>
+                    <Route path='/summarization' component={Summarization}/>
                     <Route path='/tokens' component={TokensList}/>
                 </Switch>
             </main>

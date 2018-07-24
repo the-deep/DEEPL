@@ -34,7 +34,7 @@ export default class KeywordsExtractionForm extends React.Component {
             }
             return response.json();
         })
-        .then(data => {console.log('...'); return this.props.sendData(data);});
+        .then(data => {return this.props.sendData(data);});
     }
 
     render () {
@@ -42,7 +42,7 @@ export default class KeywordsExtractionForm extends React.Component {
             <div>
                 <form>
                     <div className="form-group">
-                        <label htmlFor="email"><b>Extract keywords from: </b></label>
+                        <label><b>Extract keywords from: </b></label>
                         <textarea className="form-control" onChange={this.handleChange}></textarea><br/>
                     </div>
                     <div className="form-group">

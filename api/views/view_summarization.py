@@ -31,7 +31,7 @@ class SummarizationView(APIView):
         else:
             text = data.get('text')
         return Response(
-            {'summary': summarize_text(text)}
+            {'summary': summarize_text(text, ratio=0.1)}
         )
 
 
