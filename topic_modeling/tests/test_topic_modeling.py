@@ -62,6 +62,6 @@ def test_get_topics_correlation():
     print(correlation)
     for k, v in correlation.items():
         assert len(v.keys()) == num_topics, "Each topic should have relation with all others including itself"
-        assert float(v[k]) >= 0.99999, "Should be aligned with itself"
+        assert round(float(v[k]), 5) >= 0.99999, "Should be aligned with itself"
         for kk, vv in v.items():
-            assert vv <= 1.0
+            assert round(vv, 5) <= 1.0

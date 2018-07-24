@@ -2,8 +2,9 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from gensim.summarization import summarize as summarize_text
+
 from helpers.common import text_to_sentences
-from summarization.textrank import summarize_text
 from classifier.models import ClassifiedDocument
 
 
