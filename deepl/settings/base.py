@@ -216,7 +216,7 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
 
 CELERY_BEAT_SCHEDULE = {
     'topic_modeling_every_other_day': {
-        'task': 'topic_modeling.tasks.get_topics_and_subtopics_task',
+        'task': 'topic_modeling.tasks.get_topics_task',
         'schedule': crontab(day_of_week='*/2'),
     }
 }
