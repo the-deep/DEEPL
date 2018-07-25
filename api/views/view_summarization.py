@@ -30,8 +30,11 @@ class SummarizationView(APIView):
             text = qs[0].text
         else:
             text = data.get('text')
+        summarized = summarize_text(text, ratio=0.33)
+        if not summarized:
+            summarized = summarize_text(text, ratio=0.67)
         return Response(
-            {'summary': summarize_text(text, ratio=0.33)}
+            {'summary': summarized}
         )
 
 

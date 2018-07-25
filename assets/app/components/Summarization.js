@@ -33,9 +33,15 @@ export default class Summarization extends React.Component {
                 const data = {summary: null, message: API_LIMIT_MESSAGE};
                 return data;
             }
+            else if (response.status === 400) {
+                response.json().then(data => {
+                    const key = Object.keys(data)[0];
+                    this.setState({summary: null, message: data[key]});
+                });
+                return {};
+            }
             else if (response.status !== 200) {
-                const data = {summary: null, message: response.text}
-                return data;
+                return {summary: null, message: response.text()};
             }
             return response.json();
         })
@@ -70,7 +76,7 @@ export default class Summarization extends React.Component {
                         <div>
                             <div className="col-md-6">
                                 <h4 className="text-danger text-center">
-                                    {this.state.data.message} 
+                                    {this.state.message} 
                                 </h4>
                             </div>
                         </div>
