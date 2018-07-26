@@ -58,6 +58,7 @@ export default class Summarization extends React.Component {
                             <textarea
                                 className="form-control"
                                 onChange={this.handleTextChange}
+                                rows="20"
                             >
                             </textarea><br/>
                         </div>
