@@ -69,6 +69,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'deepl.middleware.token_middleware.CheckTokenMiddleware',
 ]
+# Because, testcases are in snakecase. The env var is set while running test
+if os.environ.get('NO_CAMELCASE_MIDDLEWARE') is None:
+    MIDDLEWARE.append(
+        'deepl.middleware.camelcase_middleware.CamelCaseMiddleware',
+    )
 
 CORS_ORIGIN_ALLOW_ALL = True
 

@@ -289,7 +289,7 @@ class KeywordsExtractionView(APIView):
 class ApiVersionsView(APIView):
     def get(self, request):
         versions = ClassifierModel.objects.values("version", "accuracy")
-        return Response({"versions": versions})
+        return Response({"versions": list(versions)})
 
 
 class RecommendationView(APIView):
@@ -422,7 +422,6 @@ class NERWithDocIdView(APIView):
 
     def _validate_ner_params(self, data):
         errors = {}
-        print(data)
         doc_ids = data.get('doc_ids')
         if not doc_ids:
             errors['doc_ids'] = "Missing doc_ids to be NER tagged"

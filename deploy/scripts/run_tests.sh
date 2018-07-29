@@ -10,10 +10,10 @@ if [ "$CI" == "true" ]; then
     python -c "import nltk; nltk.download('punkt')"
     python -c "import nltk; nltk.download('averaged_perceptron_tagger')"
     pip install codecov
-    coverage run -m pytest
+    NO_CAMELCASE_MIDDLEWARE=true coverage run -m pytest  # because all test cases have snakecase
     coverage report
     coverage html
     codecov
 else
-    pytest
+    NO_CAMELCASE_MIDDLEWARE=true pytest
 fi
