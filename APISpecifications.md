@@ -405,3 +405,30 @@ Response will be list of doc_ids of similar docs
     ]
 }
 </pre>
+
+## [POST] /api/summarization/
+#### Purpose: to summarize a document
+#### Content-Type: application/json
+#### Params:
+- text[optional]: the text to be summarized
+- doc_id[optional]: document id whose corresponding text is to be summarized
+**NOTE** One of *text* or *doc_id* should be present. If both present, *doc_id* will have precedence.
+#### Sample Request:
+<pre>
+{
+    "text": "This is a text to be summarized. But needs to be a bit longer."
+}
+</pre>
+**OR,**
+<pre>
+{
+  "doc_id": 123
+}
+</pre>
+
+#### Sample Response Body:
+<pre>
+{
+    "summary": "this is the summary of the text"
+}
+</pre>
