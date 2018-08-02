@@ -61,6 +61,8 @@ RUN . /venv/bin/activate && \
     python -c "import nltk; nltk.download('punkt')" && \
     python -c "import nltk; nltk.download('averaged_perceptron_tagger')"
 
+RUN pip3 install uwsgi
+
 RUN mkdir -p /code/nlp_data/nlp_indices/ /code/nlp_data/doc2vec_data \
     /code/nlp_data/clustering
 
