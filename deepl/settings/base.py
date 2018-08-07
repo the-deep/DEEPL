@@ -223,6 +223,10 @@ CELERY_BEAT_SCHEDULE = {
     'topic_modeling_every_other_day': {
         'task': 'topic_modeling.tasks.get_topics_task',
         'schedule': crontab(day_of_week='*/2'),
+    },
+    'topic_modeling_rerun_all': {
+        'task': 'topic_modeling.tasks.rerun_topic_modeling',
+        'schedule': crontab(day_of_week='*/3'),
     }
 }
 
