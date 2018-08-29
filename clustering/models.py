@@ -123,7 +123,7 @@ class ClusteringModel(BaseModel):
         )
         data_resource = Resource(data_path, Resource.FILE)
         raw = data_resource.get_data()
-        if not raw:
+        if raw:
             return json.loads(raw)
         # compute and write to file
         data = self.compute_relevant_terms()

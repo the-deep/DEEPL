@@ -69,14 +69,28 @@ def create_clusters_task(*args, **kwargs):
 
 
 @app.task
-def recluster(group_id, num_clusters):
-    try:
-        cluster_model = ClusteringModel.objects.get(
-            group_id=group_id,
-            n_clusters=num_clusters
+def recluster_all_models():
+    for cluster_model in ClusteringModel.objects.all():
+        # get classified docs after model's last clustering start date
+        docs = ClassifiedDocument.objects.filter(
+            created_on__gt=cluster_model.last_clustering_started
         )
+        logger.info("RECLUSTER_ALL_MODELS. new_docs_size = {}".format(
+            docs.count()
+        ))
+        if docs.count() < cluster_model.n_clusters:
+            # not enough docs added for reclustering
+            logger.info("NOT enough docs for reclustering")
+            continue
+        recluster(cluster_model)
+
+
+def recluster(cluster_model):
+    try:
         updated_model = perform_clustering(cluster_model)
-        size = ClassifiedDocument.objects.filter(group_id=group_id).count()
+        size = ClassifiedDocument.objects.filter(
+            group_id=cluster_model.group_id
+        ).count()
         write_clustered_data_to_files(updated_model, size)
         return True
     except Exception as e:
@@ -204,7 +218,7 @@ def update_cluster(cluster_id):
     # TODO: add update criteria for doc2vec
 
     # update status
-    cluster_model.ready = False
+    # cluster_model.ready = False
     cluster_model.last_clustering_started = timezone.now()
     cluster_model.save()
 
