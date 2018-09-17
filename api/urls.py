@@ -16,6 +16,7 @@ from api.views import (
     ClassifiedDocumentView,
     TokenView,
     SummarizationView,
+    FuzzySearchView,
 )
 
 urlpatterns = [
@@ -27,6 +28,7 @@ urlpatterns = [
     url(r'^keywords-extraction/$', KeywordsExtractionView.as_view()),
     url(r'^recommendation/$', RecommendationView.as_view()),
     url(r'^(?P<entity>[a-zA-Z\.]+)/correlation/$', CorrelationView.as_view()),
+    url(r'^fuzzy-search/(?P<type>[a-zA-Z\.]+)/$', FuzzySearchView.as_view()),
     url(r'^similarity/$', DocsSimilarityView.as_view()),
     url(r'^similardocs/$', SimilarDocsView.as_view()),
     url(r'^cluster/$', ClusteringView.as_view()),
