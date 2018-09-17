@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import status, exceptions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -23,13 +23,8 @@ class FuzzySearchView(APIView):
             )
 
         data = dict(request.query_params.items())
-        validation = self.validate(data)
+        self.validate(data)
 
-        if not validation['status']:
-            return Response(
-                validation['errors'],
-                status=status.HTTP_400_BAD_REQUEST
-            )
         return Response({
             'matches': find_matching(data['query'], type)
         })
@@ -41,11 +36,4 @@ class FuzzySearchView(APIView):
         if len(query) < 3:
             errors['query'] = 'query should not be empty and be at least 3 characters long.'  # noqa
         if errors:
-            return {
-                'status': False,
-                'errors': errors
-            }
-        return {
-            'status': True,
-            'data': data
-        }
+            raise exceptions.ValidationError(errors)

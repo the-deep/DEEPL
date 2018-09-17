@@ -63,7 +63,7 @@ class TestCreateClusters(APITestCase):
         create_new_clusters(self.cluster_name, self.group_id, self.n_clusters)
         assert ClusteringModel.objects.all().count() == 1
         model = ClusteringModel.objects.last()
-        recluster(model.group_id, model.n_clusters)
+        recluster(model)
         newmodel = ClusteringModel.objects.last()
         assert newmodel.ready
         assert newmodel.last_clustering_started > model.last_clustering_started
