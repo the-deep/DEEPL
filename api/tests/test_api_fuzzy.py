@@ -43,14 +43,12 @@ class TestFuzzyCountrySearchAPI(APITestCase):
         assert response.status_code == 200, 'There should be a result'
         data = response.json()
         assert isinstance(data, dict)
-        assert 'matches' in data
-        for match in data['matches']:
+        assert 'results' in data
+        for match in data['results']:
             assert isinstance(match, dict)
-            assert 'label' in match
+            assert 'name' in match
             assert 'similarity' in match
             sim = match['similarity']
             assert isinstance(sim, int) or isinstance(sim, float)
-            assert 'extra' in match
-            assert isinstance(match['extra'], dict)
-            assert 'iso2' in match['extra']
-            assert 'iso3' in match['extra']
+            assert 'iso2' in match
+            assert 'iso3' in match

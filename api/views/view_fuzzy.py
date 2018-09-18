@@ -2,7 +2,7 @@ from rest_framework import status, exceptions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from fuzzy.levenshtein import find_matching
+from fuzzy.search import get_most_matching
 
 
 import logging
@@ -26,7 +26,7 @@ class FuzzySearchView(APIView):
         self.validate(data)
 
         return Response({
-            'matches': find_matching(data['query'], type)
+            'results': get_most_matching(data['query'], type)
         })
 
     def validate(self, data):

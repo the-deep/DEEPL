@@ -1,6 +1,3 @@
-from fuzzy.data import country
-
-
 def levenshtein_distance(a, b):
     alen = len(a)
     blen = len(b)
@@ -23,14 +20,32 @@ def levenshtein_distance(a, b):
     return distance[blen][alen]
 
 
-def most_matching(word, corpus, max=10):
+def most_matching(word, corpus, key=lambda x: x, num_matches=10):
+    """
+    Find most matching keywords from corpus.
+    @word: the query word to be matched
+    @corpus: list of objects which are to be matched
+    @key: function that accesses the value to be compared, as corpus can have
+    @num_matches: number of matches
+    objests of any kind, not only string
+
+    Returns: ([matching words], [corresponding similarity scores])
+    """
     wlen = len(word)
     word = word.lower()
-    matching = [corpus[0]] * max
-    matching_dists = [999] * max
+
+    if not corpus:
+        return [], []
+
+    # set matching to the value of first item in corpus
+    first_dist = levenshtein_distance(word, key(corpus[0]).lower())
+
+    matching = [corpus[0]] * num_matches
+    matching_dists = [first_dist] * num_matches
 
     for ref in corpus[1:]:
-        dist = levenshtein_distance(word, ref['label'].lower())
+        dist = levenshtein_distance(word, key(ref).lower())
+
         if dist > matching_dists[-1]:
             continue
         elif dist < matching_dists[0]:
@@ -45,18 +60,5 @@ def most_matching(word, corpus, max=10):
             # insert at index i
             matching_dists = matching_dists[:i] + [dist] + matching_dists[i:-1]
             matching = matching[:i] + [ref] + matching[i:-1]
-    return [
-        {
-            **x,
-            'similarity': wlen/(matching_dists[i]+wlen)
-        } for (i, x) in enumerate(matching)
-    ]
 
-
-def find_matching(word, type):
-    if type == 'country':
-        corpus = country.get_data()
-        matching = most_matching(word, corpus)
-    else:
-        matching = []
-    return matching
+    return matching, [wlen/(x + wlen) for x in matching_dists]
