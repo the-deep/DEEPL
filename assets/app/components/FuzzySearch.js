@@ -84,9 +84,9 @@ export default class FuzzySearch extends React.Component {
                                             <h3>Country matches for '{this.state.query}'</h3>
                                             <ul>
                                                 {
-                                                    this.state.result.matches.map((x) => (
+                                                    this.state.result.results.map((x) => (
                                                         <li>
-                                                            <b>{x.label}</b> -> {parseInt(x.similarity*10000)/100}%
+                                                            <b>{x.name}</b> -> {parseInt(x.similarity*10000)/100}%
                                                         </li>
                                                     ))
                                                 }
