@@ -1,36 +1,9 @@
 ## Local Setup
-In docker-compose file, use the the following:
-- image: thedeep/deepl:latest-lite
-- volumes: nlp_data:/nlp_data
-- ports:  '8010:8000'
-- depends_on: db
-db should be a postgres9.6 image
 
-And in env_file, have the following values:
-```
-NLP_INDICES_PATH=/code/nlp_data/nlp_indices/
-DEEPL_CLSUTERED_DOCS_LABEL_LOCATION=/code/nlp_data/clustered_docs_label.data
-DEEPL_CLUSTERING_DATA_LOCATION=/code/nlp_data/clustering/
-
-DOC2VEC_MODELS_LOCATION=/code/nlp_data/doc2vec_data/
-
-DB_NAME=postgres
-DB_HOST=db
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_PORT=5432
-
-USE_PAPERTRAIL=False
-EBS_HOSTNAME=deepl
-EBS_ENV_TYPE=
-PAPERTRAIL_HOST=
-PAPERTRAIL_PORT=
-
-CLASSPATH=/nlp_resources/stanford-ner-2018-02-27/
-STANFORD_MODELS=/nlp_resources/stanford-ner-2018-02-27/classifiers/
-
-CI=true
-
-SENTRY_DSN=
-SERVER_ENVIRONMENT=local
-```
+- Clone the repository: https://github.com/the-deep/DEEPL
+- Have [docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/install/) installed.
+- `cd` to the DEEPL project directory and run `docker-compose up`. This should download and prepare images and might take some time since this is the first time.
+- The server should be running on port `8010`.
+- We don't have any models right now. So, run the command `docker-compose exec web bash`. This will take you inside the server's container.
+- Now create a classifier model by issuing command `./manage.py runscript create_classifier --model_version=1`. This will create a classifier model using the data from `https://docs.docker.com/compose/install/`.
+- Although DEEPL is completely [api based](https://github.com/the-deep/DEEPL/blob/develop/APISpecifications.md), there is a simple frontend to get a brief idea of how things are. It is running at port `8010`.
