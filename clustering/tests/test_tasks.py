@@ -66,8 +66,9 @@ class TestCreateClusters(APITestCase):
         recluster(model)
         newmodel = ClusteringModel.objects.last()
         assert newmodel.ready
-        assert newmodel.last_clustering_started > model.last_clustering_started
-        assert newmodel.last_clustered_on > model.last_clustered_on
+        assert newmodel.last_clustering_started \
+            >= model.last_clustering_started
+        assert newmodel.last_clustered_on >= model.last_clustered_on
         # also check size vs cluster score file created
         data = model.get_cluster_score_vs_size_data()
         assert data is not None

@@ -85,6 +85,16 @@ def recluster_all_models():
         recluster(cluster_model)
 
 
+@app.task
+def recluster_model(model_id):
+    try:
+        model = ClusteringModel.objects.get(pk=model_id)
+    except ClusteringModel.DoesNotExist:
+        return True
+    recluster(model)
+    return True
+
+
 def recluster(cluster_model):
     try:
         updated_model = perform_clustering(cluster_model)

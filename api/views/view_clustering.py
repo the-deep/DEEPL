@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from clustering.models import ClusteringModel
 from clustering.serializers import ClusteringModelSerializer
-from clustering.tasks import create_clusters_task, recluster
+from clustering.tasks import create_clusters_task, recluster_model
 from classifier.models import ClassifiedDocument
 
 
@@ -168,7 +168,7 @@ class ReClusteringView(APIView):
         # now call to do reclustering
         cluster_model.ready = False
         cluster_model.save()
-        recluster.delay(grp_id, num_clusters)
+        recluster_model.delay(cluster_model.id)
         return Response(
             {'message': 'Reclustering in progress.'},
             status=status.HTTP_202_ACCEPTED
