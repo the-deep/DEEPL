@@ -1,3 +1,6 @@
+import math
+
+
 def levenshtein_distance(a, b):
     alen = len(a)
     blen = len(b)
@@ -44,7 +47,13 @@ def most_matching(word, corpus, key=lambda x: x, num_matches=10):
     matching_dists = [first_dist] * num_matches
 
     for ref in corpus[1:]:
-        dist = levenshtein_distance(word, key(ref).lower())
+        refwords = key(ref).lower().split()
+        size = len(refwords)
+        dist = min([
+            # Add log to account for other words in the name which do not match
+            levenshtein_distance(word, refword) + math.log(size)
+            for refword in refwords
+        ])
 
         if dist > matching_dists[-1]:
             continue
