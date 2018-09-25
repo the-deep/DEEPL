@@ -11,9 +11,8 @@ class BaseModel(models.Model):
     NOTE: There exists another base model but unfortunately abstract=True
     was not set
     """
-    idx = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
-    created_on = models.DateTimeField(editable=False)
-    modified_on = models.DateTimeField()
+    created_on = models.DateTimeField(editable=False, default=timezone.now)
+    modified_on = models.DateTimeField(default=timezone.now)
 
     def save(self, *args, **kwargs):
         """Override to upate created_on and modified_on"""
@@ -26,7 +25,7 @@ class BaseModel(models.Model):
         abstract = True
 
 
-class Country(models.Model):
+class Country(BaseModel):
     name = models.CharField(max_length=100)
     iso2 = models.CharField(max_length=2)
     iso3 = models.CharField(max_length=3)

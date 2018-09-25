@@ -19,8 +19,8 @@ def populate_countries(apps, schema_editor):
     Country.objects.bulk_create([
         Country(
             name=info['label']['default'],
-            iso2=info['iso2'] or '',
-            iso3=info['iso3'] or '',
+            iso2=info.get('iso2') or '',
+            iso3=info.get('iso3') or '',
         )
         for info in countries_info
     ])
