@@ -15,7 +15,7 @@ if [[ $INSTANCE_TYPE != 'CELERY' ]]; then
     /code/node_modules/webpack-cli/bin/webpack.js 
     python manage.py collectstatic
     python manage.py migrate --no-input
-    uwsgi --ini $ROOT_DIR/deploy/configs/uwsgi.ini # Start uwsgi server
+    uwsgi --ini $ROOT_DIR/deploy/uwsgi.ini # Start uwsgi server
     # python manage.py runserver 0.0.0.0:8000
 else
     celery -A deepl worker -l info
