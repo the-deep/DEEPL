@@ -23,6 +23,18 @@ def levenshtein_distance(a, b):
     return distance[blen][alen]
 
 
+def get_max_n_grams(wlist, max_n):
+    grams = []
+    for x in range(max_n):
+        grams.extend(get_n_gram(wlist, x+1))
+    return grams
+
+
+def get_n_gram(wordlist, n):
+    sublists = [wordlist[x:] for x in range(n)]
+    return list(zip(*sublists))
+
+
 def most_matching(word, corpus, key=lambda x: x, num_matches=10):
     """
     Find most matching keywords from corpus.
@@ -46,14 +58,31 @@ def most_matching(word, corpus, key=lambda x: x, num_matches=10):
     matching = [corpus[0]] * num_matches
     matching_dists = [first_dist] * num_matches
 
+    querywords = word.split()
+    wordsize = len(querywords)
+    word_ngrams = get_max_n_grams(querywords, wordsize)
+
     for ref in corpus[1:]:
-        refwords = key(ref).lower().split()
-        size = len(refwords)
+        refword = key(ref).lower()
+        refwords = refword.split()
+
+        refsize = len(refwords)
+
+        ref_ngrams = get_max_n_grams(refwords, wordsize)
+
+        # Compare with whole ref word
+        whole_dist = levenshtein_distance(word, refword)
+        # Compare with splitted ref words
         dist = min([
             # Add log to account for other words in the name which do not match
-            levenshtein_distance(word, refword) + math.log(size)
-            for refword in refwords
+            levenshtein_distance(
+                ' '.join(word), ' '.join(refword)
+            ) + math.log(refsize/len(refword))
+
+            for refword in ref_ngrams
+            for word in word_ngrams
         ])
+        dist = dist if dist < whole_dist else whole_dist
 
         if dist > matching_dists[-1]:
             continue
