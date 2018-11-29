@@ -5,6 +5,8 @@ from helpers.deep import get_processed_data
 from helpers.create_classifier import create_classifier_model
 
 from api.tests.utils import with_token_auth_tests
+from NER.models import NERCache
+from NER.ner import get_ner_tagging_doc
 
 
 @with_token_auth_tests
@@ -42,19 +44,16 @@ class TestNERwithDocsAPI(APITestCase):
     """
     Tests for Keywords Named Entity Recognition API
     """
+    fixtures = [
+        'fixtures/classifier.json',
+        'fixtures/test_classified_docs.json',
+        'fixtures/test_base_models.json',
+    ]
+
     def setUp(self):
         self.url = '/api/ner-docs/'
-        self.classifier_model = self._get_model(1)
-        self.classifier_model.save()
-        txt = "Kathmandu is the capital of Nepal; Mohummad Ali was a boxer"
-        self.classified_doc = ClassifiedDocument.objects.create(
-            text="Kathmandu is the capital of Nepal; Mohummad Ali was a boxer",
-            classifier=self.classifier_model,
-            confidence=0.2,
-            classification_label="ABC",
-            classification_probabilities=self.classifier_model.classifier.
-                classify_as_label_probs(txt)
-        )
+        self.classified_doc = ClassifiedDocument.objects.last()
+        NERCache.objects.all().delete()
 
     def test_ner_docs_no_params(self):
         params = {}
@@ -115,7 +114,7 @@ class TestNERwithDocsAPI(APITestCase):
             assert 'lng' in geometry['location']
             assert 'viewport' in geometry
 
-    def test_cached(self):
+    def itest_location_cached(self):
         params = {
             'doc_ids': [self.classified_doc.id]
         }
@@ -133,6 +132,46 @@ class TestNERwithDocsAPI(APITestCase):
             assert 'info' in location
             assert 'cached' in location['info']
             assert location['info']['cached'] is True
+
+    def test_ner_not_cached(self):
+        # first remove cache
+        NERCache.objects.all().delete()
+        params = {
+            'doc_ids': [self.classified_doc.id]
+        }
+        response = self.client.post(self.url, params)
+        data = response.json()
+        assert isinstance(data, dict)
+        assert 'locations' in data
+        # assert 'cached' in data
+        # assert data['cached'] is False
+        locations = data['locations']
+        assert isinstance(locations, list)
+        for location in locations:
+            assert 'name' in location
+            assert 'info' in location
+            assert 'cached' in location['info']
+
+    def test_ner_cached(self):
+        # first remove cache
+        NERCache.objects.all().delete()
+        # create cache
+        get_ner_tagging_doc(self.classified_doc.id)
+        params = {
+            'doc_ids': [self.classified_doc.id]
+        }
+        response = self.client.post(self.url, params)
+        data = response.json()
+        assert isinstance(data, dict)
+        assert 'locations' in data
+        # assert 'cached' in data
+        # assert data['cached'] is False
+        locations = data['locations']
+        assert isinstance(locations, list)
+        for location in locations:
+            assert 'name' in location
+            assert 'info' in location
+            assert 'cached' in location['info']
 
     def _get_model(self, version):
         # first create classifier

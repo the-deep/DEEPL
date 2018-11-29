@@ -1,6 +1,9 @@
 from nltk.tag import StanfordNERTagger
 import re
 
+from classifier.models import ClassifiedDocument
+from NER.models import NERCache
+
 MONTHS = [
         'january', 'february', 'march', 'april', 'may', 'june', 'july',
         'august', 'september', 'october', 'november', 'december'
@@ -9,6 +12,29 @@ MONTHS_INITIALS = list(map(lambda x: x[:3], MONTHS))
 TIMES = ['midnight', 'afternoon', 'noon', 'evening', 'morning', 'night']
 DAYS = ['sunday', 'monday', 'tuesday', 'wednesday',
         'thursday', 'friday', 'saturday']
+
+
+def get_ner_tagging_doc(docid):
+    """
+    Get NER tagged data for docoument with given docid
+    Returns: <tagged_data>, <cached or not: True/False>
+    """
+    try:
+        cache = NERCache.objects.get(classified_doc__id=docid)
+    except NERCache.DoesNotExist:
+        pass
+    else:
+        return cache.ner_data, True
+    # no cache exists
+    try:
+        doc = ClassifiedDocument.objects.get(id=docid)
+    except ClassifiedDocument.DoesNotExist:
+        return {}, False
+    else:
+        tagged_data = get_ner_tagging(doc.text)
+        # create cache object
+        NERCache.objects.create(classified_doc=doc, ner_data=tagged_data)
+        return tagged_data, False
 
 
 def get_ner_tagging(text):

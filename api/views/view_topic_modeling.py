@@ -235,10 +235,18 @@ def v2_topic_modeling_handler(request):
             status=status.HTTP_404_NOT_FOUND
         )
     grp_id = params['group_id']
+    num_topics = params['number_of_topics']
+    keywords = params['keywords_per_topic']
+    depth = params['depth']
     # Check if model exists or not, if not, create one
     # If exists, check if ready or not, if ready, do not call task
     try:
-        topic_model = TopicModelingModel.objects.get(group_id=grp_id)
+        topic_model = TopicModelingModel.objects.get(
+            group_id=grp_id,
+            number_of_topics=num_topics,
+            keywords_per_topic=keywords,
+            depth=depth
+        )
         if topic_model.ready:
             return Response(
                 {'message': 'Topic model is created, call GET method'},
@@ -247,14 +255,13 @@ def v2_topic_modeling_handler(request):
     except TopicModelingModel.DoesNotExist:
         TopicModelingModel.objects.create(
             group_id=grp_id,
-            number_of_topics=params['number_of_topics'],
-            keywords_per_topic=params['keywords_per_topic'],
-            depth=params['depth']
+            number_of_topics=num_topics,
+            keywords_per_topic=keywords,
+            depth=depth
         )
         # send to background
         get_topics_and_subtopics_task.delay(
-            params['group_id'], params['number_of_topics'],
-            params['keywords_per_topic'], params['depth']
+            grp_id, num_topics, keywords, depth
         )
     return Response(
         {'message': 'Topic modeling model is being created'},

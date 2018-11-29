@@ -29,7 +29,7 @@ from classifier.serializers import (
 from topic_modeling.keywords_extraction import get_key_ngrams
 from topic_modeling.models import TopicModelingModel
 from topic_modeling.tasks import get_topics_and_subtopics_task
-from NER.ner import get_ner_tagging
+from NER.ner import get_ner_tagging, get_ner_tagging_doc
 from classifier.globals import get_classifiers
 
 from correlation.tasks import get_documents_correlation
@@ -289,7 +289,7 @@ class KeywordsExtractionView(APIView):
 class ApiVersionsView(APIView):
     def get(self, request):
         versions = ClassifierModel.objects.values("version", "accuracy")
-        return Response({"versions": versions})
+        return Response({"versions": list(versions)})
 
 
 class RecommendationView(APIView):
@@ -384,26 +384,27 @@ class NERWithDocIdView(APIView):
             return Response(validation_details['error_data'],
                             status=status.HTTP_400_BAD_REQUEST)
 
-        documents = ClassifiedDocument.objects.filter(
-            id__in=data.get('doc_ids', [])
-        )
+        doc_ids = data.get('doc_ids', [])
+        documents = ClassifiedDocument.objects.filter(id__in=doc_ids)
         # if no documents found, return 404
         if not documents:
             return Response(
                 {'error': 'No documents found for NER tagging.'},
                 status=status.HTTP_404_NOT_FOUND
             )
-        text = [doc.text for doc in documents]
-        text = ' '.join(text)
+        texts = [x.text for x in documents]
+        ner_tagged = []
+        for docid in doc_ids:
+            tags, cached = get_ner_tagging_doc(docid)
+            ner_tagged.extend(tags)
 
-        ner_tagged = get_ner_tagging(text)
         locations = []
-        for ner in ner_tagged:
+        for i, ner in enumerate(ner_tagged):
             if ner.get('entity') == 'LOCATION':
                 try:
                     start = ner['start']
                     end = start + ner['length']
-                    location = text[start:end]
+                    location = texts[i][start:end]
 
                     if location not in locations:
                         locations.append(location)
@@ -422,7 +423,6 @@ class NERWithDocIdView(APIView):
 
     def _validate_ner_params(self, data):
         errors = {}
-        print(data)
         doc_ids = data.get('doc_ids')
         if not doc_ids:
             errors['doc_ids'] = "Missing doc_ids to be NER tagged"

@@ -69,6 +69,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'deepl.middleware.token_middleware.CheckTokenMiddleware',
 ]
+# Because, testcases are in snakecase. The env var is set while running test
+if os.environ.get('NO_CAMELCASE_MIDDLEWARE') is None:
+    MIDDLEWARE.append(
+        'deepl.middleware.camelcase_middleware.CamelCaseMiddleware',
+    )
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -217,6 +222,14 @@ if os.environ.get('USE_PAPERTRAIL', 'False').lower() == 'true':
 CELERY_BEAT_SCHEDULE = {
     'topic_modeling_every_other_day': {
         'task': 'topic_modeling.tasks.get_topics_task',
+        'schedule': crontab(day_of_week='*/2'),
+    },
+    'topic_modeling_rerun_all': {
+        'task': 'topic_modeling.tasks.rerun_topic_modeling',
+        'schedule': crontab(day_of_week='*/3'),
+    },
+    'recluster_models_every_other_day': {
+        'task': 'clustering.tasks.recluster_all_models',
         'schedule': crontab(day_of_week='*/2'),
     }
 }

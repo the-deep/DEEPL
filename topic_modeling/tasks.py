@@ -38,6 +38,7 @@ def get_topics_and_subtopics_task(
         values('id', 'group_id', 'text')
 
     if docs_qs.count() < num_topics:
+        # this means not much docs are added
         return True
 
     topic_model.ready = False
@@ -76,3 +77,36 @@ def get_topics_task():
         if gid:
             get_topics_and_subtopics_task(gid, num_topics, kws_per_topic, 1)
     return True
+
+
+@task
+def rerun_topic_modeling():
+    for topic_model in TopicModelingModel.objects.all():
+        if not topic_model.ready or not topic_model.last_run_on:
+            # it's still running, so leave it
+            continue
+        # model is not running, so check if needs to rerun
+        docs_filter_criteria = {'group_id': topic_model.group_id}
+        if topic_model.last_run_on:
+            docs_filter_criteria['created_on__gte'] = topic_model.last_run_on
+
+        docs_qs = ClassifiedDocument.objects.filter(**docs_filter_criteria).\
+            values('id', 'group_id', 'text')
+        if docs_qs.count() < topic_model.number_of_topics:
+            # Not enough docs added, so continue
+            continue
+        docs = [
+            x['text'] for x in
+            ClassifiedDocument.objects.all().values('id', 'group_id', 'text')]
+
+        lda_model = LDAModel()
+        topic_model_data = lda_model.get_topics_and_subtopics(
+            docs,
+            topic_model.number_of_topics,
+            topic_model.keywords_per_topic,
+            topic_model.depth
+        )
+        topic_model.data = topic_model_data
+        topic_model.ready = True
+        topic_model.last_run_on = timezone.now().date()
+        topic_model.save()
