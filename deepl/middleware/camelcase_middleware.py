@@ -10,12 +10,11 @@ class CamelCaseMiddleware:
 
         case = request.GET.get('case', 'snakecase')
         if case == 'camelcase':
+            if hasattr(resp, 'data'):
+                data = keys_to_camelcase(resp.data)
+                resp.data = data
+                resp.content = json.dumps(data)
             return resp
-
-        if hasattr(resp, 'data'):
-            data = keys_to_camelcase(resp.data)
-            resp.data = data
-            resp.content = json.dumps(data)
         return resp
 
 
