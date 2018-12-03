@@ -8,8 +8,8 @@ class CamelCaseMiddleware:
     def __call__(self, request, **args):
         resp = self.get_response(request)
 
-        case = request.GET.get('case', 'camelcase')
-        if case == 'snakecase':
+        case = request.GET.get('case', 'snakecase')
+        if case == 'camelcase':
             return resp
 
         if hasattr(resp, 'data'):
