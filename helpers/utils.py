@@ -219,7 +219,7 @@ def sparsify_tfidf(tfidf_vector, dictionary):
     """
     vectors_tfidf_sparse = np.zeros((1, len(dictionary)))
     for tfidf in tfidf_vector:
-        vectors_tfidf_sparse[tfidf[0]] = tfidf[1]
+        vectors_tfidf_sparse[0, tfidf[0]] = tfidf[1]
     return vectors_tfidf_sparse
 
 
