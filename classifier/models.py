@@ -1,12 +1,18 @@
 import uuid
 import re
+import os
 import base64
 import pickle
+import logging
+
 from django.db import models
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 
 from helpers.common import classification_confidence
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseModel(models.Model):
@@ -50,7 +56,9 @@ class ClassifierModel(BaseModel):
         return pickle.loads(self.data)
 
     def classify_text(self, text):
-        classified = self.classifier.classify_as_label_probs(text)
+        meta = self.metadata
+        classified = self.classifier.classify_as_label_probs(
+            text, meta, self.id)
         classified.sort(key=lambda x: x[1], reverse=True)
         return classified
 

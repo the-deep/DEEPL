@@ -1,5 +1,6 @@
 import os
 import time
+import numpy as np
 
 
 class Resource:
@@ -209,6 +210,17 @@ def get_env_path_or_exception(env_var):
 directory where the index files are stored.".format(env_var)
         )
     return indicespath
+
+
+def sparsify_tfidf(tfidf_vector, dictionary):
+    """
+    @tfidf_vector: a single tfidf representing a document/text
+    dictionary is gensim Dictionary object
+    """
+    vectors_tfidf_sparse = np.zeros((1, len(dictionary)))
+    for tfidf in tfidf_vector:
+        vectors_tfidf_sparse[0, tfidf[0]] = tfidf[1]
+    return vectors_tfidf_sparse
 
 
 def _test_merge():

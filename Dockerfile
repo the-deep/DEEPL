@@ -64,7 +64,7 @@ RUN . /venv/bin/activate && \
 RUN pip3 install uwsgi
 
 RUN mkdir -p /code/nlp_data/nlp_indices/ /code/nlp_data/doc2vec_data \
-    /code/nlp_data/clustering
+    /code/nlp_data/clustering /code/nlp_data/classifier
 
 COPY . /code/
 

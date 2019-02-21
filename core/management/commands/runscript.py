@@ -32,7 +32,7 @@ class Command(BaseCommand):
             help="Clustering method: doc2vec or bow(normal)")
         parser.add_argument(
             '--doc2vec_group_id', type=str, default=None,
-            help="Group Id of Doc2VecModel. Used with clustering method doc2vec"
+            help="GroupId of Doc2VecModel. Used with clustering method doc2vec"
         )
         parser.add_argument(
             '--group_id', type=str, default=None,
@@ -41,6 +41,26 @@ class Command(BaseCommand):
         parser.add_argument(
             '--path', type=str, default=None,
             help='Path of some file'
+        )
+        parser.add_argument(
+            '--type', type=str, default=None,
+            help='Type of classifier model'
+        )
+        parser.add_argument(
+            '--dictionary_path', type=str, default=None,
+            help='Path of dictionary'
+        )
+        parser.add_argument(
+            '--model_path', type=str, default=None,
+            help='Path of model pickle'
+        )
+        parser.add_argument(
+            '--pca_model_path', type=str, default=None,
+            help='Path of some pca model pickle'
+        )
+        parser.add_argument(
+            '--tfidf_model_path', type=str, default=None,
+            help='Path of tfidf model pickle'
         )
         # Add other custom args required by the scripts
 
