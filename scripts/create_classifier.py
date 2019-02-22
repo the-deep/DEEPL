@@ -22,7 +22,7 @@ def create_train_test_data(data):
 
 def create_classifier_model(
         version,
-        data,
+        csv_path,
         classifier_class=SKNaiveBayesClassifier,
         confusion_matrix=True
         ):
@@ -42,6 +42,10 @@ def create_classifier_model(
         raise Exception("Classifier version {} already exists".format(version))
     except ClassifierModel.DoesNotExist:
         pass
+
+    from helpers.deep import get_processed_data
+    data = get_processed_data(csv_path)
+
     # get train, test data
     train, test = create_train_test_data(data)
 
@@ -70,7 +74,7 @@ def create_classifier_model(
 
 def create_and_save_classifier_model(
         version,
-        data,
+        csv_path,
         classifier_class=SKNaiveBayesClassifier,
         confusion_matrix=True
         ):
@@ -83,7 +87,7 @@ def create_and_save_classifier_model(
     @data : labeled data list [(text, classification), ...]
     @version : version of the classifier model
     """
-    obj = create_classifier_model(version, data, classifier_class)
+    obj = create_classifier_model(version, csv_path, classifier_class)
     obj.save()
     return obj
 
@@ -163,11 +167,8 @@ def main(*args, **kwargs):
         # TODO; check for model name
         version = kwargs['model_version']
 
-        from helpers.deep import get_processed_data
-
         # get data
-        data = get_processed_data(csv_path)
-        classifier_model = create_and_save_classifier_model(version, data)
+        classifier_model = create_and_save_classifier_model(version, csv_path)
         print('Classifier {}- {}  created successfully with  test data'.format(
             classifier_model, classifier_model.id
         ))

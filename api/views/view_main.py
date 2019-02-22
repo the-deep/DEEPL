@@ -104,7 +104,7 @@ class DocumentClassifierView(APIView):
         except Exception as e:
             logger.warn("Exception while translating text. {}".format(e))
 
-        classified = classify_text(classifier['classifier'], text)
+        classified = classifier['classifier_model'].classify_text(text)
 
         if not data.get('deeper'):
             return Response({
@@ -138,7 +138,7 @@ class DocumentClassifierView(APIView):
             assign_cluster_to_doc.delay(doc.id)
 
         classified_excerpts = classify_lead_excerpts(
-            classifier['classifier'],
+            classifier['classifier_model'],
             text,
         )
         # create excerpts

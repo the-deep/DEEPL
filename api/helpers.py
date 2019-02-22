@@ -2,15 +2,17 @@ import re
 from rest_framework.response import Response
 from importlib import import_module
 
+from helpers.common import preprocess
+
 
 def classify_text(classifier, text):
-    text = classifier.preprocess(text)
-    classified = classifier.classify_as_label_probs(text)
+    text = preprocess(text)
+    classified = classifier.classify_text(text)
     classified.sort(key=lambda x: x[1], reverse=True)
     return classified
 
 
-def classify_lead_excerpts(classifier, text):
+def classify_lead_excerpts(model, text):
     """
     Classify deep lead data i.e. classify it as well as its sentences(excerpts)
     """
@@ -21,7 +23,7 @@ def classify_lead_excerpts(classifier, text):
         {
             'start_pos': s+1,
             'end_pos': e,
-            'classification': classify_text(classifier, text[s+1:e+1])
+            'classification': model.classify_text(text[s+1:e+1])
         } for s, e in indices
     ]
 
