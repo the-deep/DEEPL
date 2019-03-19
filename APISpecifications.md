@@ -432,3 +432,36 @@ Response will be list of doc_ids of similar docs
     "summary": "this is the summary of the text"
 }
 </pre>
+
+
+## [GET] /api/fuzzy-search/country/
+#### Purpose: To get the matching country name for given query
+#### Params:
+- query: The query to which a country is to be matched
+
+#### Example request: https://deepl.togglecorp.com/api/fuzzy-search/country/?query=pal
+#### Response:
+<pre>
+{
+    "results": [
+        {
+            "name": "Palau",
+            "iso2": "PW",
+            "iso3": "PLW",
+            "similarity": 0.6
+        },
+        {
+            "name": "Nepal",
+            "iso2": "NP",
+            "iso3": "NPL",
+            "similarity": 0.6
+        },
+        {
+            "name": "Mali",
+            "iso2": "ML",
+            "iso3": "MLI",
+            "similarity": 0.5
+        }
+    ]
+}
+</pre>
