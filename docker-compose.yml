@@ -10,6 +10,7 @@ services:
         image: redis:latest
         volumes:
             - ./redis-data:/data
+        restart: on-failure
 
     web:
         image: thedeep/deepl:latest
@@ -29,6 +30,7 @@ services:
         depends_on:
             - db
             - celery
+        restart: on-failure
 
     celery:
         image: thedeep/deepl:latest
@@ -49,6 +51,7 @@ services:
         depends_on:
             - db
             - redis
+        restart: on-failure
 
 
 volumes:
