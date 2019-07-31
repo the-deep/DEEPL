@@ -42,6 +42,7 @@ class ClassifierModel(BaseModel):
     description = models.TextField()
     test_file_path = models.CharField(max_length=250, null=True)
     metadata = JSONField(default={})
+    is_active = models.BooleanField(default=False)
 
     def set_data(self, data):
         self._data = base64.b64encode(data)

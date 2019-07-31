@@ -14,7 +14,7 @@ def init():
                 'classifier': pickle.loads(x.data),
                 'classifier_model': x
                 }
-                for x in ClassifierModel.objects.all()
+                for x in ClassifierModel.objects.filter(is_active=True)
             }
     except ProgrammingError as e:
         print("PROGRAMMING ERROR: ", e)
