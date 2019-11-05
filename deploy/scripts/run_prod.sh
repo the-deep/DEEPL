@@ -19,6 +19,6 @@ if [[ $INSTANCE_TYPE != 'CELERY' ]]; then
     uwsgi --ini $ROOT_DIR/deploy/uwsgi.ini --static-map /static=/static  # Start uwsgi server
     # python manage.py runserver 0.0.0.0:8000
 else
-    celery -A deepl worker -l info
+    celery -A deepl worker -B -l info
 fi
 

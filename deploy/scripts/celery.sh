@@ -2,10 +2,7 @@
 
 . /venv/bin/activate
 pip3 install -r requirements.txt
-rm celerybeat.pid
+pkill -9 celery
 
-# Celery Beat
-celery -A deepl beat -l info &
 # Celery Worker
-celery -A deepl worker -l info
-
+celery -A deepl worker -B -l info
