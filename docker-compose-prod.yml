@@ -1,0 +1,63 @@
+version: '3.2'
+
+services:
+    nginx:
+        build: ./deploy/dockerfiles/nginx
+        volumes:
+            - certificates:/etc/letsencrypt/:z
+            - ./deploy/configs/nginx:/etc/nginx/:z
+        ports:
+            - '80:80'
+            - '443:443'
+        depends_on:
+            - web
+
+    redis:
+        image: redis:latest
+        volumes:
+            - ./redis-data:/data
+        restart: on-failure
+
+    web:
+        image: thedeep/deepl:latest
+        build:
+            context: .
+            cache_from:
+                - thedeep/deepl:latest
+        env_file:
+            - .nlp_env
+        command: ['/code/deploy/scripts/wait-for-it.sh', 'db:5432', '--', '/code/deploy/scripts/run_prod.sh']
+        volumes:
+            - .:/code:z
+            - ./media:/media:z
+            - nlp_data:/nlp_data
+        ports:
+            - '8010:8000'
+        depends_on:
+            - celery
+        restart: on-failure
+
+    celery:
+        image: thedeep/deepl:latest
+        build:
+            context: .
+            cache_from:
+                - thedeep/deepl:latest
+        env_file:
+            - .nlp_env
+        environment:
+            - INSTANCE_TYPE=CELERY
+        command: ['/code/deploy/scripts/celery.sh']
+        volumes:
+            - .:/code:z
+            - ./media:/media:z
+            - nlp_data:/nlp_data
+        tty: true
+        depends_on:
+            - redis
+        restart: on-failure
+
+
+volumes:
+    nlp_data:
+    certificates:

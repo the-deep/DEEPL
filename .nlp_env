@@ -4,10 +4,10 @@ DEEPL_CLUSTERING_DATA_LOCATION=/code/nlp_data/clustering/
 
 DOC2VEC_MODELS_LOCATION=/code/nlp_data/doc2vec_data/
 
-DB_NAME=postgres
-DB_HOST=db
-DB_USER=postgres
-DB_PASSWORD=postgres
+DB_NAME=deepldb
+DB_HOST=deepl-instance.c8hbka6bzy8z.eu-west-3.rds.amazonaws.com
+DB_USER=deepl
+DB_PASSWORD=M2HJ86v83qg8jLSM
 DB_PORT=5432
 
 USE_PAPERTRAIL=False
