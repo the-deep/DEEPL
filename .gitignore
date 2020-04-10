@@ -116,7 +116,6 @@ static/
 nlp_data
 .nlp_env_prod
 postgres-data/
-yarn.lock
 redis-data/
 celerybeat.pid
 celerybeat-schedule.db

@@ -4,7 +4,6 @@ services:
     nginx:
         build: ./deploy/dockerfiles/nginx
         volumes:
-            - certificates:/etc/letsencrypt/:z
             - ./deploy/configs/nginx:/etc/nginx/:z
         ports:
             - '80:80'
@@ -60,4 +59,3 @@ services:
 
 volumes:
     nlp_data:
-    certificates:
