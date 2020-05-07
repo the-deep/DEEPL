@@ -4,8 +4,8 @@ DEEPL_CLUSTERING_DATA_LOCATION=/code/nlp_data/clustering/
 
 DOC2VEC_MODELS_LOCATION=/code/nlp_data/doc2vec_data/
 
-DB_NAME=postgres
-DB_HOST=db
+DB_NAME=deepldb
+DB_HOST=postgres
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_PORT=5432
@@ -15,6 +15,8 @@ EBS_HOSTNAME=deepl
 EBS_ENV_TYPE=
 PAPERTRAIL_HOST=
 PAPERTRAIL_PORT=
+
+CLUSTER_GROUP_IDS=1828
 
 CLASSPATH=/nlp_resources/stanford-ner-2018-02-27/
 STANFORD_MODELS=/nlp_resources/stanford-ner-2018-02-27/classifiers/

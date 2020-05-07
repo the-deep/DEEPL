@@ -1,10 +1,15 @@
 version: '3.2'
 
 services:
-    db:
-        image: postgres:9.6
+    nginx:
+        build: ./deploy/dockerfiles/nginx
         volumes:
-            - ./postgres-data:/var/lib/postgresql/data
+            - ./deploy/configs/nginx:/etc/nginx/:z
+        ports:
+            - '80:80'
+            - '443:443'
+        depends_on:
+            - web
 
     redis:
         image: redis:latest
@@ -19,8 +24,8 @@ services:
             cache_from:
                 - thedeep/deepl:latest
         env_file:
-            - .nlp_env_sample
-        command: ['/code/deploy/scripts/wait-for-it.sh', 'db:5432', '--', '/code/deploy/scripts/run_develop.sh']
+            - .nlp_env_prod
+        command: ['/code/deploy/scripts/wait-for-it.sh', 'db:5432', '--', '/code/deploy/scripts/run_prod.sh']
         volumes:
             - .:/code:z
             - ./media:/media:z
@@ -28,7 +33,6 @@ services:
         ports:
             - '8010:8000'
         depends_on:
-            - db
             - celery
         restart: on-failure
 
@@ -39,7 +43,7 @@ services:
             cache_from:
                 - thedeep/deepl:latest
         env_file:
-            - .nlp_env
+            - .nlp_env_prod
         environment:
             - INSTANCE_TYPE=CELERY
         command: ['/code/deploy/scripts/celery.sh']
@@ -49,7 +53,6 @@ services:
             - nlp_data:/nlp_data
         tty: true
         depends_on:
-            - db
             - redis
         restart: on-failure
 
