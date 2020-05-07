@@ -1,3 +1,5 @@
+import os
+
 import langdetect
 from googletrans import Translator
 
@@ -7,7 +9,6 @@ from rest_framework.response import Response
 from django.db.transaction import atomic
 
 from api.helpers import (
-    classify_text,
     classify_lead_excerpts,
     check_if_test
 )
@@ -44,9 +45,10 @@ class DocumentClassifierView(APIView):
     """
     API for document classification
     """
+    # load all the classifiers, they are static attributes
+    classifiers = get_classifiers()
+
     def __init__(self):
-        # load all the classifiers
-        self.classifiers = get_classifiers()
         self.translator = Translator()
 
     def post(self, request, version):
@@ -76,7 +78,7 @@ class DocumentClassifierView(APIView):
                     {'error': 'Classified Document not found'},
                     status=status.HTTP_404_NOT_FOUND
                 )
-            except Exception as e:
+            except Exception:
                 return Response({
                     'status': False,
                     'message': 'Invalid doc_id'
@@ -131,11 +133,15 @@ class DocumentClassifierView(APIView):
             extra_info=extra_info
         )
 
+        """
         # now add the doc to a cluster, only if new doc is present
-        if not data.get('doc_id'):
+        cluster_group_ids_str = os.environ.get('CLUSTER_GROUP_IDS') or ''
+        cluster_group_ids = [x for x in cluster_group_ids_str.split(',') if x]
+        if not data.get('doc_id') and str(grp_id) in cluster_group_ids:
             # doc id is send for already present doc
             # we want to cluster new document
             assign_cluster_to_doc.delay(doc.id)
+        """
 
         classified_excerpts = classify_lead_excerpts(
             classifier['classifier_model'],

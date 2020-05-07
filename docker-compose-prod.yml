@@ -24,7 +24,7 @@ services:
             cache_from:
                 - thedeep/deepl:latest
         env_file:
-            - .nlp_env
+            - .nlp_env_prod
         command: ['/code/deploy/scripts/wait-for-it.sh', 'db:5432', '--', '/code/deploy/scripts/run_prod.sh']
         volumes:
             - .:/code:z
@@ -43,7 +43,7 @@ services:
             cache_from:
                 - thedeep/deepl:latest
         env_file:
-            - .nlp_env
+            - .nlp_env_prod
         environment:
             - INSTANCE_TYPE=CELERY
         command: ['/code/deploy/scripts/celery.sh']
